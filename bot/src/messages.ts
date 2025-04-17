@@ -1,6 +1,6 @@
 //message returners
 
-import { ProductType } from "@prisma/client";
+import { ProductType } from "../prisma/prismaSett";
 import { prdctDsplyNme, statusIcons } from "./settings";
 
 // hasap message

@@ -9,7 +9,7 @@ import {
    statusIcons,
    sumAddStates,
 } from "./src/settings";
-import { PaymentMethod } from "@prisma/client";
+import { PaymentMethod } from "./prisma/prismaSett";
 import { err_6, err_7 } from "./src/errCodes";
 import { adminValid, chatIdV, userValid, validator } from "./src/validators";
 import {
@@ -698,7 +698,9 @@ bot.callbackQuery(/^askCode_(\w+)_(\w+)$/, async (ctx) => {
 
    // order validator
    const order = await validator(
-      again ? tikTokStates.get(orderId.toString())?.orderId ?? orderId : orderId,
+      again
+         ? tikTokStates.get(orderId.toString())?.orderId ?? orderId
+         : orderId,
       ["delivering", "paid"],
       "delivering",
       adminId.toString()

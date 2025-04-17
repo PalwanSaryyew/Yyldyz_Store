@@ -4,7 +4,8 @@ import {
    ProductType,
    SummUpdate,
    User,
-} from "@prisma/client";
+} from "../prisma/prismaSett";
+
 import { Bot } from "grammy";
 
 // envs

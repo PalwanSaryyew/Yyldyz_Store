@@ -1,4 +1,5 @@
-import { Order } from "@prisma/client";
+
+import { Order } from "../prisma/prismaSett";
 import { statusIcons } from "./settings";
 import { InlineKeyboard } from "grammy";
 
