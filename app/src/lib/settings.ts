@@ -1,0 +1,8 @@
+import { ProductType } from "../../prisma/prismaSett";
+
+export const ourTonAddress = "UQDi3J28_M_iFFZ9IiukdK7adLkY5SXiMUgWFMFZNAktkDsO";
+export const toncoinId = 11419;
+export const rootUrl = "http://localhost:3000";
+export const paths: ProductType[] = ["star", "tgprem",  "uc"];
+export const STORAGE_KEY = "lastVisitedPage"; 
+

@@ -1,0 +1,11 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"]
+}
+/* {
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "semi": "off", // Noktalı virgül kuralını devre dışı bırak
+    "no-console": "off", // console.log kullanımını uyarmayı devre dışı bırak
+    "indent": "off"  // Girinti kuralını devre dışı bırak
+  }
+} */

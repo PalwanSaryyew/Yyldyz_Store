@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+   background: #111827;
+   background-image: url("/bg/bg-1.png");
+   background-size: 200px;
+   background-repeat: repeat;
+   min-height: 100vh;
+}
+
+@layer utilities {
+   .text-balance {
+      text-wrap: balance;
+   }
+}
+
+@keyframes loading1 {
+   to {
+      transform: rotate(360deg);
+   }
+}
+@keyframes loading2 {
+   0%,
+   100% {
+      transform: translateY(-25%);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+   }
+   50% {
+      transform: none;
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+   }
+}
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  display: grid;
+  color: #60A5FA;
+  background: radial-gradient(farthest-side, currentColor calc(100% - 6px),#0000 calc(100% - 5px) 0);
+  -webkit-mask: radial-gradient(farthest-side,#0000 calc(100% - 13px),#000 calc(100% - 12px));
+  border-radius: 50%;
+  animation: l19 2s infinite linear;
+}
+.loader::before,
+.loader::after {    
+  content: "";
+  grid-area: 1/1;
+  background:
+    linear-gradient(currentColor 0 0) center,
+    linear-gradient(currentColor 0 0) center;
+  background-size: 100% 10px,10px 100%;
+  background-repeat: no-repeat;
+}
+.loader::after {
+   transform: rotate(45deg);
+}
+
+@keyframes l19 { 
+  100%{transform: rotate(1turn)}
+}

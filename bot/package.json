@@ -1,0 +1,25 @@
+{
+   "name": "bot",
+   "version": "1.0.0",
+   "main": "index.js",
+   "scripts": {
+      "start": "ts-node start.ts",
+      "test": "echo \"Error: no test specified\" && exit 1"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "description": "",
+   "dependencies": {
+      "@prisma/client": "^6.4.1",
+      "grammy": "^1.35.1",
+      "prisma": "^6.5.0",
+      "typescript": "^5.7.3"
+   },
+   "devDependencies": {
+      "@types/node": "^22.13.5"
+   },
+   "prisma": {
+      "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+   }
+}
