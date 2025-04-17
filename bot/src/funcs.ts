@@ -1,14 +1,14 @@
+import { ordrIdMssgFnc, prdctCfrmtn, prdctDtlMssg } from "./messages";
+import { adminidS, bot, statusIcons } from "./settings";
+import { ordrcnfrmtnkybrd } from "./keyboards";
 import {
+   prisma,
    Order,
    PaymentMethod,
    Product,
    ProductType,
    TonTransaction,
-} from "@prisma/client";
-import { ordrIdMssgFnc, prdctCfrmtn, prdctDtlMssg } from "./messages";
-import { adminidS, bot, statusIcons } from "./settings";
-import { ordrcnfrmtnkybrd } from "./keyboards";
-import { prisma } from "../prisma/prismaSett";
+} from "../prisma/prismaSett";
 import { InlineKeyboard } from "grammy";
 
 interface OrderDetails extends Order {
