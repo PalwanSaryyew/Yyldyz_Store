@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { adminDatas } from "../src/settings";
+import { adminDatas } from "bot/src/settings";
 
 const prisma = new PrismaClient();
 async function main() {

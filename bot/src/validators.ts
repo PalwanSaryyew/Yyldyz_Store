@@ -1,5 +1,5 @@
 import { Order, OrderStatus, Product, User } from "@prisma/client";
-import { prisma } from "../prisma/prismaSett";
+import { prisma } from "../../app/prisma/prismaSett";
 import { err_1, err_2, err_3, err_4, err_5 } from "./errCodes";
 import { adminidS, rndmNmrGnrtr } from "./settings";
  type errMess = {

@@ -10,10 +10,10 @@ import { Bot } from "grammy";
 // envs
 export const bot = new Bot(process.env.BOT_TOKEN || "");
 export const adminidS = [
-   process.env.PALWAN || "",
-   process.env.PALWAN_2 || "",
-   process.env.PALWAN_3 || "",
-   process.env.HAJY || "",
+   process.env.PALWAN || "1",
+   process.env.PALWAN_2 || "2",
+   process.env.PALWAN_3 || "3",
+   process.env.HAJY || "4",
 ];
 interface SumAddState {
    mssgId: number;
