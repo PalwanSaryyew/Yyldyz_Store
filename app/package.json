@@ -3,12 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "prepare": "npm install && npx prisma generate",
-    "build": "next build && next start",
-    "start": "next start",
-    "lint": "next lint"
-  },
+       "install": "cd bot && npm install && npm link && cd .. && cd app && npm install && npm link bot && npx prisma generate && npm link && cd .. && cd bot && npm link app && cd ..",
+       "build": "cd app && npx next build && npx next start",
+       "start": "cd app && npx next start"
+    },
   "dependencies": {
     "@prisma/client": "^6.6.0",
     "@ton/ton": "^15.1.0",
