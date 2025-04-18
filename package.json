@@ -1,7 +1,6 @@
 {
    "name": "main",
    "version": "1.0.0",
-   "main": "index.js",
    "scripts": {
       "install": "cd bot && npm install && npm link && cd .. && cd app && npm install && npm link bot && npx prisma generate && npm link && cd .. && cd bot && npm link app && cd ..",
       "build": "cd app && npx next build && cd ..",
