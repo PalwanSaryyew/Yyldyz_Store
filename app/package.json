@@ -1,43 +1,42 @@
 {
-  "name": "app",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@prisma/client": "^6.6.0",
-    "@ton/ton": "^15.1.0",
-    "@tonconnect/ui-react": "^2.0.11",
-    "@twa-dev/sdk": "^8.0.2",
-    "clsx": "^2.1.1",
-    "dotenv": "^16.4.7",
-    "jsdom": "^26.0.0",
-    "next": "14.2.23",
-    "prisma": "^6.6.0",
-    "react": "^18",
-    "react-dom": "^18",
-    "react-icons": "^5.4.0",
-    "sharp": "^0.33.5",
-    "tailwind-merge": "^3.0.1",
-    "ts-node": "^10.9.2",
-    "zustand": "^5.0.3"
-  },
-  "devDependencies": {
-    "@types/jsdom": "^21.1.7",
-    "@types/node": "^20.17.17",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.23",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.7.3"
-  },
-  "prisma": {
+   "name": "app",
+   "version": "0.1.0",
+   "private": true,
+   "scripts": {
+      "install": "cd .. && cd bot && npm install && npm link && cd .. && cd app && npm install && npm link bot && npx prisma generate && npm link && cd .. && cd bot && npm link app && cd .. && cd app",
+      "build": "npx next build && npx next start",
+      "start": "npx next start"
+   },
+   "dependencies": {
+      "@prisma/client": "^6.6.0",
+      "@ton/ton": "^15.1.0",
+      "@tonconnect/ui-react": "^2.0.11",
+      "@twa-dev/sdk": "^8.0.2",
+      "clsx": "^2.1.1",
+      "dotenv": "^16.4.7",
+      "jsdom": "^26.0.0",
+      "next": "14.2.23",
+      "prisma": "^6.6.0",
+      "react": "^18",
+      "react-dom": "^18",
+      "react-icons": "^5.4.0",
+      "sharp": "^0.33.5",
+      "tailwind-merge": "^3.0.1",
+      "ts-node": "^10.9.2",
+      "zustand": "^5.0.3"
+   },
+   "devDependencies": {
+      "@types/jsdom": "^21.1.7",
+      "@types/node": "^20.17.17",
+      "@types/react": "^18",
+      "@types/react-dom": "^18",
+      "eslint": "^8",
+      "eslint-config-next": "14.2.23",
+      "postcss": "^8",
+      "tailwindcss": "^3.4.1",
+      "typescript": "^5.7.3"
+   },
+   "prisma": {
       "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
    }
 }
