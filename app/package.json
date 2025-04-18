@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "install": "cd .. && cd bot && npm install && npm link && cd .. && cd app && npm install && npm link bot && npx prisma generate && npm link && cd .. && cd bot && npm link app && cd .. && cd app",
+    "build": "next build && next start",
     "start": "next start",
     "lint": "next lint"
   },
