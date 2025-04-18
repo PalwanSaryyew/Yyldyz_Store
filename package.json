@@ -2,11 +2,10 @@
    "name": "main",
    "version": "1.0.0",
    "scripts": {
-      "dev": "next dev",
-      "build": "next build",
-      "start": "next start",
-      "lint": "next lint"
-    },
+      "install": "cd bot && npm install && npm link && cd .. && cd app && npm install && npm link bot && npx prisma generate && npm link && cd .. && cd bot && npm link app && cd ..",
+      "build": "cd app && npx next build && npx next start",
+      "start": "cd app && npx next start"
+   },
    "keywords": [],
    "author": "",
    "license": "ISC",
