@@ -16,6 +16,9 @@ export default async function ProductPage({ params }: ProductPageParams) {
       where: {
          name: prdct,
       },
+      orderBy: {
+         amount: "asc",
+      },
    });
    const tonPrice = await cmcApi(toncoinId);
 
