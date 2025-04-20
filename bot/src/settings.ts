@@ -13,8 +13,7 @@ export const bot = new Bot(process.env.BOT_TOKEN || "");
 export const adminidS = [
    process.env.PALWAN || "1",
    process.env.PALWAN_2 || "2",
-   process.env.PALWAN_3 || "3",
-   process.env.HAJY || "4",
+   process.env.HAJY || "3",
 ];
 interface SumAddState {
    mssgId: number;

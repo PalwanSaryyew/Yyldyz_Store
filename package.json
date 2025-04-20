@@ -2,8 +2,8 @@
    "name": "main",
    "version": "1.0.0",
    "scripts": {
-      "install": "cd app && npm install && npm link && cd ../bot && npm install && npm link app && npm link && cd ../app && npm link bot",
-      "build": "cd app && npx prisma generate && npx next build",
+      "install": "cd app && npm install && npm link && cd ../bot && npm install && npm link app && npm link && cd ../app && npm link bot && cd ..",
+      "build": "cd app && npx prisma generate && npx next build && cd ..",
       "start": "cd app && npx next start"
    },
    "keywords": [],

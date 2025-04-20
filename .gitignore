@@ -27,6 +27,7 @@ app/yarn-debug.log*
 app/yarn-error.log*
 
 # local env files
+.env.dep
 app/.env*.local
 bot/.env*.local
 bot/.env
