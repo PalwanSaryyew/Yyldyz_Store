@@ -51,11 +51,11 @@ bot.command("start", async (ctx) => {
 
    ctx.reply("Söwda başlamak üçin aşakdaky düwmä basyň", {
       reply_markup: new InlineKeyboard()
-         .url("Başla 🛒", "https://t.me/officialstarstorebot/str")
+         .webApp("Başla 🛒", "https://yyldyz.store")
          .row()
-         .url("Kanalymyz 📢", "https://t.me/atayevcryptotm")
+         .url("Kanalymyz 📢", "https://t.me/YyldyzKanal")
          .row()
-         .url("Grupbamyz 💬", "https://t.me/atayevcryptotmchat"),
+         .url("Grupbamyz 💬", "https://t.me/YyldyzChat"),
    });
 });
 // hasap command

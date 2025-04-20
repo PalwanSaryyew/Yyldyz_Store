@@ -19,8 +19,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-   title: "Star Store",
-   description: "Internet sowda",
+   title: "Ýyldyz Store",
+   description: "Sanly söwda",
 };
 
 export default async function RootLayout({

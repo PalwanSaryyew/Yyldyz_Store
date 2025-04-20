@@ -26,7 +26,8 @@ export default function HomePage() {
       if (lastVisited && paths.includes(lastVisited.slice(1) as ProductType)) {
          router.replace(lastVisited);
       } else {
-         router.replace("/star");
+         localStorage.setItem(STORAGE_KEY, '/star');
+         router.refresh();
       }
    }, [router]); // This useeffect usually only works once because the router object will not change.
    return (
