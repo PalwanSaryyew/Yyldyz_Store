@@ -51,7 +51,7 @@ bot.command("start", async (ctx) => {
 
    ctx.reply("Söwda başlamak üçin aşakdaky düwmä basyň", {
       reply_markup: new InlineKeyboard()
-         .webApp("Başla 🛒", "https://yyldyz.store")
+         .url("Başla 🛒", "https://t.me/YyldyzBot/app")
          .row()
          .url("Kanalymyz 📢", "https://t.me/YyldyzKanal")
          .row()

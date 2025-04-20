@@ -36,7 +36,7 @@ const TmtUsdt = ({
                   if (data.success) {
                      app.showAlert("Sargydy tassyklaň", () => {
                         app.openTelegramLink(
-                           "https://t.me/officialstarstorebot"
+                           "https://t.me/YyldyzBot"
                         );
                         app.close();
                      });
