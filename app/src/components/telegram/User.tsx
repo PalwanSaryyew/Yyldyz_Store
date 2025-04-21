@@ -17,14 +17,14 @@ const User = () => {
             const data = await fetch("/api/sum?uid=" + user?.id);
             const {
                sum,
-            }: { sum: { tmt: number; usdt: number; nmbt: string } } =
+            }: { sum: { tmt: number; usdt: number; nmbr: string } } =
                await data.json();
             setUserState({
                id: user.id,
                photo_url: user.photo_url,
                username: user.username,
                name: user.first_name,
-               nmbr: sum.nmbt,
+               nmbr: sum.nmbr,
                usdt: sum.usdt,
                tmt: sum.tmt,
             });
