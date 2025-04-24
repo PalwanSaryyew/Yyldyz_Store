@@ -18,11 +18,11 @@ export default async function ProductPage({ params }: ProductPageParams) {
          OR: [
             {
               // amount alanı null değilse
-              amount: { not: null }
+              priceTMT: { not: 0 }
             },
             {
               // duration alanı null değilse
-              duration: { not: null }
+              priceUSDT: { not: 0 }
             }
           ]
       },
@@ -31,6 +31,7 @@ export default async function ProductPage({ params }: ProductPageParams) {
       },
 
    });
+   
    const tonPrice = await cmcApi(toncoinId);
 
    return (

@@ -11,7 +11,6 @@ import {
    editSummComand,
    ordrMsgEdtStts,
    reasonStates,
-   SessionData,
    statusIcons,
    sumAddStates,
 } from "./src/settings";
@@ -148,7 +147,7 @@ bot.command("start", async (ctx) => {
 
    ctx.reply("Söwda başlamak üçin aşakdaky düwmä basyň", {
       reply_markup: new InlineKeyboard()
-         .url("Başla 🛒", "https://t.me/YyldyzBot/app")
+         .webApp("Başla 🛒", "https://yyldyz.store")
          .row()
          .url("Kanalymyz 📢", "https://t.me/YyldyzKanal")
          .row()
