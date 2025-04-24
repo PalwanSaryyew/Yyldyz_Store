@@ -6,10 +6,15 @@ import {
    User,
 } from "../prisma/prismaSett";
 
-import { Bot } from "grammy";
+import { Bot, Context, SessionFlavor } from "grammy";
 
-// envs
-export const bot = new Bot(process.env.BOT_TOKEN || "");
+export interface SessionData {
+   chattingWith?: number;
+   adminChattingWith?: number;
+}
+type MyContext = Context & SessionFlavor<SessionData>;
+export const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
+
 export const adminidS = [
    process.env.PALWAN || "1",
    process.env.PALWAN_2 || "2",

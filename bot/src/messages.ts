@@ -65,7 +65,7 @@ export function ordrCmltdMssgFnc(adminId: number, adminNick?: string) {
 }
 // user link
 export function userLink(id: number , nick?: string) {
-   return `<a href="tg://user?id=${id}">${nick ? nick : id}</a>`;
+   return `<a href="tg://user?id=${id.toString().trim()}">${nick ? nick : id}</a>`;
 }
 export function toWhere(product: ProductType) {
    return product === "uc"

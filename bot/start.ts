@@ -1,4 +1,9 @@
-import { InlineKeyboard } from "grammy";
+import {
+   InlineKeyboard,
+   MemorySessionStorage,
+   session,
+   SessionFlavor,
+} from "grammy";
 import { prisma } from "./prisma/prismaSett";
 import {
    adminidS,
@@ -6,12 +11,19 @@ import {
    editSummComand,
    ordrMsgEdtStts,
    reasonStates,
+   SessionData,
    statusIcons,
    sumAddStates,
 } from "./src/settings";
 import { PaymentMethod } from "./prisma/prismaSett";
 import { err_6, err_7 } from "./src/errCodes";
-import { adminValid, chatIdV, userValid, validator } from "./src/validators";
+import {
+   adminValid,
+   chatIdV,
+   isAdminId,
+   userValid,
+   validator,
+} from "./src/validators";
 import {
    hspMsg,
    ordrCmltdMssgFnc,
@@ -34,6 +46,91 @@ export const tikTokStates = new Map<
       pass: string;
    }
 >();
+export const chatStates = new Map<
+   number,
+   {
+      userId: number;
+      messageIds: number[];
+   }
+>();
+//admin
+bot.command("admin", async (ctx) => {
+   const userID = ctx.from?.id;
+   if (!userID || chatStates.get(userID) || isAdminId(userID).error === false) {
+      return ctx.deleteMessage();
+   }
+   const messageIds: number[] = [];
+   for (const adminId of adminidS) {
+      const { message_id } = await ctx.api.sendMessage(
+         adminId,
+         `${userLink(userID, ctx.from?.first_name)} söhbetdeşlik talap edýär`,
+         {
+            reply_markup: new InlineKeyboard().text(
+               "Tassykla",
+               "acceptChat_" + userID
+            ),
+            parse_mode: "HTML",
+         }
+      );
+      messageIds.push(message_id);
+   }
+   chatStates.set(userID, { userId: 0, messageIds: messageIds });
+   ctx.reply("Admin söhbetdeşligi kabul etýänçä garaşyň. Size habar beriler.");
+});
+bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
+   const adminID = ctx.from.id;
+   const userID = parseInt(ctx.match[1]);
+   const chatState = chatStates.get(userID);
+
+   if (!chatState || !userID || !adminID) {
+      return;
+   }
+   if (chatStates.get(adminID)) {
+      return ctx.answerCallbackQuery(
+         "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň!"
+      );
+   }
+
+   await ctx.api.sendMessage(userID, "Admin söhbetdeşligi kabul etdi.");
+   for (let i = 0; i < adminidS.length; i++) {
+      ctx.api.editMessageText(
+         adminidS[i],
+         chatState?.messageIds[i],
+         `${userLink(adminID, ctx.from.first_name)} bilen ${userLink(
+            userID
+         )} söhbetdeşlik edýär.`,
+         { parse_mode: "HTML" }
+      );
+   }
+   chatState.userId = adminID;
+   chatStates.set(adminID, {
+      userId: userID,
+      messageIds: chatState.messageIds,
+   });
+});
+bot.command("stop", async (ctx) => {
+   const userID = ctx.from?.id || 0;
+   const chatState = chatStates.get(userID);
+   if (!userID || !chatState) {
+      return ctx.deleteMessage();
+   }
+
+   await ctx.api.sendMessage(userID, `Söhbetdeşlik tamamlandy.`);
+   await ctx.api.sendMessage(chatState.userId, `Söhbetdeşlik tamamlandy.`);
+   for (let i = 0; i < adminidS.length; i++) {
+      ctx.api.editMessageText(
+         adminidS[i],
+         chatState?.messageIds[i],
+         `${userLink(userID, ctx.from?.first_name)} ${userLink(
+            chatState.userId
+         )} bilen söhbetdeşligi tamamlady.`,
+         { parse_mode: "HTML" }
+      );
+   }
+
+   chatStates.delete(userID);
+   chatStates.delete(chatState.userId);
+});
 
 /* start command */
 bot.command("test", async (ctx) => {
@@ -112,7 +209,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             adminid,
             `${ordIdMssg} ${prdctDtlMssg(
                order.product.name,
-               order.product.amount,
+               order.product.amount || 0,
                order.receiver,
                order.payment === "TMT"
                   ? order.product.priceTMT
@@ -138,7 +235,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       await ctx.editMessageText(
          `${ordIdMssg} <blockquote expandable>${prdctDtlMssg(
             order.product.name,
-            order.product.amount,
+            order.product.amount || 0,
             order.receiver,
             order.payment === "TMT"
                ? order.product.priceTMT
@@ -274,7 +371,7 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
             ordrMsgIds?.mssgIds[i],
             `${ordrIdMssgFnc(order.id)} <blockquote expandable>${prdctDtlMssg(
                order.product.name,
-               order.product.amount,
+               order.product.amount || 0,
                order.receiver,
                order.payment === "TMT"
                   ? order.product.priceTMT
@@ -423,7 +520,7 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
             messageIds?.mssgIds[i],
             `${ordIdmssg} <blockquote expandable>${prdctDtlMssg(
                order.product.name,
-               order.product.amount,
+               order.product.amount || 0,
                order.receiver,
                order.payment === "TMT"
                   ? order.product.priceTMT
@@ -460,6 +557,11 @@ bot.command(editSummComand, async (ctx) => {
    const isAdmin = adminValid(userID);
    if (sumAddStates.get(userID)) {
       return ctx.deleteMessage();
+   }
+   if (chatStates.get(Number(userID))) {
+      return ctx.answerCallbackQuery(
+         "Siz şu wagt sohbetdeşlikde, ilki söhbetdeşligi tamamlaň!"
+      );
    }
    // if user not admin notify admins
    if (isAdmin.error) {
@@ -746,8 +848,15 @@ bot.on("message", async (ctx) => {
    const reasonState = reasonStates.get(userId);
    const sumAddState = sumAddStates.get(userId);
    const tikTokState = tikTokStates.get(userId.toString());
+   const chatState = chatStates.get(userId);
    // order declining reason
-   if (reasonState) {
+   if (chatState && chatState.userId) {
+      await ctx.api.copyMessage(
+         chatState.userId,
+         ctx.chat.id,
+         ctx.message.message_id
+      );
+   } else if (reasonState) {
       const reason = ctx.message.text;
       const ordIdmess = ordrIdMssgFnc(reasonState.orderId);
       await bot.api.sendMessage(

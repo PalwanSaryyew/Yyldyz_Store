@@ -85,7 +85,7 @@ export function chatIdV(userID: number | undefined): errMess {
     }
     return {
        error: false,
-       mssg: err_3.m,
+       mssg: '',
     };
  }
  // order validator

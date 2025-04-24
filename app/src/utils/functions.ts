@@ -1,4 +1,4 @@
-import { ProductType } from "../../prisma/prismaSett";
+
 
 export function rndmNmrGnrtr(l: number): string {
    let result = "";
@@ -8,16 +8,4 @@ export function rndmNmrGnrtr(l: number): string {
    return result;
 }
 
-export function productNameDisplayer(
-   name: ProductType
-): "Jeton" | "Ýyldyz" | "Tg Premium" | "UC" {
-   return name === "jtn"
-      ? "Jeton"
-      : name === "star"
-      ? "Ýyldyz"
-      : name === "tgprem"
-      ? "Tg Premium"
-      : name === "uc"
-      ? "UC"
-      : name;
-}
+

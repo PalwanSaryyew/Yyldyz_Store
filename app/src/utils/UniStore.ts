@@ -7,7 +7,6 @@ interface ModalState {
    toogleOpen: (number: ModalState["isOpen"]) => void;
    toogleLoading: () => void;
 }
-
 export const useHandleModal = create<ModalState>((set) => ({
    isOpen: 0,
    isLoading: false,
@@ -33,10 +32,9 @@ export const useCartItem = create<CartItemState>((set) => ({
 }));
 
 interface CurrencyState {
-   currency: "TMT" | "USDT" | "TON";
+   currency: PaymentMethod;
    change: (currency: CurrencyState["currency"]) => void;
 }
-
 export const useCurrency = create<CurrencyState>((set) => ({
    currency: "TMT",
    change: (currency) => set(() => ({ currency: currency })),
@@ -67,6 +65,7 @@ export const useUser = create<UserState>((set) => ({
    user: null,
    add: (user: UserState["user"]) => set(() => ({ user: user })),
 }));
+
 interface ReceiverState {
    user: {
       name: string;
@@ -78,15 +77,4 @@ export const useReceiver = create<ReceiverState>((set) => ({
    user: null,
    add: (user: ReceiverState["user"]) => set(() => ({ user: user })),
 }));
-/* interface SummState {
-   summ: {
-      nmbr: string;
-      usdt: number;
-      tmt: number;
-   } | null;
-   add: (item: SummState["summ"]) => void;
-}
-export const useSumm = create<SummState>((set) => ({
-   summ: null,
-   add: (summ: SummState["summ"]) => set(() => ({ summ: summ })),
-})); */
+

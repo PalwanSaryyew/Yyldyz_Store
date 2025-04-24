@@ -15,10 +15,21 @@ export default async function ProductPage({ params }: ProductPageParams) {
    const data = await prisma.product.findMany({
       where: {
          name: prdct,
+         OR: [
+            {
+              // amount alanı null değilse
+              amount: { not: null }
+            },
+            {
+              // duration alanı null değilse
+              duration: { not: null }
+            }
+          ]
       },
       orderBy: {
          amount: "asc",
       },
+
    });
    const tonPrice = await cmcApi(toncoinId);
 
