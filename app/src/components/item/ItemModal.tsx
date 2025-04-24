@@ -70,7 +70,7 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
                   change({
                      id: item.id,
                      name: item.name,
-                     amount: item.amount,
+                     amount: item.amount || 0,
                      receiver:
                         item.name === "tgprem" || item.name === "star"
                            ? "@" + receiver

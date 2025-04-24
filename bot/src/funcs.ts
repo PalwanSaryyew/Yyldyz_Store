@@ -61,7 +61,7 @@ export async function noticeAdmins(order: OrderDetails) {
          adminid,
          `${ordrIdMssgFnc(order.id)} ${prdctDtlMssg(
             order.product.name,
-            order.product.amount,
+            order.product.amount || 0,
             order.receiver,
             order.tonTransaction?.price ?? 0,
             order.payment,
@@ -89,7 +89,7 @@ export async function noticeAdmins(order: OrderDetails) {
       order.userId,
       `${ordrIdMssgFnc(order.id)} <blockquote expandable>${prdctDtlMssg(
          order.product.name,
-         order.product.amount,
+         order.product.amount || 0,
          order.receiver,
          order.tonTransaction?.price ?? 0,
          order.payment

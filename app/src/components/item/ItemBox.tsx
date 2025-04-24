@@ -19,7 +19,7 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
                   <ItemIcon />
                </div>
                <div className="text-[1.3rem] font-semibold text-gray-600">
-                  <ItemAmount amount={item.amount} />
+                  <ItemAmount amount={item.amount || 0} />
                </div>
             </div>
 

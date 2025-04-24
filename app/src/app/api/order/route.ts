@@ -175,7 +175,7 @@ export async function GET(request: Request) {
       Number(userData.id),
       transaction.orderData.payment,
       productData.name,
-      productData.amount,
+      productData.amount || 0,
       transaction.orderData.receiver,
       currency === "TMT" ? productData.priceTMT : productData.priceUSDT,
       transaction.orderData.id
