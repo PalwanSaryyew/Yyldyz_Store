@@ -19,14 +19,14 @@ export default function HomePage() {
             "Failed to read last visited page from localStorage:",
             error
          );
-         router.replace("/star");
-         return;
+         localStorage.setItem(STORAGE_KEY, "/star");
+         router.refresh();
       }
 
       if (lastVisited && paths.includes(lastVisited.slice(1) as ProductType)) {
          router.replace(lastVisited);
       } else {
-         localStorage.setItem(STORAGE_KEY, '/star');
+         localStorage.setItem(STORAGE_KEY, "/star");
          router.refresh();
       }
    }, [router]); // This useeffect usually only works once because the router object will not change.
