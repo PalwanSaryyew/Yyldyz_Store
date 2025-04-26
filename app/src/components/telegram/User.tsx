@@ -10,8 +10,13 @@ const User = () => {
 
    useEffect(() => {
       const getAll = async () => {
-         const { initDataUnsafe } = await webApp();
+         const Webapp = await webApp();
+         const { initDataUnsafe } = Webapp;
          const { user } = initDataUnsafe;
+         if (!user) {
+            Webapp.showAlert("Ýalňyşlyk döredi! Haýyş täzeden giriň.")
+            Webapp.close();
+         }
 
          if (user && user.id && user.username && user.photo_url) {
             const data = await fetch("/api/sum?uid=" + user?.id);
