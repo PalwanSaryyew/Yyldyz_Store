@@ -25,7 +25,7 @@ model Order {
   receiver       String
   Admin          Admin?          @relation(fields: [courierid], references: [tgId])
   status         OrderStatus
-  TonTransaction TonTransaction?
+  tonTransaction TonTransaction?
   userId         String
   productId      Int
   courierid      String?
