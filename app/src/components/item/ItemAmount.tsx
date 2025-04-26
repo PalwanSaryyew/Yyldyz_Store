@@ -1,13 +1,10 @@
-"use client";
-import { usePathname } from "next/navigation";
 interface ItemAmountProps {
    amount: number;
+   duration: string | null;
 }
 
-const ItemAmount = ({ amount }: ItemAmountProps) => {
-   const currentPath = usePathname();
-
-   return <>{currentPath === "/prem" ? amount + " aý" : amount}</>;
+const ItemAmount = ({ amount, duration }: ItemAmountProps) => {
+   return <>{duration ? duration : amount}</>;
 };
 
 export default ItemAmount;
