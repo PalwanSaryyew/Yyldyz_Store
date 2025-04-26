@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { paths, STORAGE_KEY } from "@/lib/settings";
 import { ProductType } from "../../../prisma/prismaSett";
 import Image from "next/image";
+import { webApp } from "@/lib/webApp";
 
 export default function HomePage() {
    const router = useRouter();
 
    useEffect(() => {
+      webApp();
       let lastVisited = null;
       try {
          // get the last visited page from local storage
