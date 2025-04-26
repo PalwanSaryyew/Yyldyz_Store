@@ -26,7 +26,7 @@ export default function HomePage() {
       }
 
       if (lastVisited && paths.includes(lastVisited.slice(1) as ProductType)) {
-         router.replace(lastVisited);
+         router.push(lastVisited);
       } else {
          localStorage.setItem(STORAGE_KEY, "/star");
          router.refresh();
