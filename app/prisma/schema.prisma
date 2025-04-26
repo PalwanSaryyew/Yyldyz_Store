@@ -11,19 +11,19 @@ datasource db {
 model Admin {
   tgId        String       @id @unique
   onlineSatus Boolean      @default(false)
-  Order       Order[]
-  SummUpdate  SummUpdate[]
+  order       Order[]
+  summUpdate  SummUpdate[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
 
 model Order {
   id             Int             @id @default(autoincrement())
-  User           User            @relation(fields: [userId], references: [id])
-  Product        Product         @relation(fields: [productId], references: [id])
+  user           User            @relation(fields: [userId], references: [id])
+  product        Product         @relation(fields: [productId], references: [id])
   payment        PaymentMethod
   receiver       String
-  Admin          Admin?          @relation(fields: [courierid], references: [tgId])
+  admin          Admin?          @relation(fields: [courierid], references: [tgId])
   status         OrderStatus
   tonTransaction TonTransaction?
   userId         String
@@ -45,7 +45,7 @@ model Product {
   picture     String?
   pictures    String[]
   description String?
-  Order       Order[]
+  order       Order[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -54,8 +54,8 @@ model SummUpdate {
   id        Int           @id @default(autoincrement())
   sum       Float
   currency  PaymentMethod
-  Admin     Admin         @relation(fields: [cashierid], references: [tgId])
-  User      User          @relation(fields: [clientid], references: [id])
+  admin     Admin         @relation(fields: [cashierid], references: [tgId])
+  user      User          @relation(fields: [clientid], references: [id])
   cashierid String
   clientid  String
   createdAt DateTime      @default(now())
@@ -65,7 +65,7 @@ model SummUpdate {
 model TonTransaction {
   id        String   @id @default(cuid())
   price     Float
-  Order     Order    @relation(fields: [orderId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id])
   orderId   Int      @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,8 +76,8 @@ model User {
   walNum     String       @unique
   sumTmt     Float        @default(0)
   sumUsdt    Float        @default(0)
-  Order      Order[]
-  SummUpdate SummUpdate[]
+  order      Order[]
+  summUpdate SummUpdate[]
   role       UserRole     @default(client)
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
