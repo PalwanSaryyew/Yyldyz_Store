@@ -19,6 +19,7 @@ export const adminidS = [
    process.env.PALWAN || "1",
    process.env.PALWAN_2 || "2",
    process.env.HAJY || "3",
+   process.env.HAJY_2 || "4",
 ];
 interface SumAddState {
    mssgId: number;

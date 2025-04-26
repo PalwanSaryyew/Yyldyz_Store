@@ -3,43 +3,35 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  
-}
-
-model User {
-  id         String       @id
-  role       UserRole     @default(client)
-  sumTmt     Float        @default(0)
-  sumUsdt    Float        @default(0)
-  walNum     String       @unique()
-  orders     Order[]
-  summUpdate SummUpdate[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
 }
 
 model Admin {
   tgId        String       @id @unique
   onlineSatus Boolean      @default(false)
-  orders      Order[]
-  summUpdate  SummUpdate[]
+  Order       Order[]
+  SummUpdate  SummUpdate[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
 
-model SummUpdate {
-  id        Int           @id @default(autoincrement())
-  cashierid String
-  cashier   Admin         @relation(fields: [cashierid], references: [tgId])
-  clientid  String
-  client    User          @relation(fields: [clientid], references: [id])
-  currency  PaymentMethod
-  sum       Float
-  updatedAt DateTime      @updatedAt
-  createdAt DateTime      @default(now())
+model Order {
+  id             Int             @id @default(autoincrement())
+  User           User            @relation(fields: [userId], references: [id])
+  Product        Product         @relation(fields: [productId], references: [id])
+  payment        PaymentMethod
+  receiver       String
+  Admin          Admin?          @relation(fields: [courierid], references: [tgId])
+  status         OrderStatus
+  TonTransaction TonTransaction?
+  userId         String
+  productId      Int
+  courierid      String?
+  mssgIds        Int[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model Product {
@@ -53,35 +45,42 @@ model Product {
   picture     String?
   pictures    String[]
   description String?
-  orders      Order[]
+  Order       Order[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
 
-model Order {
-  id             Int             @id @default(autoincrement())
-  receiver       String
-  userId         String
-  user           User            @relation(fields: [userId], references: [id])
-  courierid      String?
-  courier        Admin?          @relation(fields: [courierid], references: [tgId])
-  productId      Int
-  product        Product         @relation(fields: [productId], references: [id])
-  payment        PaymentMethod
-  status         OrderStatus
-  tonTransaction TonTransaction?
-  mssgIds        Int[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+model SummUpdate {
+  id        Int           @id @default(autoincrement())
+  sum       Float
+  currency  PaymentMethod
+  Admin     Admin         @relation(fields: [cashierid], references: [tgId])
+  User      User          @relation(fields: [clientid], references: [id])
+  cashierid String
+  clientid  String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 model TonTransaction {
-  id        String   @id @default(uuid())
+  id        String   @id
   price     Float
+  Order     Order    @relation(fields: [orderId], references: [id])
   orderId   Int      @unique
-  order     Order    @relation(fields: [orderId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model User {
+  id         String       @id
+  walNum     String       @unique
+  sumTmt     Float        @default(0)
+  sumUsdt    Float        @default(0)
+  Order      Order[]
+  SummUpdate SummUpdate[]
+  role       UserRole     @default(client)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 }
 
 enum OrderStatus {
@@ -100,14 +99,14 @@ enum PaymentMethod {
   TMT
 }
 
-enum UserRole {
-  client
-  admin
-}
-
 enum ProductType {
   jtn
   star
   tgprem
   uc
+}
+
+enum UserRole {
+  client
+  admin
 }
