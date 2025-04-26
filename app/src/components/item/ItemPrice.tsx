@@ -1,4 +1,5 @@
 "use client";
+import { tonFee } from "@/lib/settings";
 import { cn } from "@/utils/tailwindMerge";
 import { useCurrency } from "@/utils/UniStore";
 
@@ -16,7 +17,7 @@ const ItemPrice = ({ priceTMT, priceUSDT, tonPrice }: ItemPriceProps) => {
          ? priceTMT
          : currency === "USDT"
          ? priceUSDT
-         : Number((priceUSDT / tonPrice +0.3).toFixed(4));
+         : Number((priceUSDT / tonPrice +tonFee).toFixed(4));
    return (
       <div className="flex items-center gap-4">
          <div className="text-lg font-semibold text-gray-600">

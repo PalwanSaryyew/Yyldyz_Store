@@ -1,6 +1,6 @@
 import { PaymentMethod, prisma } from "../../../../prisma/prismaSett";
 import { cmcApi } from "@/lib/fetchs";
-import { toncoinId } from "@/lib/settings";
+import { toncoinId, tonFee } from "@/lib/settings";
 import { rndmNmrGnrtr } from "@/utils/functions";
 import { orderScript } from "bot/src/funcs";
 
@@ -152,7 +152,7 @@ export async function GET(request: Request) {
          const transactionData = await prisma.tonTransaction.create({
             data: {
                price: Number(
-                  (productData.priceUSDT / Number(tonPrice) + 0.3).toFixed(4)
+                  (productData.priceUSDT / Number(tonPrice) + tonFee).toFixed(4)
                ),
                orderId: newOrder.id,
             },

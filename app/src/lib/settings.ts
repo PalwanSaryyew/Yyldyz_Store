@@ -5,4 +5,5 @@ export const toncoinId = 11419;
 export const rootUrl = "http://localhost:3000";
 export const paths: ProductType[] = ["star", "tgprem",  "uc"];
 export const STORAGE_KEY = "lastVisitedPageMyapp"; 
+export const tonFee= 0.3
 

@@ -12,6 +12,7 @@ import { cn } from "@/utils/tailwindMerge";
 import { getUser } from "@/lib/fetchs";
 import { webApp } from "@/lib/webApp";
 import { Product } from "../../../prisma/prismaSett";
+import { tonFee } from "@/lib/settings";
 const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
    const isOpen = useWhicIsOpen((state) => state.opened);
    const change = useCartItem((state) => state.add);
@@ -23,7 +24,7 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
          ? item.priceTMT
          : currency === "USDT"
          ? item.priceUSDT
-         : Number((item.priceUSDT / tonPrice).toFixed(4));
+         : Number((item.priceUSDT / tonPrice + tonFee).toFixed(4));
    const currentColor = cn(
       currency === "TMT"
          ? "bg-tmtColor"
