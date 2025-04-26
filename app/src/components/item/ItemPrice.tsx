@@ -16,7 +16,7 @@ const ItemPrice = ({ priceTMT, priceUSDT, tonPrice }: ItemPriceProps) => {
          ? priceTMT
          : currency === "USDT"
          ? priceUSDT
-         : Number((priceUSDT / tonPrice).toFixed(4));
+         : Number((priceUSDT / tonPrice +0.3).toFixed(4));
    return (
       <div className="flex items-center gap-4">
          <div className="text-lg font-semibold text-gray-600">

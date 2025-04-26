@@ -152,7 +152,7 @@ export async function GET(request: Request) {
          const transactionData = await prisma.tonTransaction.create({
             data: {
                price: Number(
-                  (productData.priceUSDT / Number(tonPrice)).toFixed(4)
+                  (productData.priceUSDT / Number(tonPrice) + 0.3).toFixed(4)
                ),
                orderId: newOrder.id,
             },
