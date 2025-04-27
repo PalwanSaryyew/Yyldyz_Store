@@ -35,19 +35,20 @@ model Order {
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
-  name        ProductType
-  amount      Int?
-  duration    String?
-  priceBuy    Float
-  priceTMT    Float
-  priceUSDT   Float
-  picture     String?
-  pictures    String[]
-  description String?
-  order       Order[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           Int         @id @default(autoincrement())
+  name         ProductType
+  amount       Int?
+  duration     String?
+  chatRequired Boolean     @default(false)
+  priceBuy     Float
+  priceTMT     Float
+  priceUSDT    Float
+  picture      String?
+  pictures     String[]
+  description  String?
+  order        Order[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model SummUpdate {
@@ -72,7 +73,7 @@ model TonTransaction {
 }
 
 model User {
-  id         String       @id 
+  id         String       @id
   walNum     String       @unique
   sumTmt     Float        @default(0)
   sumUsdt    Float        @default(0)

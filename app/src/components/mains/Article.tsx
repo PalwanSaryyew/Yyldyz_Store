@@ -11,9 +11,6 @@ const Article = async ({ prdctNm }: { prdctNm: ProductType }) => {
       },
    });
    const tonPrice = await cmcApi(toncoinId);
-   console.log(data, tonPrice);
-   
-
    return (
       <div className="flex flex-col gap-4 py-8 w-full items-center">
          {data.map((item) => (

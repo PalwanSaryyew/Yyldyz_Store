@@ -1,9 +1,4 @@
-import {
-   InlineKeyboard,
-   MemorySessionStorage,
-   session,
-   SessionFlavor,
-} from "grammy";
+import { InlineKeyboard } from "grammy";
 import { prisma } from "./prisma/prismaSett";
 import {
    adminidS,
@@ -114,21 +109,66 @@ bot.command("stop", async (ctx) => {
       return ctx.deleteMessage();
    }
 
-   await ctx.api.sendMessage(userID, `Söhbetdeşlik tamamlandy.`);
-   await ctx.api.sendMessage(chatState.userId, `Söhbetdeşlik tamamlandy.`);
-   for (let i = 0; i < adminidS.length; i++) {
-      ctx.api.editMessageText(
-         adminidS[i],
-         chatState?.messageIds[i],
-         `${userLink(userID, ctx.from?.first_name)} ${userLink(
-            chatState.userId
-         )} bilen söhbetdeşligi tamamlady.`,
-         { parse_mode: "HTML" }
-      );
+   await ctx.reply(`Söhbetdeşlik tamamlandy.`);
+   await ctx.api.sendMessage(
+      chatState.userId,
+      `<blockquote>bot</blockquote> Söhbetdeşlik tamamlandy.`,
+      { parse_mode: "HTML" }
+   );
+   if (chatState.messageIds.length > 0) {
+      for (let i = 0; i < adminidS.length; i++) {
+         ctx.api.editMessageText(
+            adminidS[i],
+            chatState?.messageIds[i],
+            `${userLink(userID, ctx.from?.first_name)} ${userLink(
+               chatState.userId
+            )} bilen söhbetdeşligi tamamlady.`,
+            { parse_mode: "HTML" }
+         );
+      }
    }
 
    chatStates.delete(userID);
    chatStates.delete(chatState.userId);
+});
+
+bot.command("on", async (ctx) => {
+   const userID = ctx.from?.id;
+   if (!userID) {
+      return ctx.deleteMessage();
+   }
+   const status = await prisma.admin.update({
+      where: {
+         tgId: userID.toString(),
+      },
+      data: {
+         onlineSatus: true,
+      },
+   });
+   if (status) {
+      return ctx.reply("Siz Online " + statusIcons.yes[3]);
+   } else {
+      return ctx.deleteMessage();
+   }
+});
+bot.command("of", async (ctx) => {
+   const userID = ctx.from?.id;
+   if (!userID) {
+      return ctx.deleteMessage();
+   }
+   const status = await prisma.admin.update({
+      where: {
+         tgId: userID.toString(),
+      },
+      data: {
+         onlineSatus: false,
+      },
+   });
+   if (status) {
+      return ctx.reply("Siz Offline " + statusIcons.no[3]);
+   } else {
+      return ctx.deleteMessage();
+   }
 });
 
 /* start command */
@@ -226,11 +266,27 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       }
       ordrMsgEdtStts.set(orderId, { mssgIds: mssgIds });
 
+      let adminOnlineStatus = false;
+      if (order.product.chatRequired) {
+         chatStates.set(Number(order.userId), { userId: 0, messageIds: [] });
+         const admins = await prisma.admin.findFirst({
+            where: {
+               onlineSatus: true,
+            },
+         });
+         if (admins) adminOnlineStatus = true;
+      }
+
       const clntmssg = `${statusIcons.care[1]} ${
-         order.product.name === "jtn"
-            ? "Sargydyňyz alyndy, TikTok-dan gelmeli sms kody soralýança garaşyň!"
+         order.product.chatRequired
+            ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
+                 adminOnlineStatus
+                    ? "admin size ýazar haýyş garaşyň"
+                    : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminleň biri size ýazýança garaşyp bielrsiňiz"
+              }.`
             : "Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."
       }`;
+
       await ctx.editMessageText(
          `${ordIdMssg} <blockquote expandable>${prdctDtlMssg(
             order.product.name,
@@ -241,7 +297,12 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
                : order.product.priceUSDT,
             order.payment
          )}</blockquote> \n ${clntmssg}`,
-         { parse_mode: "HTML" }
+         {
+            parse_mode: "HTML",
+            reply_markup: adminOnlineStatus
+               ? undefined
+               : new InlineKeyboard().text("cancelOrder_" + order.id),
+         }
       );
    } catch (error) {
       console.error("SMS ERROR::", error);
@@ -264,6 +325,11 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
          show_alert: true,
       });
    }
+
+   if (chatStates.get(clntID)) {
+      chatStates.delete(clntID);
+   }
+
    // validates and turnes order details
    const order = await validator(orderId, ["pending"], "cancelled");
    if ("error" in order) {
@@ -359,11 +425,11 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
          .text("Ýatyr " + statusIcons.no[2], "declineOrder_" + order.id)
          .row()
          .copyText(order.receiver, order.receiver);
-      if (order.product.name === "jtn") {
+      /* if (order.product.name === "jtn") {
          keyboard
             .row()
             .text("SMS kody sora 💬", "askCode_" + order.id + "_first");
-      }
+      } */
       for (let i = 0; i < adminidS.length; i++) {
          await ctx.api.editMessageText(
             adminidS[i],
@@ -384,7 +450,23 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
                parse_mode: "HTML",
             }
          );
+         if (order.courierid === adminidS[i]) {
+            ctx.pinChatMessage(ordrMsgIds?.mssgIds[i]);
+         }
       }
+
+      const chatState = chatStates.get(Number(order.userId));
+      if (order.product.chatRequired && chatState) {
+         chatStates.set(Number(order.courierid), {
+            userId: Number(order.userId),
+            messageIds: [],
+         });
+         chatState.userId = Number(order.courierid);
+      }
+      await ctx.answerCallbackQuery({
+         text: "Şahsy söhbetdeşlik başladyldy. Soňundan yapmagy ýatdan çykarmaň.",
+         show_alert: true,
+      });
    } catch (error) {
       console.error("SMS ERROR::", error);
       await ctx.answerCallbackQuery({
@@ -850,11 +932,20 @@ bot.on("message", async (ctx) => {
    const chatState = chatStates.get(userId);
    // order declining reason
    if (chatState && chatState.userId) {
-      await ctx.api.copyMessage(
-         chatState.userId,
-         ctx.chat.id,
-         ctx.message.message_id
-      );
+      if (ctx.message && !ctx.message.pinned_message) {
+         // Eğer sabitlenmiş mesaj bildirimi değilse, mesajı kopyala
+         try {
+            await ctx.api.copyMessage(
+               chatState.userId, // Bu kısım admin'in veya kullanıcının chat ID'si olmalı, duruma göre ayarlarsın.
+               ctx.chat.id, // Mesajın geldiği chat ID'si
+               ctx.message.message_id // Kopyalanacak mesajın ID'si
+            );
+            console.log("Mesaj başarıyla kopyalandı.");
+         } catch (error) {
+            console.error("Mesaj kopyalanırken bir hata oluştu:", error);
+            // Hata yönetimi burada yapılabilir, örneğin kullanıcıya veya admin'e bilgi verme.
+         }
+      }
    } else if (reasonState) {
       const reason = ctx.message.text;
       const ordIdmess = ordrIdMssgFnc(reasonState.orderId);

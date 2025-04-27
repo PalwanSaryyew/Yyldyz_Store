@@ -1,20 +1,12 @@
-const cmcApikey = process.env.CMC_API_KEY || "";
-
-export async function cmcApi(id: number) {
-   const fetchUrl = `https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?id=${id}`;
+export async function cmcApi(id: string) {
    try {
-      const response = await fetch(fetchUrl, {
-         headers: {
-            "X-CMC_PRO_API_KEY": cmcApikey,
-         },
-         cache: "no-cache",
-      });
-      const result = await response.json();
-      const coinData = result.data;
-      const coinId = Object.keys(coinData)[0]; // get key
-      const coinPrice = coinData[coinId].quote.USD.price; // get price
+      const data = await fetch(
+         `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`
+      )
+         .then((response) => response.json())
+         .then((data) => data["the-open-network"].usd);
 
-      return Number(coinPrice);
+      return Number(data);
    } catch (error: unknown) {
       console.log((error as Error).message);
       return 0;
