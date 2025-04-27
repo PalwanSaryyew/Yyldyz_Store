@@ -14,7 +14,7 @@ export default async function ProductPage({ params }: ProductPageParams) {
    const { prdct } = params;
    const data = await prisma.product.findMany({
       where: {
-         name: prdct,
+         name: prdct as ProductType,
          OR: [
             {
               // amount alanı null değilse

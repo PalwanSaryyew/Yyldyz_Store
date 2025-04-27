@@ -134,7 +134,12 @@ bot.command("stop", async (ctx) => {
 
 bot.command("on", async (ctx) => {
    const userID = ctx.from?.id;
+   
    if (!userID) {
+      return ctx.deleteMessage();
+   }
+   const isAmdin =  isAdminId(userID)
+   if (isAmdin.error) {
       return ctx.deleteMessage();
    }
    const status = await prisma.admin.update({
@@ -154,6 +159,10 @@ bot.command("on", async (ctx) => {
 bot.command("of", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID) {
+      return ctx.deleteMessage();
+   }
+   const isAmdin =  isAdminId(userID);
+   if (isAmdin.error) {
       return ctx.deleteMessage();
    }
    const status = await prisma.admin.update({
@@ -282,7 +291,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
                  adminOnlineStatus
                     ? "admin size ýazar haýyş garaşyň"
-                    : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminleň biri size ýazýança garaşyp bielrsiňiz"
+                    : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminleň biri size ýazýança garaşyp bilersiňiz"
               }.`
             : "Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."
       }`;
@@ -301,7 +310,10 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             parse_mode: "HTML",
             reply_markup: adminOnlineStatus
                ? undefined
-               : new InlineKeyboard().text("cancelOrder_" + order.id),
+               : new InlineKeyboard().text(
+                    "Ýatyr " + statusIcons.no[2],
+                    "cancelOrder_" + order.id
+                 ),
          }
       );
    } catch (error) {
