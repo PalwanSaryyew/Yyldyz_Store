@@ -308,12 +308,13 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          )}</blockquote> \n ${clntmssg}`,
          {
             parse_mode: "HTML",
-            reply_markup: adminOnlineStatus
-               ? undefined
-               : new InlineKeyboard().text(
-                    "Ýatyr " + statusIcons.no[2],
-                    "cancelOrder_" + order.id
-                 ),
+            reply_markup:
+               adminOnlineStatus && order.product.chatRequired
+                  ? undefined
+                  : new InlineKeyboard().text(
+                       "Ýatyr " + statusIcons.no[2],
+                       "cancelOrder_" + order.id
+                    ),
          }
       );
    } catch (error) {
@@ -968,7 +969,7 @@ bot.on("message", async (ctx) => {
       const ordIdmess = ordrIdMssgFnc(reasonState.orderId);
       await bot.api.sendMessage(
          reasonState.client,
-         `${ordIdmess}  ${ordrDclngMssgFnc(userId.toString(), false, reason)}`,
+         `${ordIdmess}  ${ordrDclngMssgFnc(userId.toString(), false, reason, true)}`,
          {
             parse_mode: "HTML",
          }

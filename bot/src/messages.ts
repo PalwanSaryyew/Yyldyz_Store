@@ -53,19 +53,27 @@ export function ordrDlvrng(tgId: number | string, firstname?: string) {
 export function ordrDclngMssgFnc(
    adminId: string | number,
    adminNick: string | boolean,
-   reason?: string
+   reason?: string,
+   isClient: boolean = false
 ) {
-   return `${statusIcons.no[2]} <a href="tg://user?id=${adminId}">${
-      adminNick ? adminNick : "Admin"
-   }</a> sargydy ýatyrdy! ${reason ? `\n Sebäbi: ${reason} ` : ""}`;
+   return `${statusIcons.no[2]} <a href="tg://user?id=${
+      isClient ? "" : adminId
+   }">${adminNick ? adminNick : "Admin"}</a> sargydy ýatyrdy! ${
+      reason ? `\n Sebäbi: ${reason} ` : ""
+   }`;
 }
 // order delivered by admin
 export function ordrCmltdMssgFnc(adminId: number, adminNick?: string) {
-   return `${statusIcons.yes[2]} ${userLink(adminId, adminNick)} sargydy tabşyrdy!`;
+   return `${statusIcons.yes[2]} ${userLink(
+      adminId,
+      adminNick
+   )} sargydy tabşyrdy!`;
 }
 // user link
-export function userLink(id: number , nick?: string) {
-   return `<a href="tg://user?id=${id.toString().trim()}">${nick ? nick : id}</a>`;
+export function userLink(id: number, nick?: string) {
+   return `<a href="tg://user?id=${id.toString().trim()}">${
+      nick ? nick : id
+   }</a>`;
 }
 export function toWhere(product: ProductType) {
    return product === "uc"
