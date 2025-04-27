@@ -309,7 +309,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          {
             parse_mode: "HTML",
             reply_markup:
-               adminOnlineStatus && order.product.chatRequired
+               adminOnlineStatus && !order.product.chatRequired
                   ? undefined
                   : new InlineKeyboard().text(
                        "Ýatyr " + statusIcons.no[2],
