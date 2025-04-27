@@ -480,11 +480,11 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
             messageIds: [],
          });
          chatState.userId = Number(order.courierid);
+         await ctx.answerCallbackQuery({
+            text: "Şahsy söhbetdeşlik başladyldy. Soňundan yapmagy ýatdan çykarmaň.",
+            show_alert: true,
+         });
       }
-      await ctx.answerCallbackQuery({
-         text: "Şahsy söhbetdeşlik başladyldy. Soňundan yapmagy ýatdan çykarmaň.",
-         show_alert: true,
-      });
    } catch (error) {
       console.error("SMS ERROR::", error);
       await ctx.answerCallbackQuery({
