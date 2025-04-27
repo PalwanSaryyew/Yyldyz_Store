@@ -343,7 +343,7 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
    }
 
    // validates and turnes order details
-   const order = await validator(orderId, ["pending"], "cancelled");
+   const order = await validator(orderId, ["pending", 'accepted'], "cancelled");
    if ("error" in order) {
       return await ctx.answerCallbackQuery({
          text: order.mssg,
