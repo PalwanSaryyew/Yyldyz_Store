@@ -634,6 +634,9 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
                parse_mode: "HTML",
             }
          );
+         if (order.courierid === adminidS[i]) {
+            ctx.unpinChatMessage(messageIds?.mssgIds[i]);
+         }
       }
 
       await bot.api.sendMessage(
