@@ -134,11 +134,11 @@ bot.command("stop", async (ctx) => {
 
 bot.command("on", async (ctx) => {
    const userID = ctx.from?.id;
-   
+
    if (!userID) {
       return ctx.deleteMessage();
    }
-   const isAmdin =  isAdminId(userID)
+   const isAmdin = isAdminId(userID);
    if (isAmdin.error) {
       return ctx.deleteMessage();
    }
@@ -161,7 +161,7 @@ bot.command("of", async (ctx) => {
    if (!userID) {
       return ctx.deleteMessage();
    }
-   const isAmdin =  isAdminId(userID);
+   const isAmdin = isAdminId(userID);
    if (isAmdin.error) {
       return ctx.deleteMessage();
    }
@@ -328,7 +328,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
 bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
    const orderId = parseInt(ctx.match[1]);
    const clntID = ctx.from.id;
-
+   const chatState = chatStates.get(clntID);
    //caht id comes ?
    const chatId = chatIdV(clntID);
    if (chatId.error) {
@@ -338,18 +338,23 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
       });
    }
 
-   if (chatStates.get(clntID)) {
-      chatStates.delete(clntID);
-   }
-
    // validates and turnes order details
-   const order = await validator(orderId, ["pending", 'accepted'], "cancelled");
+   const order = await validator(
+      orderId,
+      ["pending", chatState ? "accepted" : "pending"],
+      "cancelled"
+   );
    if ("error" in order) {
       return await ctx.answerCallbackQuery({
          text: order.mssg,
          show_alert: true,
       });
    }
+
+   if (chatState) {
+      chatStates.delete(clntID);
+   }
+
    // order belongs to ovner of wallet ?
    if (order.userId !== clntID.toString()) {
       return await ctx.answerCallbackQuery({
@@ -652,8 +657,8 @@ bot.command(editSummComand, async (ctx) => {
       return ctx.deleteMessage();
    }
    if (chatStates.get(Number(userID))) {
-      return ctx.answerCallbackQuery(
-         "Siz şu wagt sohbetdeşlikde, ilki söhbetdeşligi tamamlaň!"
+      return ctx.reply(
+         "Siz şu wagt söhbetdeşlikde, ilki söhbetdeşligi tamamlaň! \n /stop"
       );
    }
    // if user not admin notify admins
