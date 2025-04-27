@@ -418,11 +418,11 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
       adminId.toString()
    );
    if ("error" in order) {
-      await ctx.deleteMessage();
-      return await ctx.answerCallbackQuery({
+      await ctx.answerCallbackQuery({
          text: order.mssg,
          show_alert: true,
       });
+      return ctx.deleteMessage();
    }
    if (order.mssgIds.length > 0) {
       ordrMsgEdtStts.set(order.id, { mssgIds: order.mssgIds });
@@ -515,10 +515,11 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
       adminId.toString()
    );
    if ("error" in order) {
-      return await ctx.answerCallbackQuery({
+      await ctx.answerCallbackQuery({
          text: order.mssg,
          show_alert: true,
       });
+      return ctx.deleteMessage();
    }
    if (order.mssgIds.length > 0) {
       ordrMsgEdtStts.set(order.id, { mssgIds: order.mssgIds });
