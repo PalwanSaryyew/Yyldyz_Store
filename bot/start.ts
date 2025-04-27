@@ -309,7 +309,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          {
             parse_mode: "HTML",
             reply_markup:
-            order.product.chatRequired===false && !adminOnlineStatus
+               order.product.chatRequired === false && !adminOnlineStatus
                   ? undefined
                   : new InlineKeyboard().text(
                        "Ýatyr " + statusIcons.no[2],
@@ -566,6 +566,9 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
                parse_mode: "HTML",
             }
          );
+         if (adminidS[i] === order.courierid) {
+            ctx.unpinChatMessage(ordrMsgIds?.mssgIds[i]);
+         }
       }
       // yatyrma sebabi garasylyar
       reasonStates.set(adminId, {
@@ -969,7 +972,12 @@ bot.on("message", async (ctx) => {
       const ordIdmess = ordrIdMssgFnc(reasonState.orderId);
       await bot.api.sendMessage(
          reasonState.client,
-         `${ordIdmess}  ${ordrDclngMssgFnc(userId.toString(), false, reason, true)}`,
+         `${ordIdmess}  ${ordrDclngMssgFnc(
+            userId.toString(),
+            false,
+            reason,
+            true
+         )}`,
          {
             parse_mode: "HTML",
          }
