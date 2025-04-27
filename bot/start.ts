@@ -418,6 +418,7 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
       adminId.toString()
    );
    if ("error" in order) {
+      await ctx.deleteMessage();
       return await ctx.answerCallbackQuery({
          text: order.mssg,
          show_alert: true,
