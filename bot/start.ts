@@ -291,7 +291,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
                  adminOnlineStatus
                     ? "admin size ýazar haýyş garaşyň"
-                    : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminleň biri size ýazýança garaşyp bilersiňiz"
+                    : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminlardan biri size ýazýança garaşyp bilersiňiz"
               }.`
             : "Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."
       }`;
@@ -309,7 +309,8 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          {
             parse_mode: "HTML",
             reply_markup:
-               (order.product.chatRequired === false && !adminOnlineStatus) || adminOnlineStatus
+               (order.product.chatRequired === false && !adminOnlineStatus) ||
+               adminOnlineStatus
                   ? undefined
                   : new InlineKeyboard().text(
                        "Ýatyr " + statusIcons.no[2],
@@ -474,6 +475,10 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
          }
       }
 
+      if (order.payment === "TON" && order.product.chatRequired) {
+         chatStates.set(Number(order.userId), { userId: 0, messageIds: [] });
+      }
+
       const chatState = chatStates.get(Number(order.userId));
       if (order.product.chatRequired && chatState) {
          chatStates.set(Number(order.courierid), {
@@ -482,7 +487,7 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
          });
          chatState.userId = Number(order.courierid);
          await ctx.answerCallbackQuery({
-            text: "Şahsy söhbetdeşlik başladyldy. Soňundan yapmagy ýatdan çykarmaň.",
+            text: "Şahsy söhbetdeşlik başlady. Soňundan yapmagy ýatdan çykarmaň. \n /stop",
             show_alert: true,
          });
       }

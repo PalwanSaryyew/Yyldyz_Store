@@ -82,9 +82,27 @@ export async function noticeAdmins(order: OrderDetails) {
       );
       mssgIds.push(data.message_id);
    }
-   const clntmssg = `${
-      statusIcons.care[1]
-   } ${"Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."}`;
+
+   let adminOnlineStatus = false;
+   if (order.product.chatRequired) {
+      const admins = await prisma.admin.findFirst({
+         where: {
+            onlineSatus: true,
+         },
+      });
+      if (admins) adminOnlineStatus = true;
+   }
+
+   const clntmssg = `${statusIcons.care[1]} ${
+      order.product.chatRequired
+         ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
+              adminOnlineStatus
+                 ? "admin size ýazar haýyş garaşyň"
+                 : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminlardan biri size ýazýança garaşyp bilersiňiz"
+           }.`
+         : "Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."
+   }`;
+
    await bot.api.sendMessage(
       order.userId,
       `${ordrIdMssgFnc(order.id)} <blockquote expandable>${prdctDtlMssg(

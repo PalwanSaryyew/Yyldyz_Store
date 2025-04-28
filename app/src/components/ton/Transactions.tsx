@@ -49,7 +49,7 @@ const Transactions = () => {
                   await tonConnectUI.sendTransaction(transaction);
                   fetch(`/api/tonpay?oid=${response.orderId}`);
                   app.showAlert("Töleg amala aşyryldy! Sargydyňyz mümkin bolan iň gysga wagtda gowşurylar.", () => {
-                     app.openTelegramLink("https://t.me/officialstarstorebot");
+                     app.openTelegramLink("https://t.me/yyldyzbot");
                   }); // Success message
                } catch (transactionError: unknown) {
                   console.log(transactionError);
