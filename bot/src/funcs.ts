@@ -98,7 +98,7 @@ export async function noticeAdmins(order: OrderDetails) {
          ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
               adminOnlineStatus
                  ? "admin size ýazar haýyş garaşyň"
-                 : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminlardan biri size ýazýança garaşyp bilersiňiz"
+                 : "ýöne şu waglykça adminlaryň hiçbiri online däl, online bolansoň size ýazarlar."
            }.`
          : "Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."
    }`;
