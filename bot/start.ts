@@ -1,4 +1,4 @@
-import { InlineKeyboard } from "grammy";
+import { InlineKeyboard, Keyboard } from "grammy";
 import { prisma } from "./prisma/prismaSett";
 import {
    adminidS,
@@ -48,7 +48,7 @@ export const chatStates = new Map<
    }
 >();
 //admin
-bot.command("admin", async (ctx) => {
+bot.hears("Admini çagyr", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID || chatStates.get(userID) || isAdminId(userID).error === false) {
       return ctx.deleteMessage();
@@ -194,17 +194,27 @@ bot.command("start", async (ctx) => {
       return ctx.reply(user.mssg + " \n Täzeden synanşyň /start");
    }
 
+   const replyKeyboard = new Keyboard()
+      .text("Balansy barla") // İlk satırdaki ilk buton
+      .row()
+      .text("Admini çagyr")
+      .resized()
+      .persistent()
+
+
    ctx.reply("Söwda başlamak üçin aşakdaky düwmä basyň", {
-      reply_markup: new InlineKeyboard()
+      reply_markup: replyKeyboard,
+      /* new InlineKeyboard()
          .webApp("Başla 🛒", "https://yyldyz.store")
          .row()
          .url("Kanalymyz 📢", "https://t.me/YyldyzKanal")
          .row()
-         .url("Grupbamyz 💬", "https://t.me/YyldyzChat"),
+         .url("Grupbamyz 💬", "https://t.me/YyldyzChat"), */
    });
 });
+
 // hasap command
-bot.command("hasap", async (ctx) => {
+bot.hears("Balansy barla", async (ctx) => {
    const userID = ctx.from?.id;
    // geting user
    const user = await userValid(userID);
