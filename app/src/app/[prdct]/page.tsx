@@ -3,6 +3,7 @@ import { cmcApi } from "@/lib/fetchs";
 import { toncoinId } from "@/lib/settings";
 import { prisma, ProductType } from "../../../prisma/prismaSett";
 import UseTrackLastVisitedPage from "@/lib/UseTrackLastVisitedPage";
+import InfoBox from "@/components/mains/InfoBox";
 
 interface ProductPageParams {
    params: {
@@ -17,30 +18,42 @@ export default async function ProductPage({ params }: ProductPageParams) {
          name: prdct as ProductType,
          OR: [
             {
-              // amount alanı null değilse
-              priceTMT: { not: 0 }
+               priceTMT: { not: 0 },
             },
             {
-              // duration alanı null değilse
-              priceUSDT: { not: 0 }
-            }
-          ]
+               priceUSDT: { not: 0 },
+            },
+         ],
       },
       orderBy: {
          amount: "asc",
       },
-
    });
-   
+
    const tonPrice = await cmcApi(toncoinId);
 
    return (
-      <div className="flex flex-col gap-4 py-8 w-full items-center">
-         {/* recording path */}
-         <UseTrackLastVisitedPage />
-         {data.map((item) => (
-            <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
-         ))}
-      </div>
+      <>
+         {prdct === "exit" && (
+            <InfoBox title={"Exitlag barada"}>
+               <div className="text-white">
+                  Exitlag bul online oýunlary açmak üçin niýetlenen
+                  programmadyr.
+                  <br /><br /> Exitlag diňe bir online oýunlary oýnamaga mümkinçilik
+                  bermän eýsem bulary ýokary tizlikde we pes pingde oynamagada
+                  mümkünçilik döretýär.
+                  <br /><br /> Elbetde PUBG Mobile üçin hem işleýär.
+                  <br /> Häzirki abuna diňe smartfonlar üçin niyetlenendir!
+               </div>
+            </InfoBox>
+         )}
+         <div className="flex flex-col gap-4 py-4 w-full items-center">
+            {/* recording path */}
+            <UseTrackLastVisitedPage />
+            {data.map((item) => (
+               <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
+            ))}
+         </div>
+      </>
    );
 }

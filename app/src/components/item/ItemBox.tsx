@@ -15,11 +15,13 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
          <ItemModalOpener id={item.id}>
             {/* left */}
             <div className="flex items-center gap-4">
-               <div className="">
-                  <ItemIcon />
-               </div>
+               <ItemIcon />
+
                <div className="text-[1.3rem] font-semibold text-gray-600">
-                  <ItemAmount amount={item.amount || 0} duration={item.duration}/>
+                  <ItemAmount
+                     amount={item.amount || 0}
+                     duration={item.duration}
+                  />
                </div>
             </div>
 

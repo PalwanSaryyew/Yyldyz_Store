@@ -58,6 +58,8 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
                         ? "Tg username"
                         : item.name === "uc"
                         ? "PUBG ID"
+                        : item.name === "exit"
+                        ? "Elektron poştaňyz"
                         : "TikTok-a birikdirilen telefon belgi."
                   }
                   value={receiver}
@@ -126,8 +128,7 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
                className={`${
                   currentUser === null ||
                   receiver.length > 0 ||
-                  item.name !== "tgprem" &&
-                  item.name !== "star"
+                  (item.name !== "tgprem" && item.name !== "star")
                      ? "hidden"
                      : "block"
                } bg-white text-black px-2 py-2 rounded-lg ring-1 ring-blue text-sm`}

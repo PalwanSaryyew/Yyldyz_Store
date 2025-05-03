@@ -11,6 +11,7 @@ export default async function layout({
    return (
       <>
          <ItemMenu />
+
          <CurrencyBox />
          <MainboxColor>{children}</MainboxColor>
       </>

@@ -6,14 +6,14 @@ import {
    User,
 } from "../prisma/prismaSett";
 
-import { Bot, Context, SessionFlavor } from "grammy";
+import { Bot } from "grammy";
 
 export interface SessionData {
    chattingWith?: number;
    adminChattingWith?: number;
 }
-type MyContext = Context & SessionFlavor<SessionData>;
-export const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
+
+export const bot = new Bot(process.env.BOT_TOKEN || "123");
 
 export const adminidS = [
    process.env.PALWAN || "1",
@@ -60,8 +60,8 @@ export function rndmNmrGnrtr(l: number): string {
 }
 // product name returner
 export function prdctDsplyNme(
-   name: ProductType
-): "Jeton" | "Ýyldyz" | "Tg Premium" | "UC" {
+   name: ProductType | undefined
+): "Jeton" | "Ýyldyz" | "Tg Premium" | "UC" | "Exitlag" | "" {
    return name === "jtn"
       ? "Jeton"
       : name === "star"
@@ -70,7 +70,9 @@ export function prdctDsplyNme(
       ? "Tg Premium"
       : name === "uc"
       ? "UC"
-      : name;
+      : name === "exit"
+      ? "Exitlag"
+      : "";
 }
 
 export const editSummComand = "eylenbeylen";

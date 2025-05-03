@@ -1,5 +1,6 @@
 "use client";
 
+import { prdctDsplyNme } from "bot/src/settings";
 import {
    useCartItem,
    useCurrency,
@@ -33,19 +34,17 @@ const ChktMdl = () => {
                <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">
                   <div>Haryt:</div>
                   <div>
-                     {item?.name === "star"
-                        ? "Ýyldyz"
-                        : item?.name === "tgprem"
-                        ? "Tg Premium"
-                        : item?.name === "jtn"
-                        ? "Jeton"
-                        : "UC"}
+                     {prdctDsplyNme(item?.name)}
                   </div>
                </div>
                <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">
-                  <div>{item?.name === "tgprem" ? "Wagty:" : "Sany:"}</div>
                   <div>
-                     {item?.name === "tgprem"
+                     {item?.name === "tgprem" || item?.name === "exit"
+                        ? "Wagty:"
+                        : "Sany:"}
+                  </div>
+                  <div>
+                     {item?.name === "tgprem" || item?.name === "exit"
                         ? item.amount + " aý"
                         : item?.amount}
                   </div>

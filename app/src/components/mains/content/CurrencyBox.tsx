@@ -3,7 +3,7 @@ import CrrncyChngr from "./CrrncyChngr";
 
 const CurrencyBox = () => {
    return (
-      <div className="cursor-pointer  text-white  font-bold mt-8 m-auto w-[90%]">
+      <div className="cursor-pointer  text-white  font-bold mt-3 m-auto w-[90%]">
          <div className="w-[98%] rounded-t-3xl flex overflow-hidden">
             <CrrncyChngr crrncy="TMT">TMT</CrrncyChngr>
             <CrrncyChngr crrncy="USDT">
