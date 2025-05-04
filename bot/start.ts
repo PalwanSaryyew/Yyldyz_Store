@@ -47,6 +47,25 @@ export const chatStates = new Map<
       messageIds: number[];
    }
 >();
+export const broadcastStates = new Map<
+   number,
+   {
+      message: string;
+   }
+>();
+
+bot.command("broadcast", async (ctx) => {
+   const isAmdin = isAdminId(ctx.from?.id);
+   if (isAmdin.error) {
+      return ctx.deleteMessage();
+   }
+
+   if (ctx.from?.id !== undefined) {
+      broadcastStates.set(ctx.from.id, { message: "" });
+   }
+   ctx.reply('Texti ugradyn')
+});
+
 //admin
 bot.hears("Admini çagyr", async (ctx) => {
    const userID = ctx.from?.id;
@@ -199,8 +218,7 @@ bot.command("start", async (ctx) => {
       .row()
       .text("Admini çagyr")
       .resized()
-      .persistent()
-
+      .persistent();
 
    ctx.reply("Söwda başlamak üçin aşakdaky düwmä basyň", {
       reply_markup: replyKeyboard,
@@ -971,6 +989,7 @@ bot.on("message", async (ctx) => {
    const sumAddState = sumAddStates.get(userId);
    const tikTokState = tikTokStates.get(userId.toString());
    const chatState = chatStates.get(userId);
+   const broadcastState = broadcastStates.get(userId);
    // order declining reason
    if (chatState && chatState.userId) {
       if (ctx.message && !ctx.message.pinned_message) {
@@ -1098,6 +1117,37 @@ bot.on("message", async (ctx) => {
             "TikTok hasabybyňyzyň paroly dogry bolsa, sargydyňyz az salymdan tabşyrylar."
          );
       }
+   } else if (broadcastState) {
+      const messageToSend = ctx.message.text || "";
+      const users = await prisma.user.findMany();
+
+      console.log(`Toplam ${users.length} kullanıcıya mesaj gönderiliyor...`);
+
+      for (const user of users) {
+         try {
+            await bot.api.sendMessage(user.id, messageToSend);
+            console.log(`Mesaj gönderildi: ${user.id}`);
+            // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
+            await new Promise((resolve) => setTimeout(resolve, 100));
+         } catch (error: any) {
+            console.error(`Mesaj gönderme hatası ${user.id}:`, error);
+            // Kullanıcı botu engellediyse veya başka bir hata varsa
+            if (
+               error.description &&
+               error.description.includes("bot was blocked by the user")
+            ) {
+               console.log(
+                  `Kullanıcı botu engellemiş, ${user.id}`
+               );
+            }
+            // Diğer hatalar için farklı işlemler yapabilirsiniz.
+         }
+      }
+
+      await ctx.reply(
+         "Köpçülikleýin habar ibermek prosesi tamamlandy (nogsanlyklar bolup biler)."
+      );
+      broadcastStates.delete(userId);
    }
 });
 
