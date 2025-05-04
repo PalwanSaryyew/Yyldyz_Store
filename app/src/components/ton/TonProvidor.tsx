@@ -1,7 +1,7 @@
 'use client'
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import { ReactNode } from 'react';
-const url = 'https://coffee-impressed-bird-829.mypinata.cloud/ipfs/bafkreiepmlafjliapweqfp2sygyhe2tqfegas46ysh4wducscqkaykhwte'
+const url = "https://yyldyz.store/oth/tonconnect-manifest.json"
 
 const TonProvider = ({ children }: { children: ReactNode }) => {
    return (
