@@ -62,8 +62,18 @@ bot.command("broadcast", async (ctx) => {
 
    if (ctx.from?.id !== undefined) {
       broadcastStates.set(ctx.from.id, { message: "" });
+      ctx.reply("Texti ugradyn", {
+         reply_markup: new InlineKeyboard().text(
+            "Ýatyr",
+            "cancelBroad_" + ctx.from.id
+         ),
+      });
    }
-   ctx.reply('Texti ugradyn')
+});
+
+bot.callbackQuery(/cancelBroad_(.+)/, async (ctx) => {
+   broadcastStates.delete(ctx.from.id);
+   ctx.answerCallbackQuery({ text: "Yatyryldy", show_alert: true });
 });
 
 //admin
@@ -220,7 +230,7 @@ bot.command("start", async (ctx) => {
       .resized()
       .persistent();
 
-   ctx.reply("Söwda başlamak üçin aşakdaky düwmä basyň", {
+   ctx.reply("Söwda başlamak üçin çep aşakdaky düwmä basyň", {
       reply_markup: replyKeyboard,
       /* new InlineKeyboard()
          .webApp("Başla 🛒", "https://yyldyz.store")
@@ -1136,9 +1146,7 @@ bot.on("message", async (ctx) => {
                error.description &&
                error.description.includes("bot was blocked by the user")
             ) {
-               console.log(
-                  `Kullanıcı botu engellemiş, ${user.id}`
-               );
+               console.log(`Kullanıcı botu engellemiş, ${user.id}`);
             }
             // Diğer hatalar için farklı işlemler yapabilirsiniz.
          }
