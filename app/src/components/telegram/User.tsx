@@ -14,10 +14,10 @@ const User = () => {
          const { initDataUnsafe } = Webapp;
          const { user } = initDataUnsafe;
          if (!user) {
-            Webapp.showAlert("Ýalňyşlyk döredi! Haýyş täzeden giriň.")
+            /* Webapp.showAlert("Ýalňyşlyk döredi! Haýyş täzeden giriň.")
             Webapp.close();
             window.alert("Ýalňyşlyk döredi! Haýyş täzeden giriň.")
-            window.close()
+            window.close() */
          }
 
          if (user && user.id && user.username && user.photo_url) {
