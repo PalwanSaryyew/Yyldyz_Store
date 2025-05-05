@@ -55,7 +55,7 @@ export const broadcastStates = new Map<
 >();
 
 const mainKEybiard = new Keyboard()
-   .webApp("Dükana gir 🛒", "https://yyldyz.store")
+   .text("Dükana gir 🛒")
    .row()
    .text("Balansy barla") // İlk satırdaki ilk buton
    .text("Admini çagyr")
@@ -81,7 +81,9 @@ bot.command("update", async (ctx) => {
 
    for (const user of users) {
       try {
-         await bot.api.sendMessage(user.id, "Botuň aşaky düwmeleri täzelendi", { reply_markup: mainKEybiard });
+         await bot.api.sendMessage(user.id, "Bagyşlaň käbir ýalňyşlyklary düzetdik", {
+            reply_markup: mainKEybiard,
+         });
          console.log(`Mesaj gönderildi: ${user.id}`);
          // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
          await new Promise((resolve) => setTimeout(resolve, 100));
@@ -353,6 +355,14 @@ bot.command("of", async (ctx) => {
 bot.command("test", async (ctx) => {
    ctx.reply(`${statusIcons.yes} \n ${statusIcons.no} \n ${statusIcons.care}`, {
       parse_mode: "HTML",
+   });
+});
+bot.hears("Dükana gir 🛒", async (ctx) => {
+   ctx.reply("Dükana girmek üçin aşaky düwma basyň " + ctx.from?.first_name, {
+      reply_markup: new InlineKeyboard().webApp(
+         "Söwda 🛒",
+         "https://yyldyz.store"
+      ),
    });
 });
 bot.command("start", async (ctx) => {
