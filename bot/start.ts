@@ -54,10 +54,64 @@ export const broadcastStates = new Map<
    }
 >();
 
+const mainKEybiard = new Keyboard()
+   .webApp("Dükana gir 🛒", "https://yyldyz.store")
+   .row()
+   .text("Balansy barla") // İlk satırdaki ilk buton
+   .text("Admini çagyr")
+   .resized()
+   .persistent();
+
+bot.command("update", async (ctx) => {
+   const isAmdin = isAdminId(ctx.from?.id);
+   if (isAmdin.error) {
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---update komandada deleteMessage yalnyslygy---", e);
+      });
+   }
+
+   const users = await prisma.user.findMany().catch((e) => {
+      console.error("---update komandada prisma yalnyslygy---", e);
+   });
+   if (!users) {
+      return;
+   }
+
+   console.log(`Toplam ${users.length} kullanıcıya guncelleme gönderiliyor...`);
+
+   for (const user of users) {
+      try {
+         await bot.api.sendMessage(user.id, "Botuň aşaky düwmeleri täzelendi", { reply_markup: mainKEybiard });
+         console.log(`Mesaj gönderildi: ${user.id}`);
+         // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
+         await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (error: any) {
+         console.error(`Mesaj gönderme hatası ${user.id}:`, error);
+         // Kullanıcı botu engellediyse veya başka bir hata varsa
+         if (
+            error.description &&
+            error.description.includes("bot was blocked by the user")
+         ) {
+            console.log(`Kullanıcı botu engellemiş, ${user.id}`);
+         }
+         // Diğer hatalar için farklı işlemler yapabilirsiniz.
+      }
+   }
+
+   await ctx
+      .reply(
+         "Köpçülikleýin Täzeleme prosesi tamamlandy (nogsanlyklar bolup biler)."
+      )
+      .catch((e) => {
+         console.error("---update komandada reply yalnyslygy---", e);
+      });
+});
 bot.command("broadcast", async (ctx) => {
    const isAmdin = isAdminId(ctx.from?.id);
    if (isAmdin.error) {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---brodcast komandada deleteMessage yalnyslygy---", e);
+      });
    }
 
    if (ctx.from?.id !== undefined) {
@@ -67,38 +121,67 @@ bot.command("broadcast", async (ctx) => {
             "Ýatyr",
             "cancelBroad_" + ctx.from.id
          ),
+      }).catch((e) => {
+         console.error("---brodcast komandada reply yalnyslygy---", e);
       });
    }
 });
 
 bot.callbackQuery(/cancelBroad_(.+)/, async (ctx) => {
    broadcastStates.delete(ctx.from.id);
-   ctx.answerCallbackQuery({ text: "Yatyryldy", show_alert: true });
+   ctx.answerCallbackQuery({ text: "Yatyryldy", show_alert: true }).catch(
+      (e) => {
+         console.error(
+            "---cancelBroad duwmesinde answerCallbackQuery yalnyslygy---",
+            e
+         );
+      }
+   );
 });
 
 //admin
 bot.hears("Admini çagyr", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID || chatStates.get(userID) || isAdminId(userID).error === false) {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error(
+            "---Admini çagyr duwmesinde deleteMessage yalnyslygy---",
+            e
+         );
+      });
    }
    const messageIds: number[] = [];
    for (const adminId of adminidS) {
-      const { message_id } = await ctx.api.sendMessage(
-         adminId,
-         `${userLink(userID, ctx.from?.first_name)} söhbetdeşlik talap edýär`,
-         {
-            reply_markup: new InlineKeyboard().text(
-               "Tassykla",
-               "acceptChat_" + userID
-            ),
-            parse_mode: "HTML",
-         }
-      );
-      messageIds.push(message_id);
+      try {
+         const { message_id } = await ctx.api.sendMessage(
+            adminId,
+            `${userLink(
+               userID,
+               ctx.from?.first_name
+            )} söhbetdeşlik talap edýär`,
+            {
+               reply_markup: new InlineKeyboard().text(
+                  "Tassykla",
+                  "acceptChat_" + userID
+               ),
+               parse_mode: "HTML",
+            }
+         );
+
+         messageIds.push(message_id);
+      } catch (e) {
+         console.error(
+            "---Admini çagyr duwmesinde for-sendMessage yalnyslygy---",
+            e
+         );
+      }
    }
    chatStates.set(userID, { userId: 0, messageIds: messageIds });
-   ctx.reply("Admin söhbetdeşligi kabul etýänçä garaşyň. Size habar beriler.");
+   ctx.reply(
+      "Admin söhbetdeşligi kabul etýänçä garaşyň. Size habar beriler."
+   ).catch((e) => {
+      console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
+   });
 });
 bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
    const adminID = ctx.from.id;
@@ -109,21 +192,39 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
       return;
    }
    if (chatStates.get(adminID)) {
-      return ctx.answerCallbackQuery(
-         "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň!"
-      );
+      return ctx
+         .answerCallbackQuery(
+            "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň!"
+         )
+         .catch((e) => {
+            console.error(
+               "---acceptChat komandynda answerCallbackQuery yalnyslygy---",
+               e
+            );
+         });
    }
 
-   await ctx.api.sendMessage(userID, "Admin söhbetdeşligi kabul etdi.");
+   await ctx.api
+      .sendMessage(userID, "Admin söhbetdeşligi kabul etdi.")
+      .catch((e) => {
+         console.error("---acceptChat komandynda sendMessage yalnyslygy---", e);
+      });
    for (let i = 0; i < adminidS.length; i++) {
-      ctx.api.editMessageText(
-         adminidS[i],
-         chatState?.messageIds[i],
-         `${userLink(adminID, ctx.from.first_name)} bilen ${userLink(
-            userID
-         )} söhbetdeşlik edýär.`,
-         { parse_mode: "HTML" }
-      );
+      try {
+         ctx.api.editMessageText(
+            adminidS[i],
+            chatState?.messageIds[i],
+            `${userLink(adminID, ctx.from.first_name)} bilen ${userLink(
+               userID
+            )} söhbetdeşlik edýär.`,
+            { parse_mode: "HTML" }
+         );
+      } catch (e) {
+         console.error(
+            "---acceptChat komandynda fot-editMessageText yalnyslygy---",
+            e
+         );
+      }
    }
    chatState.userId = adminID;
    chatStates.set(adminID, {
@@ -135,25 +236,40 @@ bot.command("stop", async (ctx) => {
    const userID = ctx.from?.id || 0;
    const chatState = chatStates.get(userID);
    if (!userID || !chatState) {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---stop komandasynda deleteMessage yalnyslygy---", e);
+      });
    }
 
-   await ctx.reply(`Söhbetdeşlik tamamlandy.`);
-   await ctx.api.sendMessage(
-      chatState.userId,
-      `<blockquote>bot</blockquote> Söhbetdeşlik tamamlandy.`,
-      { parse_mode: "HTML" }
-   );
+   await ctx.reply(`Söhbetdeşlik tamamlandy.`).catch((e) => {
+      console.error("---stop komandasynda reply yalnyslygy---", e);
+   });
+   await ctx.api
+      .sendMessage(
+         chatState.userId,
+         `<blockquote>bot</blockquote> Söhbetdeşlik tamamlandy.`,
+         { parse_mode: "HTML" }
+      )
+      .catch((e) => {
+         console.error("---stop komandasynda sendMessage yalnyslygy---", e);
+      });
    if (chatState.messageIds.length > 0) {
       for (let i = 0; i < adminidS.length; i++) {
-         ctx.api.editMessageText(
-            adminidS[i],
-            chatState?.messageIds[i],
-            `${userLink(userID, ctx.from?.first_name)} ${userLink(
-               chatState.userId
-            )} bilen söhbetdeşligi tamamlady.`,
-            { parse_mode: "HTML" }
-         );
+         try {
+            ctx.api.editMessageText(
+               adminidS[i],
+               chatState?.messageIds[i],
+               `${userLink(userID, ctx.from?.first_name)} ${userLink(
+                  chatState.userId
+               )} bilen söhbetdeşligi tamamlady.`,
+               { parse_mode: "HTML" }
+            );
+         } catch (e) {
+            console.error(
+               "---stop komandasynda fot-editMessageText yalnyslygy---",
+               e
+            );
+         }
       }
    }
 
@@ -165,47 +281,71 @@ bot.command("on", async (ctx) => {
    const userID = ctx.from?.id;
 
    if (!userID) {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---on komandasynda deleteMessage yalnyslygy---", e);
+      });
    }
    const isAmdin = isAdminId(userID);
    if (isAmdin.error) {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---on komandasynda deleteMessage yalnyslygy---", e);
+      });
    }
-   const status = await prisma.admin.update({
-      where: {
-         tgId: userID.toString(),
-      },
-      data: {
-         onlineSatus: true,
-      },
-   });
+   const status = await prisma.admin
+      .update({
+         where: {
+            tgId: userID.toString(),
+         },
+         data: {
+            onlineSatus: true,
+         },
+      })
+      .catch((e) => {
+         console.error("---on komandasynda prisma yalnyslygy---", e);
+      });
    if (status) {
-      return ctx.reply("Siz Online " + statusIcons.yes[3]);
+      return ctx.reply("Siz Online " + statusIcons.yes[3]).catch((e) => {
+         console.error("---on komandasynda reply yalnyslygy---", e);
+      });
    } else {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---on komandasynda deleteMessage yalnyslygy---", e);
+      });
    }
 });
 bot.command("of", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID) {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---of komandasynda deleteMessage yalnyslygy---", e);
+      });
    }
    const isAmdin = isAdminId(userID);
    if (isAmdin.error) {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---of komandasynda deleteMessage yalnyslygy---", e);
+      });
    }
-   const status = await prisma.admin.update({
-      where: {
-         tgId: userID.toString(),
-      },
-      data: {
-         onlineSatus: false,
-      },
-   });
+   const status = await prisma.admin
+      .update({
+         where: {
+            tgId: userID.toString(),
+         },
+         data: {
+            onlineSatus: false,
+         },
+      })
+      .catch((e) => {
+         console.error("---of komandasynda prisma yalnyslygy---", e);
+      });
    if (status) {
-      return ctx.reply("Siz Offline " + statusIcons.no[3]);
+      return ctx.reply("Siz Offline " + statusIcons.no[3]).catch((e) => {
+         console.error("---of komandasynda reply yalnyslygy---", e);
+      });
    } else {
-      return ctx.deleteMessage();
+      return ctx.deleteMessage().catch((e) => {
+         console.error("---of komandasynda deleteMessage yalnyslygy---", e);
+      });
    }
 });
 
@@ -223,15 +363,8 @@ bot.command("start", async (ctx) => {
       return ctx.reply(user.mssg + " \n Täzeden synanşyň /start");
    }
 
-   const replyKeyboard = new Keyboard()
-      .text("Balansy barla") // İlk satırdaki ilk buton
-      .row()
-      .text("Admini çagyr")
-      .resized()
-      .persistent();
-
-   ctx.reply("Söwda başlamak üçin çep aşakdaky düwmä basyň", {
-      reply_markup: replyKeyboard,
+   ctx.reply("Hoş geldiň " + ctx.from?.first_name, {
+      reply_markup: mainKEybiard,
       /* new InlineKeyboard()
          .webApp("Başla 🛒", "https://yyldyz.store")
          .row()

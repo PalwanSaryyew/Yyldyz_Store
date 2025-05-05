@@ -106,6 +106,8 @@ enum ProductType {
   tgprem
   uc
   exit
+  pubg
+  trgt
 }
 
 enum UserRole {
