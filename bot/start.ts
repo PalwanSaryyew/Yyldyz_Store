@@ -53,6 +53,13 @@ export const broadcastStates = new Map<
       message: string;
    }
 >();
+export const checkStates = new Map<
+   number,
+   {
+      idOrWal: string;
+      messageId: number;
+   }
+>();
 
 const mainKEybiard = new Keyboard()
    .text("Dükana gir 🛒")
@@ -81,9 +88,13 @@ bot.command("update", async (ctx) => {
 
    for (const user of users) {
       try {
-         await bot.api.sendMessage(user.id, "Bagyşlaň käbir ýalňyşlyklary düzetdik", {
-            reply_markup: mainKEybiard,
-         });
+         await bot.api.sendMessage(
+            user.id,
+            "Bagyşlaň käbir ýalňyşlyklary düzetdik",
+            {
+               reply_markup: mainKEybiard,
+            }
+         );
          console.log(`Mesaj gönderildi: ${user.id}`);
          // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
          await new Promise((resolve) => setTimeout(resolve, 100));
@@ -845,6 +856,46 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
 });
 
 // add sum comand
+bot.command("check", async (ctx) => {
+   const userID = ctx.from?.id;
+   if (!userID) {
+      return ctx.deleteMessage();
+   }
+   if (checkStates.get(userID)) {
+      return ctx.deleteMessage();
+   }
+   if (chatStates.get(Number(userID))) {
+      return ctx.reply(
+         "Siz şu wagt söhbetdeşlikde, ilki söhbetdeşligi tamamlaň! \n /stop"
+      );
+   }
+   // if user not admin notify admins
+   const isAdmin = adminValid(userID);
+   if (isAdmin.error) {
+      adminidS.map(async (adminId) => {
+         await ctx.api.sendMessage(
+            adminId,
+            sspcsCaseMs(
+               isAdmin.mssg,
+               "/" + editSummComand,
+               ctx.from?.username,
+               ctx.from?.id
+            )
+         );
+      });
+      return ctx.reply(isAdmin.mssg);
+   }
+   // asking walnum
+   const { message_id } = await ctx.reply(`Hasap nomer ýa-da tg ID: ?`, {
+      reply_markup: new InlineKeyboard().text("Yatyr", "declineCheck"),
+   });
+   // open the state
+   checkStates.set(userID, {
+      idOrWal: "",
+      messageId: message_id,
+   });
+   return;
+});
 bot.command(editSummComand, async (ctx) => {
    const userID = ctx.from?.id;
    const isAdmin = adminValid(userID);
@@ -1064,6 +1115,33 @@ bot.callbackQuery("declineAdd", async (ctx) => {
    sumAddStates.delete(adminId);
    return await ctx.editMessageText("Hasap goşmak ýatyryldy.");
 });
+bot.callbackQuery("declineCheck", async (ctx) => {
+   const adminId = ctx.from?.id;
+   // if user not admin notify admins
+   const isAdmin = adminValid(adminId);
+   if (isAdmin.error) {
+      adminidS.map(async (adminId) => {
+         await ctx.api.sendMessage(
+            adminId,
+            sspcsCaseMs(
+               isAdmin.mssg,
+               "/" + editSummComand,
+               ctx.from?.username,
+               ctx.from?.id
+            )
+         );
+      });
+      return ctx.reply(isAdmin.mssg);
+   }
+   const checkState = checkStates.get(adminId);
+   if (!checkState) {
+      return ctx.editMessageText(
+         "Barlag eýýäm ýatyryldy ýa-da amala aşyryldy ýa-da ýalňyşlyk döredi!"
+      );
+   }
+   checkStates.delete(adminId);
+   return await ctx.editMessageText("Barlag ýatyryldy.");
+});
 
 bot.callbackQuery(/^askPass_(\w+)_(\w+)$/, (ctx) => {
    //const adminId = ctx.from?.id;
@@ -1143,6 +1221,7 @@ bot.on("message", async (ctx) => {
    const tikTokState = tikTokStates.get(userId.toString());
    const chatState = chatStates.get(userId);
    const broadcastState = broadcastStates.get(userId);
+   const checkState = checkStates.get(userId);
    // order declining reason
    if (chatState && chatState.userId) {
       if (ctx.message && !ctx.message.pinned_message) {
@@ -1299,6 +1378,40 @@ bot.on("message", async (ctx) => {
          "Köpçülikleýin habar ibermek prosesi tamamlandy (nogsanlyklar bolup biler)."
       );
       broadcastStates.delete(userId);
+   } else if (checkState) {
+      const message = ctx.message.text || "";
+      ctx.deleteMessage();
+      let user;
+      const fromId = await prisma.user.findUnique({
+         where: { id: message },
+      });
+      if (fromId) {
+         user = fromId;
+      } else {
+         const formWal = await prisma.user.findUnique({
+            where: { walNum: message },
+         });
+         if (formWal) {
+            user = formWal;
+         }
+      }
+      if (!user) {
+         checkStates.delete(userId);
+         return ctx.api.editMessageText(
+            userId,
+            checkState.messageId,
+            "Hasap tapylmady, täzeden synanyşyň."
+         );
+      }
+      checkStates.delete(userId);
+      return ctx.api.editMessageText(
+         userId,
+         checkState.messageId,
+         `ID: <a href="tg://user?id=${user.id}">${user.id}</a> \n Hasap nomer: ${user.walNum} \n TMT: ${user.sumTmt} \n USDT: ${user.sumUsdt}`,
+         {
+            parse_mode: "HTML",
+         }
+      );
    }
 });
 
