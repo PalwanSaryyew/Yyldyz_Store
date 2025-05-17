@@ -64,7 +64,7 @@ const PubtItem = ({ item, tonPrice }: Props) => {
                )
             )}
 
-            <BuyButton title="Abuna ýazyl" item={item} tonPrice={tonPrice} />
+            <BuyButton title={item.duration ? 'Abuna ýazyl' : 'Satyn al'} item={item} tonPrice={tonPrice} />
             
          </div>
       </div>
