@@ -4,6 +4,7 @@ import { toncoinId } from "@/lib/settings";
 import { prisma, ProductType } from "../../../prisma/prismaSett";
 import UseTrackLastVisitedPage from "@/lib/UseTrackLastVisitedPage";
 import InfoBox from "@/components/mains/InfoBox";
+import PubtItem from "@/components/pubg/PubtItem";
 
 interface ProductPageParams {
    params: {
@@ -39,20 +40,24 @@ export default async function ProductPage({ params }: ProductPageParams) {
                <div className="text-white">
                   Exitlag bul online oýunlary açmak üçin niýetlenen
                   programmadyr.
-                  <br /><br /> Exitlag diňe bir online oýunlary oýnamaga mümkinçilik
+                  <br />
+                  <br /> Exitlag diňe bir online oýunlary oýnamaga mümkinçilik
                   bermän eýsem bulary ýokary tizlikde we pes pingde oynamagada
                   mümkünçilik döretýär.
-                  <br /><br /> Elbetde PUBG Mobile üçin hem işleýär.
-                  <br /> Häzirki abuna diňe smartfonlar üçin niyetlenendir!
+                  <br />
+                  <br /> Elbetde PUBG Mobile üçin hem işleýär.
+                  <br /> Häzirki abuna diňe mobil ulgamlar üçin niyetlenendir!
                </div>
             </InfoBox>
          )}
          <div className="flex flex-col gap-4 py-4 w-full items-center">
             {/* recording path */}
             <UseTrackLastVisitedPage />
-            {data.map((item) => (
-               <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
-            ))}
+            {prdct === "pubg"
+               ? data.map((item) => <PubtItem item={item} key={item.id} tonPrice={tonPrice} />)
+               : data.map((item) => (
+                    <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
+                 ))}
          </div>
       </>
    );

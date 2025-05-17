@@ -1,6 +1,6 @@
 //message returners
 
-import { ProductType } from "../prisma/prismaSett";
+import { Product, ProductType } from "../prisma/prismaSett";
 import { prdctDsplyNme, statusIcons } from "./settings";
 
 // hasap message
@@ -22,7 +22,7 @@ export function ordrIdMssgFnc(orderId: number) {
 }
 // produçt details message
 export function prdctDtlMssg(
-   product: ProductType,
+   product: ProductType | Product['title'],
    amount: number,
    receiver: string,
    total: number,
@@ -75,14 +75,14 @@ export function userLink(id: number, nick?: string) {
       nick ? nick : id
    }</a>`;
 }
-export function toWhere(product: ProductType) {
+export function toWhere(product: ProductType | Product['title']) {
    return product === "uc"
       ? "PUBG ID"
       : product === "jtn"
       ? "TikTok Tel.№"
       : "Kime";
 }
-export function prdcAmnt(product: ProductType, amount: number) {
+export function prdcAmnt(product: ProductType | Product['title'], amount: number) {
    return `${product === "tgprem" ? "Wagty" : "Sany"}:  ${
       product === "tgprem" ? amount + " aý" : amount
    }`;

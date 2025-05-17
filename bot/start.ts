@@ -475,7 +475,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             const data = await bot.api.sendMessage(
                adminid,
                `${ordIdMssg} ${prdctDtlMssg(
-                  order.product.name,
+                  order.product.title || order.product.name,
                   order.product.amount || 0,
                   order.receiver,
                   order.payment === "TMT"
@@ -531,7 +531,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       await ctx
          .editMessageText(
             `${ordIdMssg} <blockquote expandable>${prdctDtlMssg(
-               order.product.name,
+               order.product.title || order.product.name,
                order.product.amount || 0,
                order.receiver,
                order.payment === "TMT"
@@ -774,7 +774,7 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
                `${ordrIdMssgFnc(
                   order.id
                )} <blockquote expandable>${prdctDtlMssg(
-                  order.product.name,
+                  order.product.title || order.product.name,
                   order.product.amount || 0,
                   order.receiver,
                   order.payment === "TMT"
@@ -1035,7 +1035,7 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
                adminidS[i],
                messageIds?.mssgIds[i],
                `${ordIdmssg} <blockquote expandable>${prdctDtlMssg(
-                  order.product.name,
+                  order.product.title || order.product.name,
                   order.product.amount || 0,
                   order.receiver,
                   order.payment === "TMT"

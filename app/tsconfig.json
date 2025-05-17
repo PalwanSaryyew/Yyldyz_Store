@@ -39,7 +39,7 @@
     "bot/scripts.ts",
     "bot/start.mjs",
     "build/types/**/*.ts"
-  ],
+, "prisma/primedata.ts"  ],
   "exclude": [
     "node_modules"
   ]

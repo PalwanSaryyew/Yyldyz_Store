@@ -1,23 +1,33 @@
 import { PrismaClient } from "@prisma/client";
-import { adminDatas } from "bot/src/settings";
+
 
 const prisma = new PrismaClient();
 async function main() {
-   // seed stars
-   
-   console.log("Seeding stars successfully!");
-   // Seed prem
-   
-   console.log("Seeding tgprem successfully!");
-   // seed uc
-   
-   console.log("Seeding uc successfully!");
-   // seed admins
-
-   await prisma.admin.createMany({
-      data: adminDatas(),
-   });
-   console.log("Seeding completed successfully!");
+   /* try {
+      await prisma.product.createMany({
+         data: [
+            {
+               name: "pubg",
+               title: "Prime",
+               priceBuy: 1.02,
+               priceTMT: 30,
+               priceUSDT: 1.5,
+               details: data,
+            },
+            {
+               name: "pubg",
+               title: "Prime Plus",
+               priceBuy: 9.94,
+               priceTMT: 250,
+               priceUSDT: 12.5,
+               details: data2,
+            },
+         ],
+      });
+      console.log("yes");
+   } catch (error) {
+      console.log(error);
+   } */
 }
 
 main()

@@ -12,7 +12,7 @@ interface ItemBoxProps {
 const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
    return (
       <div className="w-full">
-         <ItemModalOpener id={item.id}>
+         <ItemModalOpener id={item.id} style="bg-white cursor-pointer flex w-[90%] rounded-t-lg p-2 items-center justify-between mx-auto">
             {/* left */}
             <div className="flex items-center gap-4">
                <ItemIcon />

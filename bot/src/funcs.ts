@@ -19,7 +19,7 @@ interface OrderDetails extends Order {
 export async function orderScript(
    buyerId: number,
    currency: PaymentMethod,
-   product: ProductType,
+   product: ProductType | Product["title"],
    amount: number,
    receiver: string,
    total: number,
@@ -60,7 +60,7 @@ export async function noticeAdmins(order: OrderDetails) {
       const data = await bot.api.sendMessage(
          adminid,
          `${ordrIdMssgFnc(order.id)} ${prdctDtlMssg(
-            order.product.name,
+            order.product.title || order.product.name,
             order.product.amount || 0,
             order.receiver,
             order.tonTransaction?.price ?? 0,
@@ -106,7 +106,7 @@ export async function noticeAdmins(order: OrderDetails) {
    await bot.api.sendMessage(
       order.userId,
       `${ordrIdMssgFnc(order.id)} <blockquote expandable>${prdctDtlMssg(
-         order.product.name,
+         order.product.title || order.product.name,
          order.product.amount || 0,
          order.receiver,
          order.tonTransaction?.price ?? 0,

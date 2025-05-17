@@ -174,7 +174,7 @@ export async function GET(request: Request) {
    const botRes = await orderScript(
       Number(userData.id),
       transaction.orderData.payment,
-      productData.name,
+      productData.title || productData.name,
       productData.amount || 0,
       transaction.orderData.receiver,
       currency === "TMT" ? productData.priceTMT : productData.priceUSDT,

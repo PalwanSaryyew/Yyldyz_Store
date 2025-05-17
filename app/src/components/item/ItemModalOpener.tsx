@@ -6,15 +6,17 @@ import React from "react";
 const ItemModalOpener = ({
    id,
    children,
+   style,
 }: {
    id: number;
    children: React.ReactNode;
+   style: string;
 }) => {
    const chIsOpen = useWhicIsOpen((state) => state.change);
    const isOpen = useWhicIsOpen((state) => state.opened);
    return (
       <div
-         className="bg-white cursor-pointer flex w-[90%] rounded-t-lg p-2 items-center justify-between mx-auto"
+         className={style}
          onClick={() => {
             chIsOpen(isOpen === id ? 0 : id);
          }}

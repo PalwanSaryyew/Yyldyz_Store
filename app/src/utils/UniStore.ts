@@ -18,7 +18,7 @@ export const useHandleModal = create<ModalState>((set) => ({
 export interface CartItemState {
    item: {
       id: number;
-      name: Product["name"];
+      name: Product["name"] | Product['title'];
       amount: number;
       receiver: string;
       currency: PaymentMethod;

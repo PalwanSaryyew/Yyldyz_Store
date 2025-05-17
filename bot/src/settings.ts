@@ -1,6 +1,7 @@
 import {
    Admin,
    PaymentMethod,
+   Product,
    ProductType,
    SummUpdate,
    User,
@@ -60,8 +61,8 @@ export function rndmNmrGnrtr(l: number): string {
 }
 // product name returner
 export function prdctDsplyNme(
-   name: ProductType | undefined
-): "Jeton" | "Ýyldyz" | "Tg Premium" | "UC" | "Exitlag" | "" {
+   name: ProductType | undefined | Product['title']
+): "Jeton" | "Ýyldyz" | "Tg Premium" | "UC" | "Exitlag" | "" | Product['title'] {
    return name === "jtn"
       ? "Jeton"
       : name === "star"
@@ -72,7 +73,7 @@ export function prdctDsplyNme(
       ? "UC"
       : name === "exit"
       ? "Exitlag"
-      : "";
+      : name ?? "";
 }
 
 export const editSummComand = "eylenbeylen";

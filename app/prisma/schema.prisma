@@ -37,6 +37,8 @@ model Order {
 model Product {
   id           Int         @id @default(autoincrement())
   name         ProductType
+  title        String?
+  details      Json?
   amount       Int?
   duration     String?
   chatRequired Boolean     @default(false)
