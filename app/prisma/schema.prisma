@@ -38,9 +38,10 @@ model Product {
   id           Int         @id @default(autoincrement())
   name         ProductType
   title        String?
-  details      Json?
   amount       Int?
   duration     String?
+  details      Json?
+  requirements Json?
   chatRequired Boolean     @default(false)
   priceBuy     Float
   priceTMT     Float
@@ -110,6 +111,7 @@ enum ProductType {
   exit
   pubg
   trgt
+  psp
 }
 
 enum UserRole {
