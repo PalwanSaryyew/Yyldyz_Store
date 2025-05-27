@@ -19,8 +19,10 @@ export interface CartItemState {
    item: {
       id: number;
       name: Product["name"] | Product['title'];
-      amount: number;
-      receiver: string;
+      title: string | null;
+      amount: number | null;
+      duration: string | null;
+      receiver: string[];
       currency: PaymentMethod;
       total: number;
    } | null;

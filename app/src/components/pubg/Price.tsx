@@ -1,6 +1,6 @@
 "use client";
-import { tonFee } from "@/lib/settings";
 import { useCurrency } from "@/utils/UniStore";
+import { tonFee } from "bot/src/settings";
 
 interface ItemPriceProps {
    priceTMT: number;

@@ -7,7 +7,6 @@ import { ProductType } from "../../prisma/prismaSett";
 
 export default function UseTrackLastVisitedPage() {
    const pathname = usePathname();
-   console.log(pathname.slice(1));
 
    useEffect(() => {
       // record only allowed paths

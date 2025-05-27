@@ -1,5 +1,5 @@
 import { cmcApi } from "@/lib/fetchs";
-import { toncoinId } from "@/lib/settings";
+import { toncoinId } from "bot/src/settings";
 
 const Pricer = async ({ round }: { round: number }) => {
    const res = await cmcApi(toncoinId);

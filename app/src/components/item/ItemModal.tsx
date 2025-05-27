@@ -12,8 +12,18 @@ import { cn } from "@/utils/tailwindMerge";
 import { getUser } from "@/lib/fetchs";
 import { webApp } from "@/lib/webApp";
 import { Product } from "../../../prisma/prismaSett";
-import { tonFee } from "@/lib/settings";
-const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
+import { Detail, Details, Requirements } from "@prisma/client";
+import PrimeItemsBox from "../pubg/PrimeItemsBox";
+import { tonFee } from "bot/src/settings";
+const ItemModal = ({
+   item,
+   tonPrice,
+}: {
+   item: Product & { requirements: Requirements | null } & {
+      details: (Details & { detail: Detail[] })[];
+   };
+   tonPrice: number;
+}) => {
    const isOpen = useWhicIsOpen((state) => state.opened);
    const change = useCartItem((state) => state.add);
    const modalOpener = useHandleModal((state) => state.toogleOpen);
@@ -26,7 +36,9 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
          ? item.priceUSDT
          : Number((item.priceUSDT / tonPrice + tonFee).toFixed(4));
    const currentColor = cn(
-      currency === "TMT"
+      item.name === "pubg"
+         ? "bg-white"
+         : currency === "TMT"
          ? "bg-tmtColor"
          : currency === "TON"
          ? "bg-tonColor"
@@ -38,8 +50,12 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
    const [isLoading, setIsLoading] = useState(false);
    return (
       <div
-         className={`${boxDisplay} bg-white w-[90%] rounded-b-lg p-2 items-center mx-auto`}
+         className={`${boxDisplay} w-[95%] rounded-b-lg p-2 items-center mx-auto`}
       >
+         {item.details.length > 0 &&
+            item.details.map((detail, index) => (
+               <PrimeItemsBox key={index} detail={detail} />
+            ))}
          {/* input box */}
          <div
             className={`${currentColor} mx-auto p-1 px-2 rounded-lg flex items-center justify-between`}
@@ -52,15 +68,19 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
                   type="text"
                   name="receiver"
                   id=""
-                  className="border-none py-2 w-full outline-none bg-transparent text-gray-100 font-medium text-lg placeholder:text-gray-200/80 placeholder:text-base"
+                  className={`border-none py-2 w-full outline-none bg-transparent font-medium text-lg placeholder:text-base ${
+                     item.name === "pubg"
+                        ? "placeholder:text-gray-500/50 text-gray-700"
+                        : "placeholder:text-gray-200/80 text-gray-100"
+                  }`}
                   placeholder={
                      item.name === "tgprem" || item.name === "star"
                         ? "Tg username"
                         : item.name === "uc"
                         ? "PUBG ID"
                         : item.name === "exit"
-                        ? "Elektron poştaňyz"
-                        : "TikTok-a birikdirilen telefon belgi."
+                        ? "Elektron poçtaňyz"
+                        : item.requirements?.asking
                   }
                   value={receiver}
                   onChange={(e) => setReceiver(e.target.value)}
@@ -73,11 +93,17 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
                   change({
                      id: item.id,
                      name: item.name,
-                     amount: item.amount || 0,
-                     receiver:
+                     title: item.title,
+                     amount: item.amount,
+                     duration: item.duration,
+                     receiver: [
+                        item.requirements?.expecting
+                           ? item.requirements?.expecting
+                           : "Kime",
                         item.name === "tgprem" || item.name === "star"
                            ? "@" + receiver
                            : receiver,
+                     ],
                      currency: currency,
                      total:
                         currency === "TON"
@@ -115,13 +141,17 @@ const ItemModal = ({ item, tonPrice }: { item: Product; tonPrice: number }) => {
                   }
                }}
                className={`${
-                  receiver.length < 1 ? "hidden" : "block"
-               } bg-white text-black px-2 py-2 rounded-lg ring-1 ring-blue`}
+                  receiver.length > 1 ? "block" : "hidden"
+               } px-2 py-2 rounded-lg ring-1 ring-blue ${
+                  item.name === "pubg"
+                     ? "bg-mainColor text-white"
+                     : "bg-white text-black"
+               }`}
             >
                {isLoading ? (
                   <div className="animate-spin p-3 border border-transparent rounded-full border-l-black"></div>
                ) : (
-                  <div className="px-2">Al</div>
+                  <div className="px-2">{item.duration ? "Al" : "Al"}</div>
                )}
             </button>
             <button

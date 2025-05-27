@@ -7,7 +7,7 @@ type PrimeItemProps = {
 
 const PrimeItem = ({ text, image }: PrimeItemProps) => {
    return (
-      <div className="flex items-center gap-1 text-xs">
+      <div className="flex items-center gap-1 text-sm">
          {" "}
          <Image src={image} alt={image} width={30} height={30} /> {text}
       </div>

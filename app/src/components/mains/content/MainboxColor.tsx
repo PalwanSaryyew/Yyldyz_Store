@@ -14,7 +14,7 @@ const MainboxColor = ({ children }: { children: React.ReactNode }) => {
          : "border-usdtColor"
    );
    return (
-      <main className={`relative w-[90%] mx-auto mb-48`}>
+      <main className={`w-[90%] mx-auto mb-48`}>
          <div
             className={`${border} backdrop-blur-[1.25px] w-[98%] rounded-b-3xl border-[2px]`}
          >

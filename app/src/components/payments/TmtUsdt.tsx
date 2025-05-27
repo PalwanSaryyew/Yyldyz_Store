@@ -29,7 +29,7 @@ const TmtUsdt = ({
       app.requestWriteAccess(async (perm) => {
          if (perm) {
             await fetch(
-               `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver}&crrnc=${item?.currency}`
+               `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver[1]}&crrnc=${item?.currency}`
             )
                .then(async (response) => await response.json())
                .then(async (data) => {

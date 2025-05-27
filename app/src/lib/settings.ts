@@ -1,9 +1,18 @@
 import { ProductType } from "../../prisma/prismaSett";
 
 export const ourTonAddress = "UQDi3J28_M_iFFZ9IiukdK7adLkY5SXiMUgWFMFZNAktkDsO";
-export const toncoinId = 'TONUSDT';
 export const rootUrl = "http://localhost:3000";
-export const paths: ProductType[] = ["star", "tgprem",  "uc", 'jtn', 'exit', 'pubg'];
-export const STORAGE_KEY = "lastVisitedPageMyapp"; 
-export const tonFee= 0.3
+export const paths: ProductType[] = [
+   "star",
+   "tgprem",
+   "uc",
+   "jtn",
+   "exit",
+   "pubg",
+   "psp",
+];
+export const STORAGE_KEY = "lastVisitedPageMyapp";
+
+
+
 

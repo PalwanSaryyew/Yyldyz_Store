@@ -1,7 +1,17 @@
 //message returners
 
-import { Product, ProductType } from "../prisma/prismaSett";
-import { prdctDsplyNme, statusIcons } from "./settings";
+import {
+   Order,
+   PaymentMethod,
+   Product,
+   ProductType,
+} from "../prisma/prismaSett";
+import {
+   prdctDsplyNme,
+   productTitle,
+   statusIcons,
+   tonPriceCalculator,
+} from "./settings";
 
 // hasap message
 export function hspMsg(hnum: string, sum1: number, sum2: number) {
@@ -21,23 +31,40 @@ export function ordrIdMssgFnc(orderId: number) {
    return `<blockquote>Sargyt ID: ${orderId}</blockquote>`;
 }
 // produçt details message
-export function prdctDtlMssg(
-   product: ProductType | Product['title'],
-   amount: number,
-   receiver: string,
-   total: number,
-   currency: string,
-   buyerId?: number | string,
-   byrName?: string
-) {
-   return `Haryt: ${prdctDsplyNme(product)} \n ${prdcAmnt(
-      product,
-      amount
-   )} \n ${
-      !buyerId ? "" : `Kimden: ${userLink(Number(buyerId), byrName)} \n `
-   }${toWhere(
-      product
-   )}: ${receiver} \n Jemi töleg: <b>${total} ${currency} </b>`;
+export function prdctDtlMssg({
+   order,
+   forWhom,
+}: {
+   order: Order & { product: Product };
+   forWhom: "admin" | "client";
+}) {
+   return `${productTitle(order.product.name)} \n ${prdcAmnt({
+      title: order.product.title,
+      amount: order.product.amount,
+      duration: order.product.duration,
+   })} ${
+      forWhom === "client"
+         ? ""
+         : `Kimden: ${userLink({ id: Number(order.userId) })} \n `
+   }${toWhere()}: ${order.receiver} \n Jemi töleg: ${orderTotal({
+      currency: order.payment,
+      product: order.product,
+   })}`;
+}
+export function orderTotal({
+   currency,
+   product,
+}: {
+   currency: PaymentMethod;
+   product: Product;
+}) {
+   return `<b>${
+      currency === "TMT"
+         ? product.priceTMT
+         : currency === "USDT"
+         ? product.priceUSDT
+         : tonPriceCalculator(product.priceUSDT)
+   } ${currency}</b>`;
 }
 //asking confirmation meesage
 export function prdctCfrmtn() {
@@ -64,26 +91,30 @@ export function ordrDclngMssgFnc(
 }
 // order delivered by admin
 export function ordrCmltdMssgFnc(adminId: number, adminNick?: string) {
-   return `${statusIcons.yes[2]} ${userLink(
-      adminId,
-      adminNick
-   )} sargydy tabşyrdy!`;
+   return `${statusIcons.yes[2]} ${userLink({
+      id: adminId,
+      nick: adminNick,
+   })} sargydy tabşyrdy!`;
 }
 // user link
-export function userLink(id: number, nick?: string) {
+export function userLink({ id, nick }: { id: number; nick?: string }) {
    return `<a href="tg://user?id=${id.toString().trim()}">${
       nick ? nick : id
    }</a>`;
 }
-export function toWhere(product: ProductType | Product['title']) {
-   return product === "uc"
-      ? "PUBG ID"
-      : product === "jtn"
-      ? "TikTok Tel.№"
-      : "Kime";
+export function toWhere() {
+   return "Nirä";
 }
-export function prdcAmnt(product: ProductType | Product['title'], amount: number) {
-   return `${product === "tgprem" ? "Wagty" : "Sany"}:  ${
-      product === "tgprem" ? amount + " aý" : amount
-   }`;
+export function prdcAmnt({
+   duration,
+   title,
+   amount,
+}: {
+   duration: Product["duration"];
+   title: Product["title"];
+   amount: Product["amount"];
+}) {
+   return `${title !== null ? `Haryt: ${title} \n ` : " "}${
+      amount ? `Mukdary: ${amount} \n ` : " "
+   }${duration ? `Möhleti: ${duration} \n ` : " "}`;
 }

@@ -35,23 +35,51 @@ model Order {
 }
 
 model Product {
-  id           Int         @id @default(autoincrement())
-  name         ProductType
-  title        String?
-  amount       Int?
-  duration     String?
-  details      Json?
-  requirements Json?
-  chatRequired Boolean     @default(false)
-  priceBuy     Float
-  priceTMT     Float
-  priceUSDT    Float
-  picture      String?
-  pictures     String[]
-  description  String?
-  order        Order[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id             Int           @id @default(autoincrement())
+  name           ProductType
+  title          String?
+  amount         Int?
+  duration       String?
+  details        Details[]
+  requirements   Requirements? @relation(fields: [requirementsId], references: [id])
+  chatRequired   Boolean       @default(false)
+  priceBuy       Float
+  priceTMT       Float
+  priceUSDT      Float
+  picture        String?
+  pictures       String[]
+  description    String?
+  order          Order[]
+  requirementsId Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Requirements {
+  id        Int       @id @default(autoincrement())
+  asking    String
+  expecting String
+  product   Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Details {
+  id        Int       @id @default(autoincrement())
+  title     String
+  detail    Detail[]
+  product   Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Detail {
+  id        Int       @id @default(autoincrement())
+  text      String
+  image     String
+  belongs   Details[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model SummUpdate {

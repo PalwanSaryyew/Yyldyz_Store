@@ -1,8 +1,8 @@
 import { PaymentMethod, prisma } from "../../../../prisma/prismaSett";
 import { cmcApi } from "@/lib/fetchs";
-import { toncoinId, tonFee } from "@/lib/settings";
 import { rndmNmrGnrtr } from "@/utils/functions";
 import { orderScript } from "bot/src/funcs";
+import { toncoinId, tonFee } from "bot/src/settings";
 
 export async function GET(request: Request) {
    const { searchParams } = new URL(request.url);
@@ -171,15 +171,12 @@ export async function GET(request: Request) {
    }
 
    // sending messages from bot
-   const botRes = await orderScript(
-      Number(userData.id),
-      transaction.orderData.payment,
-      productData.title || productData.name,
-      productData.amount || 0,
-      transaction.orderData.receiver,
-      currency === "TMT" ? productData.priceTMT : productData.priceUSDT,
-      transaction.orderData.id
-   );
+   const botRes = await orderScript({
+      order: {
+         ...transaction.orderData,
+         product: productData,
+      },
+   });
    if (!botRes) {
       console.error("Bot message failed");
       return Response.json({

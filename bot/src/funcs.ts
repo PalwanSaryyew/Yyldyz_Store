@@ -1,14 +1,7 @@
 import { ordrIdMssgFnc, prdctCfrmtn, prdctDtlMssg } from "./messages";
 import { adminidS, bot, statusIcons } from "./settings";
 import { ordrcnfrmtnkybrd } from "./keyboards";
-import {
-   prisma,
-   Order,
-   PaymentMethod,
-   Product,
-   ProductType,
-   TonTransaction,
-} from "../prisma/prismaSett";
+import { prisma, Order, Product, TonTransaction } from "../prisma/prismaSett";
 import { InlineKeyboard } from "grammy";
 
 interface OrderDetails extends Order {
@@ -16,30 +9,23 @@ interface OrderDetails extends Order {
    product: Product;
 }
 // after order created
-export async function orderScript(
-   buyerId: number,
-   currency: PaymentMethod,
-   product: ProductType | Product["title"],
-   amount: number,
-   receiver: string,
-   total: number,
-   orderId: number
-) {
+export async function orderScript({
+   order,
+}: {
+   order: Order & { product: Product };
+}) {
    try {
-      if (currency === "TON") {
+      if (order.payment === "TON") {
          return true;
       } else {
          const clientMessage = `${ordrIdMssgFnc(
-            orderId
-         )} <blockquote>${prdctDtlMssg(
-            product,
-            amount,
-            receiver,
-            total,
-            currency
-         )}</blockquote> \n ${prdctCfrmtn()}`;
-         await bot.api.sendMessage(buyerId, clientMessage, {
-            reply_markup: ordrcnfrmtnkybrd(orderId),
+            order.id
+         )} <blockquote>${prdctDtlMssg({
+            order: order,
+            forWhom: "client",
+         })}</blockquote> \n ${prdctCfrmtn()}`;
+         await bot.api.sendMessage(order.userId, clientMessage, {
+            reply_markup: ordrcnfrmtnkybrd(order.id),
             parse_mode: "HTML",
          });
 
@@ -59,14 +45,10 @@ export async function noticeAdmins(order: OrderDetails) {
       console.log(adminid);
       const data = await bot.api.sendMessage(
          adminid,
-         `${ordrIdMssgFnc(order.id)} ${prdctDtlMssg(
-            order.product.title || order.product.name,
-            order.product.amount || 0,
-            order.receiver,
-            order.tonTransaction?.price ?? 0,
-            order.payment,
-            order.userId
-         )}`,
+         `${ordrIdMssgFnc(order.id)} ${prdctDtlMssg({
+            order: order,
+            forWhom: "admin",
+         })}`,
          {
             reply_markup: new InlineKeyboard()
                .text(
@@ -105,13 +87,10 @@ export async function noticeAdmins(order: OrderDetails) {
 
    await bot.api.sendMessage(
       order.userId,
-      `${ordrIdMssgFnc(order.id)} <blockquote expandable>${prdctDtlMssg(
-         order.product.title || order.product.name,
-         order.product.amount || 0,
-         order.receiver,
-         order.tonTransaction?.price ?? 0,
-         order.payment
-      )}</blockquote> \n ${clntmssg}`,
+      `${ordrIdMssgFnc(order.id)} <blockquote expandable>${prdctDtlMssg({
+         order: order,
+         forWhom: "client",
+      })}</blockquote> \n ${clntmssg}`,
       { parse_mode: "HTML" }
    );
 

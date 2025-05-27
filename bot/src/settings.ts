@@ -9,6 +9,9 @@ import {
 
 import { Bot } from "grammy";
 
+export const toncoinId = "TONUSDT";
+export const tonFee = 0.3;
+
 export interface SessionData {
    chattingWith?: number;
    adminChattingWith?: number;
@@ -62,8 +65,15 @@ export function rndmNmrGnrtr(l: number): string {
 }
 // product name returner
 export function prdctDsplyNme(
-   name: ProductType | undefined | Product['title']
-): "Jeton" | "Ýyldyz" | "Tg Premium" | "UC" | "Exitlag" | "" | Product['title'] {
+   name: ProductType | undefined | Product["title"]
+):
+   | "Jeton"
+   | "Ýyldyz"
+   | "Tg Premium"
+   | "UC"
+   | "Exitlag"
+   | ""
+   | Product["title"] {
    return name === "jtn"
       ? "Jeton"
       : name === "star"
@@ -101,3 +111,45 @@ export const statusIcons = {
       "⏲️",
    ],
 };
+
+export const productTitle = (name: ProductType) => {
+   switch (name) {
+      case "jtn":
+         return "TikTok Jeton";
+      case "star":
+         return "Telegram Ýyldyz";
+      case "tgprem":
+         return "Telegram Premium";
+      case "uc":
+         return "PUBG UC";
+      case "exit":
+         return "Exitlag";
+      case "pubg":
+         return "PUBG Mobile";
+      case "psp":
+         return "PlayStation balans";
+      default:
+         return "";
+   }
+};
+
+export async function cmcApi(id: string) {
+   try {
+      const data = await fetch(
+         /* `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`, */
+         `https://api.binance.com/api/v3/ticker/price?symbol=${id}`,
+         { cache: "no-store" } // Buraya cache: 'no-store' seçeneğini ekliyoruz
+      )
+         .then((response) => response.json())
+         .then((data) => data.price);
+      return Number(data);
+   } catch (error: unknown) {
+      console.log((error as Error).message);
+      return 0;
+   }
+}
+
+export async function tonPriceCalculator(USDTPrice: number): Promise<number> {
+   const tonprice = await cmcApi(toncoinId);
+   return Number((USDTPrice / tonprice + tonFee).toFixed(4));
+}

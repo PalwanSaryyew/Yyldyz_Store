@@ -1,6 +1,5 @@
 "use client";
 
-import { prdctDsplyNme } from "bot/src/settings";
 import {
    useCartItem,
    useCurrency,
@@ -11,6 +10,8 @@ import {
 import TmtUsdt from "../payments/TmtUsdt";
 import Transactions from "../ton/Transactions";
 import Image from "next/image";
+import { ProductType } from "@prisma/client";
+import { productTitle } from "bot/src/settings";
 
 const ChktMdl = () => {
    const openState = useHandleModal((state) => state.isOpen);
@@ -30,59 +31,60 @@ const ChktMdl = () => {
             </div>
 
             <div className="rounded-md overflow-hidden mx-2">
-               <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">
-                  <div>Haryt:</div>
-                  <div>{prdctDsplyNme(item?.name)}</div>
+               <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-center">
+                  
+                  <div>
+                     {item?.name ? productTitle(item.name as ProductType) : ""}
+                  </div>
                </div>
                <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">
                   <div>
-                     {item?.name === "tgprem" || item?.name === "exit"
+                     {item?.title
+                        ? "Haryt"
+                        : item?.duration
                         ? "Wagty:"
                         : "Sany:"}
                   </div>
                   <div>
-                     {item?.name === "tgprem" || item?.name === "exit"
-                        ? item.amount + " aý"
-                        : item?.amount}
+                     {item?.title
+                        ? item?.title
+                        : item?.amount
+                        ? item.amount
+                        : item?.duration}
                   </div>
                </div>
-               
-                  <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">
-                     
-                        <div>
-                           {item?.name === "jtn"
-                              ? "Tel. №"
-                              : item?.name === "uc"
-                              ? "PUBG ID"
-                              : "Kime"}
-                           :
-                        </div>
-                        <div>
-                           {item?.name === "tgprem" || item?.name === "star" ? (
-                              <div className="flex items-center">
-                                 <span className="text-sm mr-1">
-                                    {receiever?.name || "username"}
-                                 </span>
-                                 <Image
-                                    alt=""
-                                    src={
-                                       receiever?.photo_url ||
-                                       "/oth/no-user.png"
-                                    }
-                                    width={25}
-                                    height={25}
-                                    className="rounded-full"
-                                    rel="preload"
-                                    priority
-                                 />
-                              </div>
-                           ) : (
-                              item?.receiver
-                           )}
-                        </div>
-                     
+
+               <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">
+                  <div>
+                     {item?.name === "jtn"
+                        ? "Tel. №"
+                        : item?.name === "uc"
+                        ? "PUBG ID"
+                        : item?.receiver[0]}
+                     :
                   </div>
-               
+                  <div>
+                     {item?.name === "tgprem" || item?.name === "star" ? (
+                        <div className="flex items-center">
+                           <span className="text-sm mr-1">
+                              {receiever?.name || "username"}
+                           </span>
+                           <Image
+                              alt=""
+                              src={receiever?.photo_url || "/oth/no-user.png"}
+                              width={25}
+                              height={25}
+                              className="rounded-full"
+                              rel="preload"
+                              priority
+                           />
+                        </div>
+                     ) : (
+                        item?.receiver[1]
+                     )}
+                  </div>
+               </div>
+
                <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">
                   <div>Jemi töleg:</div>
                   <div>{item?.total + " " + item?.currency}</div>

@@ -5,6 +5,7 @@ import {
    bot,
    editSummComand,
    ordrMsgEdtStts,
+   productTitle,
    reasonStates,
    statusIcons,
    sumAddStates,
@@ -30,16 +31,6 @@ import {
 } from "./src/messages";
 import { cnclAddSumBtnn, dlvrOrdrKybrd } from "./src/keyboards";
 
-export const tikTokStates = new Map<
-   string,
-   {
-      adminId: number;
-      mssgId: number;
-      orderId: number;
-      code: string;
-      pass: string;
-   }
->();
 export const chatStates = new Map<
    number,
    {
@@ -165,10 +156,10 @@ bot.hears("Admini çagyr", async (ctx) => {
       try {
          const { message_id } = await ctx.api.sendMessage(
             adminId,
-            `${userLink(
-               userID,
-               ctx.from?.first_name
-            )} söhbetdeşlik talap edýär`,
+            `${userLink({
+               id: userID,
+               nick: ctx.from?.username,
+            })} söhbetdeşlik talap edýär`,
             {
                reply_markup: new InlineKeyboard().text(
                   "Tassykla",
@@ -224,9 +215,10 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
          ctx.api.editMessageText(
             adminidS[i],
             chatState?.messageIds[i],
-            `${userLink(adminID, ctx.from.first_name)} bilen ${userLink(
-               userID
-            )} söhbetdeşlik edýär.`,
+            `${userLink({
+               id: adminID,
+               nick: ctx.from.first_name,
+            })} bilen ${userLink({ id: userID })} söhbetdeşlik edýär.`,
             { parse_mode: "HTML" }
          );
       } catch (e) {
@@ -269,9 +261,12 @@ bot.command("stop", async (ctx) => {
             ctx.api.editMessageText(
                adminidS[i],
                chatState?.messageIds[i],
-               `${userLink(userID, ctx.from?.first_name)} ${userLink(
-                  chatState.userId
-               )} bilen söhbetdeşligi tamamlady.`,
+               `${userLink({
+                  id: userID,
+                  nick: ctx.from?.first_name,
+               })} ${userLink({
+                  id: chatState.userId,
+               })} bilen söhbetdeşligi tamamlady.`,
                { parse_mode: "HTML" }
             );
          } catch (e) {
@@ -474,17 +469,10 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          try {
             const data = await bot.api.sendMessage(
                adminid,
-               `${ordIdMssg} ${prdctDtlMssg(
-                  order.product.title || order.product.name,
-                  order.product.amount || 0,
-                  order.receiver,
-                  order.payment === "TMT"
-                     ? order.product.priceTMT
-                     : order.product.priceUSDT,
-                  order.payment,
-                  ctx.from.id,
-                  ctx.from.first_name
-               )}`,
+               `${ordIdMssg} ${prdctDtlMssg({
+                  order: order,
+                  forWhom: "admin",
+               })}`,
                {
                   reply_markup: dlvrOrdrKybrd(order),
                   parse_mode: "HTML",
@@ -530,15 +518,10 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
 
       await ctx
          .editMessageText(
-            `${ordIdMssg} <blockquote expandable>${prdctDtlMssg(
-               order.product.title || order.product.name,
-               order.product.amount || 0,
-               order.receiver,
-               order.payment === "TMT"
-                  ? order.product.priceTMT
-                  : order.product.priceUSDT,
-               order.payment
-            )}</blockquote> \n ${clntmssg}`,
+            `${ordIdMssg} <blockquote expandable>${prdctDtlMssg({
+               order: order,
+               forWhom: "client",
+            })}</blockquote> \n ${clntmssg}`,
             {
                parse_mode: "HTML",
                reply_markup:
@@ -773,16 +756,10 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
                ordrMsgIds?.mssgIds[i],
                `${ordrIdMssgFnc(
                   order.id
-               )} <blockquote expandable>${prdctDtlMssg(
-                  order.product.title || order.product.name,
-                  order.product.amount || 0,
-                  order.receiver,
-                  order.payment === "TMT"
-                     ? order.product.priceTMT
-                     : order.product.priceUSDT,
-                  order.payment,
-                  order.userId
-               )}</blockquote> \n ${ordrDlvrng(adminId, ctx.from.first_name)}`,
+               )} <blockquote expandable>${prdctDtlMssg({
+                  order: order,
+                  forWhom: "admin",
+               })}</blockquote> \n ${ordrDlvrng(adminId, ctx.from.first_name)}`,
                {
                   reply_markup:
                      order.courierid === adminidS[i] ? keyboard : undefined,
@@ -1034,16 +1011,10 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
             await bot.api.editMessageText(
                adminidS[i],
                messageIds?.mssgIds[i],
-               `${ordIdmssg} <blockquote expandable>${prdctDtlMssg(
-                  order.product.title || order.product.name,
-                  order.product.amount || 0,
-                  order.receiver,
-                  order.payment === "TMT"
-                     ? order.product.priceTMT
-                     : order.product.priceUSDT,
-                  order.payment,
-                  order.userId
-               )}</blockquote> \n ${ordrCmltdMssg}`,
+               `${ordIdmssg} <blockquote expandable>${prdctDtlMssg({
+                  order: order,
+                  forWhom: "admin",
+               })}</blockquote> \n ${ordrCmltdMssg}`,
                {
                   parse_mode: "HTML",
                }
@@ -1408,12 +1379,13 @@ bot.callbackQuery("complateAdd", async (ctx) => {
       adminidS.map((adminId) => {
          ctx.api.sendMessage(
             adminId,
-            `Hasap +/- \n Kimden: ${userLink(
-               Number(ctx.from.id),
-               ctx.from.first_name
-            )} \n Nirä: ${userLink(Number(user.id), user.walNum)} \n Mukdar: ${
-               save.sum
-            } ${save.currency}`,
+            `Hasap +/- \n Kimden: ${userLink({
+               id: Number(ctx.from.id),
+               nick: ctx.from.first_name,
+            })} \n Nirä: ${userLink({
+               id: Number(user.id),
+               nick: user.walNum,
+            })} \n Mukdar: ${save.sum} ${save.currency}`,
             {
                parse_mode: "HTML",
             }
@@ -1543,7 +1515,6 @@ bot.on("message", async (ctx) => {
    const chatState = chatStates.get(userId);
    const broadcastState = broadcastStates.get(userId);
    const checkState = checkStates.get(userId);
-   // order declining reason
    if (chatState && chatState.userId) {
       if (ctx.message && !ctx.message.pinned_message) {
          // If it is not a pinned message notification, copy the message
@@ -1614,19 +1585,27 @@ bot.on("message", async (ctx) => {
                );
          }
          sumAddState.walNum = ctx.message.text;
-         ctx.api.editMessageText(
-            userId,
-            sumAddState.mssgId,
-            `Hasap nomer: ${sumAddState.walNum} \n Walýuta ?`,
-            {
-               reply_markup: new InlineKeyboard()
-                  .text("TMT", "choose_TMT")
-                  .text("USDT", "choose_USDT")
-                  .row()
-                  .text("Goýbolsun " + statusIcons.care[7], "declineAdd"),
-            }
-         ).catch(e=> console.error("---sumAddState editMessageText yalnyslygy---", e));
-         return await ctx.deleteMessage().catch(e=> console.error("---sumAddState deleteMessage yalnyslygy---", e));
+         ctx.api
+            .editMessageText(
+               userId,
+               sumAddState.mssgId,
+               `Hasap nomer: ${sumAddState.walNum} \n Walýuta ?`,
+               {
+                  reply_markup: new InlineKeyboard()
+                     .text("TMT", "choose_TMT")
+                     .text("USDT", "choose_USDT")
+                     .row()
+                     .text("Goýbolsun " + statusIcons.care[7], "declineAdd"),
+               }
+            )
+            .catch((e) =>
+               console.error("---sumAddState editMessageText yalnyslygy---", e)
+            );
+         return await ctx
+            .deleteMessage()
+            .catch((e) =>
+               console.error("---sumAddState deleteMessage yalnyslygy---", e)
+            );
       } else if (sumAddState.sum === 0.0) {
          // collect sum
          const sum = ctx.message.text;
@@ -1635,49 +1614,62 @@ bot.on("message", async (ctx) => {
             return ctx.reply("Girizen mukdaryňyz nädogry. Başdan synanyşyň.");
          }
          sumAddState.sum = Number(Number(sum).toFixed(2));
-         ctx.deleteMessage().catch(e=> console.error("---sumAddState deleteMessage yalnyslygy---", e));
-         ctx.api.editMessageText(
-            userId,
-            sumAddState.mssgId,
-            `Hasap nomer: ${sumAddState.walNum} \n ${sumAddState.sum} ${sumAddState.crrncy}`,
-            {
-               reply_markup: new InlineKeyboard()
-                  .text("Ýalňyş", "declineAdd")
-                  .text("Dogry", "complateAdd"),
-            }
-         ).catch(e=> console.error("---sumAddState editMessageText yalnyslygy---", e));
+         ctx.deleteMessage().catch((e) =>
+            console.error("---sumAddState deleteMessage yalnyslygy---", e)
+         );
+         ctx.api
+            .editMessageText(
+               userId,
+               sumAddState.mssgId,
+               `Hasap nomer: ${sumAddState.walNum} \n ${sumAddState.sum} ${sumAddState.crrncy}`,
+               {
+                  reply_markup: new InlineKeyboard()
+                     .text("Ýalňyş", "declineAdd")
+                     .text("Dogry", "complateAdd"),
+               }
+            )
+            .catch((e) =>
+               console.error("---sumAddState editMessageText yalnyslygy---", e)
+            );
       }
    } else if (broadcastState) {
-      const messageToSend = ctx.message.text || "";
       const users = await prisma.user.findMany().catch((e) => {
          console.error("---broadcastState prisma yalnyslygy---", e);
          return [];
       });
 
-      console.log(`Toplam ${users.length} kullanıcıya mesaj gönderiliyor...`);
+      console.log(`Jemi ${users.length} ulanyja habar ugradylýar...`);
 
       for (const user of users) {
          try {
-            await bot.api.sendMessage(user.id, messageToSend);
-            console.log(`Mesaj gönderildi: ${user.id}`);
+            await ctx.api.copyMessage(
+               user.id, // Chat ID for the message to be sent
+               userId, // Chat ID from which the message came
+               ctx.message.message_id // ID of the message to be copied
+            );
+            console.log(`Habar ugradyldy: ${user.id}`);
             // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
             await new Promise((resolve) => setTimeout(resolve, 100));
          } catch (error: any) {
-            console.error(`Mesaj gönderme hatası ${user.id}:`, error);
+            console.error(`Habar ugratma ýalňyşlygy ${user.id}:`, error);
             // Kullanıcı botu engellediyse veya başka bir hata varsa
             if (
                error.description &&
                error.description.includes("bot was blocked by the user")
             ) {
-               console.log(`Kullanıcı botu engellemiş, ${user.id}`);
+               console.log(`Ulanyjy boty petikläpdir, ${user.id}`);
             }
             // Diğer hatalar için farklı işlemler yapabilirsiniz.
          }
       }
 
-      await ctx.reply(
-         "Köpçülikleýin habar ibermek prosesi tamamlandy (nogsanlyklar bolup biler)."
-      ).catch(e=> console.error("---broadcastState reply yalnyslygy---", e));
+      await ctx
+         .reply(
+            "Köpçülikleýin habar ibermek prosesi tamamlandy (nogsanlyklar bolup biler)."
+         )
+         .catch((e) =>
+            console.error("---broadcastState reply yalnyslygy---", e)
+         );
       broadcastStates.delete(userId);
    } else if (checkState) {
       const message = ctx.message.text || "";
