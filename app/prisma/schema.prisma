@@ -140,6 +140,8 @@ enum ProductType {
   pubg
   trgt
   psp
+  steam
+  royale
 }
 
 enum UserRole {

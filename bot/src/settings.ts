@@ -128,6 +128,10 @@ export const productTitle = (name: ProductType) => {
          return "PUBG Mobile";
       case "psp":
          return "PlayStation balans";
+      case "steam":
+         return "Steam balans";
+      case "royale":
+         return "Clash Royale";
       default:
          return "";
    }

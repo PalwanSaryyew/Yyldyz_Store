@@ -10,9 +10,7 @@ export const paths: ProductType[] = [
    "exit",
    "pubg",
    "psp",
+   "steam",
+   "royale",
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
-
-
-
-
