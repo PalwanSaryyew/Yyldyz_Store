@@ -38,15 +38,15 @@ export function prdctDtlMssg({
    order: Order & { product: Product };
    forWhom: "admin" | "client";
 }) {
-   return `${productTitle(order.product.name)} \n ${prdcAmnt({
+   return ` ${productTitle(order.product.name)}\n${prdcAmnt({
       title: order.product.title,
       amount: order.product.amount,
       duration: order.product.duration,
-   })} ${
+   })}${
       forWhom === "client"
          ? ""
-         : `Kimden: ${userLink({ id: Number(order.userId) })} \n `
-   }${toWhere()}: ${order.receiver} \n Jemi töleg: ${orderTotal({
+         : `Kimden: ${userLink({ id: Number(order.userId) })}\n`
+   }${toWhere()}: ${order.receiver}\nJemi töleg: ${orderTotal({
       currency: order.payment,
       product: order.product,
    })}`;
@@ -114,7 +114,7 @@ export function prdcAmnt({
    title: Product["title"];
    amount: Product["amount"];
 }) {
-   return `${title !== null ? `Haryt: ${title} \n ` : " "}${
-      amount ? `Mukdary: ${amount} \n ` : " "
-   }${duration ? `Möhleti: ${duration} \n ` : " "}`;
+   return `${title !== null ? `Haryt: ${title}\n` : ""}${
+      amount ? `Mukdary: ${amount}\n` : ""
+   }${duration ? `Möhleti: ${duration}\n` : ""}`;
 }

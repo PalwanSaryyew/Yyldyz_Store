@@ -61,3 +61,28 @@ body {
 @keyframes l19 { 
   100%{transform: rotate(1turn)}
 }
+
+@keyframes marquee {
+  0% { transform: translateX(0%); } /* Başlangıçta metni sıfır pozisyonda başlat */
+  10% { transform: translateX(0%); } /* Başlangıçta metni sıfır pozisyonda başlat */
+  100% { transform: translateX(-100%); } /* Sola doğru tamamen kaydır */
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+  white-space: nowrap; /* Metnin tek satırda kalmasını sağlar */
+  display: inline-block; /* Genişliğini içeriğine göre ayarlar */
+  /* NOT: Bu div'in genişliği, içeriğinin gerçek genişliğine göre belirlenmeli.
+     Eğer metin kısaysa kaymaz. Bu yüzden `width: 100%` yerine `display: inline-block`
+     veya `flex` ile esneklik sağlamak daha doğru olabilir.
+     Metnin gerçek genişliği, kapsayıcının genişliğinden büyük olmalı ki kayma gerçekleşsin. */
+}
+
+.marquee-container {
+  overflow: hidden; /* Bu div'in dışına taşan her şeyi gizle */
+  white-space: nowrap; /* İçindeki metnin tek satırda kalmasını sağlar (sarmalayıcı için de önemli) */
+  /* width: 250px; /* Bu değeri adresinize uygun olarak ayarlayın, flex-grow ile birlikte kullanılıyorsa daha esnek olmalı */
+  /* flex-grow ile kullanıldığı için width değeri bazen sınırlayıcı olabilir.
+     Amacımız, `marquee-container`'ın metnin görünen alanını kısıtlaması,
+     ancak `animate-marquee` içindeki metnin bu kısıtlamayı aşmasını sağlamaktır. */
+}
