@@ -142,6 +142,8 @@ enum ProductType {
   psp
   steam
   royale
+  gpt
+  lis
 }
 
 enum UserRole {
