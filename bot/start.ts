@@ -36,6 +36,7 @@ export const chatStates = new Map<
       userId: number;
       username?: string;
       messageIds: number[];
+      calling?: boolean; // for /cagyr command
    }
 >();
 export const broadcastStates = new Map<
@@ -204,18 +205,80 @@ bot.hears("Admini çagyr", async (ctx) => {
       console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
    });
 });
+bot.command("cagyr", async (ctx) => {
+   const userID = ctx.from?.id;
+   if (!userID) {
+      return;
+   }
+   if (chatStates.get(userID)) {
+      return await ctx
+         .reply(
+            "Siz häzir hem söhbetdeşlikde. Öňki söhbetdeşligi ýapmak üçin 👉 /stop 👈"
+         )
+         .catch((e) => {
+            console.error("--- çagyr komandynda reply yalnyslygy---", e);
+         });
+   }
+   if (isAdminId(userID).error === true) {
+      return await ctx
+         .reply("Bul komandy diňe adminler ulanyp bilýär!")
+         .catch((e) => {
+            console.error("---çagyr komandynda reply yalnyslygy---", e);
+         });
+   }
+
+   const messageIds: number[] = [];
+   /* for (const adminId of adminidS) {
+      try {
+         const { message_id } = await ctx.api.sendMessage(
+            adminId,
+            `${userLink({
+               id: userID,
+               nick: ctx.from?.first_name,
+            })}${
+               ctx.from?.username !== undefined
+                  ? ` / @${ctx.from?.username}`
+                  : ""
+            } söhbetdeşlik talap edýär`,
+            {
+               reply_markup: new InlineKeyboard().text(
+                  "Tassykla",
+                  "acceptChat_" + userID
+               ),
+               parse_mode: "HTML",
+            }
+         );
+
+         messageIds.push(message_id);
+      } catch (e) {
+         console.error(
+            "---Admini çagyr duwmesinde for-sendMessage yalnyslygy---",
+            e
+         );
+      }
+   } */
+
+   chatStates.set(userID, {
+      userId: 0,
+      messageIds: messageIds,
+      calling: true,
+   });
+   return ctx.reply("ID ugradyň.").catch((e) => {
+      console.error("---çagyr komandynda reply yalnyslygy---", e);
+   });
+});
 bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
-   const adminID = ctx.from.id;
+   const acceptorId = ctx.from.id;
    const userID = parseInt(ctx.match[1]);
    const chatState = chatStates.get(userID);
 
-   if (!chatState || !userID || !adminID) {
+   if (!chatState || !userID || !acceptorId) {
       return;
    }
-   if (chatStates.get(adminID)) {
+   if (chatStates.get(acceptorId)) {
       return ctx
          .answerCallbackQuery(
-            "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň!"
+            "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň! \n /stop"
          )
          .catch((e) => {
             console.error(
@@ -224,39 +287,48 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
             );
          });
    }
-
+   if (chatState.messageIds.length > 0) {
+      for (let i = 0; i < adminidS.length; i++) {
+         try {
+            ctx.api.editMessageText(
+               adminidS[i],
+               chatState?.messageIds[i],
+               `${userLink({
+                  id: acceptorId,
+                  nick: ctx.from.first_name,
+               })} bilen ${userLink({ id: userID })}${
+                  chatState.username !== undefined
+                     ? ` / @${chatState.username}`
+                     : ""
+               } söhbetdeşlik edýär.`,
+               { parse_mode: "HTML" }
+            );
+         } catch (e) {
+            console.error(
+               "---acceptChat duwmesinde fot-editMessageText yalnyslygy---",
+               e
+            );
+         }
+      }
+   }
    await ctx.api
-      .sendMessage(userID, "Admin söhbetdeşligi kabul etdi.")
+      .sendMessage(
+         userID,
+         "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar."
+      )
       .catch((e) => {
          console.error("---acceptChat duwmesinde sendMessage yalnyslygy---", e);
       });
-   for (let i = 0; i < adminidS.length; i++) {
-      try {
-         ctx.api.editMessageText(
-            adminidS[i],
-            chatState?.messageIds[i],
-            `${userLink({
-               id: adminID,
-               nick: ctx.from.first_name,
-            })} bilen ${userLink({ id: userID })}${
-               chatState.username !== undefined
-                  ? ` / @${chatState.username}`
-                  : ""
-            } söhbetdeşlik edýär.`,
-            { parse_mode: "HTML" }
-         );
-      } catch (e) {
-         console.error(
-            "---acceptChat duwmesinde fot-editMessageText yalnyslygy---",
-            e
-         );
-      }
-   }
-   chatState.userId = adminID;
-   chatStates.set(adminID, {
+   chatState.userId = acceptorId;
+   chatStates.set(acceptorId, {
       userId: userID,
       messageIds: chatState.messageIds,
    });
+   console.log(chatState, chatStates.get(acceptorId));
+
+   return ctx.editMessageText(
+      "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar."
+   );
 });
 bot.command("stop", async (ctx) => {
    const userID = ctx.from?.id || 0;
@@ -513,22 +585,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       ordrMsgEdtStts.set(orderId, { mssgIds: mssgIds });
 
       let adminOnlineStatus = false;
-      if (order.product.chatRequired) {
-         chatStates.set(Number(order.userId), { userId: 0, messageIds: [] });
-         const admins = await prisma.admin
-            .findFirst({
-               where: {
-                  onlineSatus: true,
-               },
-            })
-            .catch((e) =>
-               console.error(
-                  "---acceptOrder duwmesinde prisma yalnyslygy---",
-                  e
-               )
-            );
-         if (admins) adminOnlineStatus = true;
-      }
+      
 
       const clntmssg = `${statusIcons.care[1]} ${
          order.product.chatRequired
@@ -584,8 +641,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
 bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
    const orderId = parseInt(ctx.match[1]);
    const clntID = ctx.from.id;
-   const chatState = chatStates.get(clntID);
-   //caht id comes ?
+   
    const chatId = chatIdV(clntID);
    if (chatId.error) {
       return await ctx
@@ -602,11 +658,7 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
    }
 
    // validates and turnes order details
-   const order = await validator(
-      orderId,
-      ["pending", chatState ? "accepted" : "pending"],
-      "cancelled"
-   );
+   const order = await validator(orderId, ["pending"], "cancelled");
    if ("error" in order) {
       return await ctx
          .answerCallbackQuery({
@@ -621,11 +673,9 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
          );
    }
 
-   if (chatState) {
-      chatStates.delete(clntID);
-   }
+   
 
-   // order belongs to ovner of wallet ?
+   
    if (order.userId !== clntID.toString()) {
       return await ctx
          .answerCallbackQuery({
@@ -801,29 +851,7 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
          }
       }
 
-      if (order.payment === "TON" && order.product.chatRequired) {
-         chatStates.set(Number(order.userId), { userId: 0, messageIds: [] });
-      }
-
-      const chatState = chatStates.get(Number(order.userId));
-      if (order.product.chatRequired && chatState) {
-         chatStates.set(Number(order.courierid), {
-            userId: Number(order.userId),
-            messageIds: [],
-         });
-         chatState.userId = Number(order.courierid);
-         await ctx
-            .answerCallbackQuery({
-               text: "Şahsy söhbetdeşlik başlady. Soňundan yapmagy ýatdan çykarmaň. \n /stop",
-               show_alert: true,
-            })
-            .catch((e) =>
-               console.error(
-                  "---deliverOrder duwmesinde answerCallbackQuery yalnyslygy---",
-                  e
-               )
-            );
-      }
+      
    } catch (error) {
       console.error("SMS ERROR::", error);
       await ctx
@@ -1539,7 +1567,46 @@ bot.on("message", async (ctx) => {
    const chatState = chatStates.get(userId);
    const broadcastState = broadcastStates.get(userId);
    const checkState = checkStates.get(userId);
-   if (chatState && chatState.userId) {
+
+   if (chatState && chatState.calling && !chatState.userId) {
+      const expectingID = ctx.message.text;
+      if (!expectingID) {
+         return ctx
+            .reply("Id ugradyn")
+            .catch((e) =>
+               console.error("---chatState calling reply yalnyslygy---", e)
+            );
+      }
+      chatState.calling = false;
+      try {
+         await ctx.api.sendMessage(
+            expectingID,
+            `Admin sizi söhbetdeşlige çagyrýar.`,
+            {
+               reply_markup: new InlineKeyboard().text(
+                  "Kabul et",
+                  "acceptChat_" + userId
+               ),
+            }
+         );
+         return ctx.reply(
+            "Ýüzlenme ugradyldy, kabul edilenden soň habar beriler."
+         );
+      } catch (error: any) {
+         chatStates.delete(userId);
+         console.error(`---chatState calling yalnyslygy---`, error);
+         // Kullanıcı botu engellediyse veya başka bir hata varsa
+         if (
+            error.description &&
+            error.description.includes("bot was blocked by the user")
+         ) {
+            return ctx.reply(
+               `Ulanyjy boty petikläpdir ýa-da başga sebäpden habar ugradyp bolmady.\n` +
+                  error.description
+            );
+         }
+      }
+   } else if (chatState && chatState.userId) {
       if (ctx.message && !ctx.message.pinned_message) {
          // If it is not a pinned message notification, copy the message
          await ctx.api
