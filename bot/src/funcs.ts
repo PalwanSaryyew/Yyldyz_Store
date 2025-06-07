@@ -1,8 +1,9 @@
 import { ordrIdMssgFnc, prdctCfrmtn, prdctDtlMssg } from "./messages";
-import { adminidS, bot, statusIcons } from "./settings";
+import { adminidS, statusIcons } from "./settings";
 import { ordrcnfrmtnkybrd } from "./keyboards";
 import { prisma, Order, Product, TonTransaction } from "../prisma/prismaSett";
 import { InlineKeyboard } from "grammy";
+import { bot } from "./botConf";
 
 interface OrderDetails extends Order {
    tonTransaction: TonTransaction | null;

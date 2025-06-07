@@ -1,0 +1,10 @@
+{
+  "GLOBAL_BOT_STATE_KEY": {
+    "reasonStates": {},
+    "sumAddStates": {},
+    "ordrMsgEdtStts": {},
+    "chatStates": {},
+    "broadcastStates": {},
+    "checkStates": {}
+  }
+}

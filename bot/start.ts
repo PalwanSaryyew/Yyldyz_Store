@@ -1,14 +1,7 @@
 import { InlineKeyboard, Keyboard } from "grammy";
 import { prisma } from "./prisma/prismaSett";
-import {
-   adminidS,
-   bot,
-   editSummComand,
-   ordrMsgEdtStts,
-   reasonStates,
-   statusIcons,
-   sumAddStates,
-} from "./src/settings";
+import { adminidS, editSummComand, statusIcons } from "./src/settings";
+import { bot } from "./src/botConf";
 import { PaymentMethod } from "./prisma/prismaSett";
 import { err_6, err_7 } from "./src/errCodes";
 import {
@@ -29,28 +22,6 @@ import {
    userLink,
 } from "./src/messages";
 import { cnclAddSumBtnn, dlvrOrdrKybrd } from "./src/keyboards";
-
-export const chatStates = new Map<
-   number,
-   {
-      userId: number;
-      username?: string;
-      messageIds: number[];
-      calling?: boolean; // for /cagyr command
-   }
->();
-export const broadcastStates = new Map<
-   number,
-   {
-      message: string;
-   }
->();
-export const checkStates = new Map<
-   number,
-   {
-      messageId: number;
-   }
->();
 
 const mainKEybiard = new Keyboard()
    .text("Dükana gir 🛒")
@@ -120,7 +91,7 @@ bot.command("broadcast", async (ctx) => {
    }
 
    if (ctx.from?.id !== undefined) {
-      broadcastStates.set(ctx.from.id, { message: "" });
+      ctx.session.broadcastStates[ctx.from.id] = { message: "" };
       ctx.reply("Texti ugradyn", {
          reply_markup: new InlineKeyboard().text(
             "Ýatyr",
@@ -133,7 +104,7 @@ bot.command("broadcast", async (ctx) => {
 });
 // cancel sending bulk messages
 bot.callbackQuery(/cancelBroad_(.+)/, async (ctx) => {
-   broadcastStates.delete(ctx.from.id);
+   delete ctx.session.broadcastStates[ctx.from.id];
    ctx.answerCallbackQuery({ text: "Yatyryldy", show_alert: true }).catch(
       (e) => {
          console.error(
@@ -150,7 +121,7 @@ bot.hears("Admini çagyr", async (ctx) => {
    if (!userID) {
       return;
    }
-   if (chatStates.get(userID)) {
+   if (ctx.session.chatStates[userID]) {
       return await ctx
          .reply(
             "Siz häzir hem admin bilen söhbetdeşlikde. Öňki söhbetdeşligi ýapmak üçin 👉 /stop 👈"
@@ -194,11 +165,11 @@ bot.hears("Admini çagyr", async (ctx) => {
          );
       }
    }
-   chatStates.set(userID, {
+   ctx.session.chatStates[userID] = {
       userId: 0,
       username: ctx.from?.username,
       messageIds: messageIds,
-   });
+   };
    ctx.reply(
       "Admin söhbetdeşligi kabul etýänçä garaşyň. Size habar beriler."
    ).catch((e) => {
@@ -210,7 +181,7 @@ bot.command("cagyr", async (ctx) => {
    if (!userID) {
       return;
    }
-   if (chatStates.get(userID)) {
+   if (ctx.session.chatStates[userID]) {
       return await ctx
          .reply(
             "Siz häzir hem söhbetdeşlikde. Öňki söhbetdeşligi ýapmak üçin 👉 /stop 👈"
@@ -258,11 +229,11 @@ bot.command("cagyr", async (ctx) => {
       }
    } */
 
-   chatStates.set(userID, {
+   ctx.session.chatStates[userID] = {
       userId: 0,
       messageIds: messageIds,
       calling: true,
-   });
+   };
    return ctx.reply("ID ugradyň.").catch((e) => {
       console.error("---çagyr komandynda reply yalnyslygy---", e);
    });
@@ -270,12 +241,14 @@ bot.command("cagyr", async (ctx) => {
 bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
    const acceptorId = ctx.from.id;
    const userID = parseInt(ctx.match[1]);
-   const chatState = chatStates.get(userID);
+   const chatState = ctx.session.chatStates[userID];
+   console.log(chatState);
+   
 
    if (!chatState || !userID || !acceptorId) {
-      return;
+      return ctx.reply('Yalnyslyk');
    }
-   if (chatStates.get(acceptorId)) {
+   if (ctx.session.chatStates[acceptorId]) {
       return ctx
          .answerCallbackQuery(
             "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň! \n /stop"
@@ -320,19 +293,25 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
          console.error("---acceptChat duwmesinde sendMessage yalnyslygy---", e);
       });
    chatState.userId = acceptorId;
-   chatStates.set(acceptorId, {
+   ctx.session.chatStates[acceptorId] = {
       userId: userID,
       messageIds: chatState.messageIds,
-   });
-   console.log(chatState, chatStates.get(acceptorId));
-
-   return ctx.editMessageText(
-      "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar."
-   );
+   };
+   return ctx.api
+      .sendMessage(
+         acceptorId,
+         "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar."
+      )
+      .catch((e) => {
+         console.error(
+            "---acceptChat duwmesinde editMessageText yalnyslygy---",
+            e
+         );
+      });
 });
 bot.command("stop", async (ctx) => {
    const userID = ctx.from?.id || 0;
-   const chatState = chatStates.get(userID);
+   const chatState = ctx.session.chatStates[userID];
    if (!userID || !chatState) {
       return ctx.deleteMessage().catch((e) => {
          console.error("---stop komandasynda deleteMessage yalnyslygy---", e);
@@ -374,8 +353,8 @@ bot.command("stop", async (ctx) => {
       }
    }
 
-   chatStates.delete(userID);
-   chatStates.delete(chatState.userId);
+   delete ctx.session.chatStates[userID];
+   delete ctx.session.chatStates[chatState.userId];
 });
 
 bot.command("on", async (ctx) => {
@@ -582,10 +561,9 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             );
          }
       }
-      ordrMsgEdtStts.set(orderId, { mssgIds: mssgIds });
+      ctx.session.ordrMsgEdtStts[orderId] = { mssgIds: mssgIds };
 
       let adminOnlineStatus = false;
-      
 
       const clntmssg = `${statusIcons.care[1]} ${
          order.product.chatRequired
@@ -641,7 +619,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
 bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
    const orderId = parseInt(ctx.match[1]);
    const clntID = ctx.from.id;
-   
+
    const chatId = chatIdV(clntID);
    if (chatId.error) {
       return await ctx
@@ -673,9 +651,6 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
          );
    }
 
-   
-
-   
    if (order.userId !== clntID.toString()) {
       return await ctx
          .answerCallbackQuery({
@@ -797,9 +772,9 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
          );
    }
    if (order.mssgIds.length > 0) {
-      ordrMsgEdtStts.set(order.id, { mssgIds: order.mssgIds });
+      ctx.session.ordrMsgEdtStts[order.id] = { mssgIds: order.mssgIds };
    }
-   const ordrMsgIds = ordrMsgEdtStts.get(orderId);
+   const ordrMsgIds = ctx.session.ordrMsgEdtStts[orderId];
 
    if (ordrMsgIds?.mssgIds === undefined) {
       console.log(err_7.d);
@@ -850,8 +825,6 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
             );
          }
       }
-
-      
    } catch (error) {
       console.error("SMS ERROR::", error);
       await ctx
@@ -916,9 +889,9 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
          );
    }
    if (order.mssgIds.length > 0) {
-      ordrMsgEdtStts.set(order.id, { mssgIds: order.mssgIds });
+      ctx.session.ordrMsgEdtStts[order.id] = { mssgIds: order.mssgIds };
    }
-   const ordrMsgIds = ordrMsgEdtStts.get(orderId);
+   const ordrMsgIds = ctx.session.ordrMsgEdtStts[orderId];
    if (!ordrMsgIds?.mssgIds) {
       console.log(err_7.d);
       return await ctx
@@ -992,12 +965,12 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
          }
       }
       // yatyrma sebabi garasylyar
-      reasonStates.set(adminId, {
+      ctx.session.reasonStates[adminId] = {
          orderId: order.id,
          client: order.userId,
          mssgIds: ordrMsgIds.mssgIds,
-      });
-      ordrMsgEdtStts.delete(orderId);
+      };
+      delete ctx.session.ordrMsgEdtStts[orderId];
    } catch (error) {
       console.error("BOT API ERR::", error);
       await ctx
@@ -1039,7 +1012,7 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
    }
 
    // message ids
-   const messageIds = ordrMsgEdtStts.get(orderId);
+   const messageIds = ctx.session.ordrMsgEdtStts[orderId];
    if (!messageIds?.mssgIds) {
       console.log(err_7.d);
       return await ctx
@@ -1096,7 +1069,7 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
                e
             )
          );
-      ordrMsgEdtStts.delete(order.id);
+      delete ctx.session.ordrMsgEdtStts[order.id];
    } catch (error) {
       console.error("bot api error: ", error);
       await ctx
@@ -1123,14 +1096,14 @@ bot.command("check", async (ctx) => {
             console.error("---check komandynda deleteMessage yalnyslygy---", e)
          );
    }
-   if (checkStates.get(userID)) {
+   if (ctx.session.checkStates[userID]) {
       return ctx
          .deleteMessage()
          .catch((e) =>
             console.error("---check komandynda deleteMessage yalnyslygy---", e)
          );
    }
-   if (chatStates.get(Number(userID))) {
+   if (ctx.session.chatStates[Number(userID)]) {
       return ctx
          .reply(
             "Siz şu wagt söhbetdeşlikde, ilki söhbetdeşligi tamamlaň! \n /stop"
@@ -1164,15 +1137,15 @@ bot.command("check", async (ctx) => {
          console.error("---check komandynda reply yalnyslygy---", e)
       );
    // open the state
-   checkStates.set(userID, {
+   ctx.session.checkStates[userID] = {
       messageId: message?.message_id || 0,
-   });
+   };
    return;
 });
 bot.command(editSummComand, async (ctx) => {
    const userID = ctx.from?.id;
    const isAdmin = adminValid(userID);
-   if (sumAddStates.get(userID)) {
+   if (ctx.session.sumAddStates[userID || 0]) {
       return ctx
          .deleteMessage()
          .catch((e) =>
@@ -1182,7 +1155,7 @@ bot.command(editSummComand, async (ctx) => {
             )
          );
    }
-   if (chatStates.get(Number(userID))) {
+   if (ctx.session.chatStates[Number(userID)]) {
       return ctx
          .reply(
             "Siz şu wagt söhbetdeşlikde, ilki söhbetdeşligi tamamlaň! \n /stop"
@@ -1226,18 +1199,18 @@ bot.command(editSummComand, async (ctx) => {
          console.error("---editSummComand komandynda reply yalnyslygy---", e)
       );
    // open the state
-   sumAddStates.set(userID, {
+   ctx.session.sumAddStates[userID || 0] = {
       mssgId: message?.message_id || 0,
       walNum: "",
       crrncy: "",
       sum: 0.0,
-   });
+   };
    return;
 });
 // add sum crrcncy chooser
 bot.callbackQuery(/^choose_(\w+)$/, (ctx) => {
    const adminId = ctx.from?.id;
-   const sumAddState = sumAddStates.get(adminId);
+   const sumAddState = ctx.session.sumAddStates[adminId];
    // if user not admin notify admins
    const isAdmin = adminValid(adminId);
    if (isAdmin.error) {
@@ -1285,7 +1258,7 @@ bot.callbackQuery(/^choose_(\w+)$/, (ctx) => {
 // complate add sum
 bot.callbackQuery("complateAdd", async (ctx) => {
    const adminId = ctx.from?.id;
-   const sumAddState = sumAddStates.get(adminId);
+   const sumAddState = ctx.session.sumAddStates[adminId];
    const isAdmin = adminValid(adminId);
    // if user not admin notify admins
    if (isAdmin.error) {
@@ -1324,7 +1297,7 @@ bot.callbackQuery("complateAdd", async (ctx) => {
          console.error("---complateAdd duwmesinde prisma yalnyslygy---", e)
       );
    if (!user) {
-      sumAddStates.delete(adminId);
+      delete ctx.session.sumAddStates[adminId];
       return ctx
          .editMessageText(
             "Yalnys beyle hasap nomer tapylmady, tazeden synansyn /" +
@@ -1340,7 +1313,7 @@ bot.callbackQuery("complateAdd", async (ctx) => {
    // validating if sum is correct
    const fltdSum = sumAddState?.sum;
    if (fltdSum === undefined || isNaN(fltdSum) || fltdSum === 0) {
-      sumAddStates.delete(adminId);
+      delete ctx.session.sumAddStates[adminId];
       return ctx
          .editMessageText(
             "Yalnys pul mukdary dogry yazylmady, tazeden synansyn /" +
@@ -1356,7 +1329,7 @@ bot.callbackQuery("complateAdd", async (ctx) => {
    // is choosed currency correct
    const chsdCrrnc = sumAddState?.crrncy;
    if (typeof chsdCrrnc !== "string" || !(chsdCrrnc in PaymentMethod)) {
-      sumAddStates.delete(adminId);
+      delete ctx.session.sumAddStates[adminId];
       return ctx
          .editMessageText("Yalnys Walyuta, tazeden synansyn /" + editSummComand)
          .catch((e) =>
@@ -1384,7 +1357,7 @@ bot.callbackQuery("complateAdd", async (ctx) => {
       );
    // if updating went wrong
    if (!addSum) {
-      sumAddStates.delete(adminId);
+      delete ctx.session.sumAddStates[adminId];
       return ctx
          .editMessageText(
             "User Db update error, tazeden synansyn /" + editSummComand
@@ -1412,7 +1385,7 @@ bot.callbackQuery("complateAdd", async (ctx) => {
       );
    // if went wrong
    if (!save) {
-      sumAddStates.delete(adminId);
+      delete ctx.session.sumAddStates[adminId];
       return ctx.api
          .editMessageText(
             adminId,
@@ -1426,7 +1399,7 @@ bot.callbackQuery("complateAdd", async (ctx) => {
             )
          );
    }
-   sumAddStates.delete(adminId);
+   delete ctx.session.sumAddStates[adminId];
    try {
       adminidS.map((adminId) => {
          ctx.api.sendMessage(
@@ -1498,7 +1471,7 @@ bot.callbackQuery("declineAdd", async (ctx) => {
             console.error("---declineAdd duwmesinde reply yalnyslygy---", e)
          );
    }
-   const sumAddState = sumAddStates.get(adminId);
+   const sumAddState = ctx.session.sumAddStates[adminId];
    if (!sumAddState) {
       return ctx
          .editMessageText(
@@ -1511,7 +1484,7 @@ bot.callbackQuery("declineAdd", async (ctx) => {
             )
          );
    }
-   sumAddStates.delete(adminId);
+   delete ctx.session.sumAddStates[adminId];
    return await ctx
       .editMessageText("Hasap goşmak ýatyryldy.")
       .catch((e) =>
@@ -1536,7 +1509,7 @@ bot.callbackQuery("declineCheck", async (ctx) => {
       });
       return ctx.reply(isAdmin.mssg);
    }
-   const checkState = checkStates.get(adminId);
+   const checkState = ctx.session.checkStates[adminId];
    if (!checkState) {
       return ctx
          .editMessageText(
@@ -1549,7 +1522,7 @@ bot.callbackQuery("declineCheck", async (ctx) => {
             )
          );
    }
-   checkStates.delete(adminId);
+   delete ctx.session.checkStates[adminId];
    return await ctx
       .editMessageText("Barlag ýatyryldy.")
       .catch((e) =>
@@ -1562,11 +1535,11 @@ bot.callbackQuery("declineCheck", async (ctx) => {
 
 bot.on("message", async (ctx) => {
    const userId = ctx.chat.id;
-   const reasonState = reasonStates.get(userId);
-   const sumAddState = sumAddStates.get(userId);
-   const chatState = chatStates.get(userId);
-   const broadcastState = broadcastStates.get(userId);
-   const checkState = checkStates.get(userId);
+   const reasonState = ctx.session.reasonStates[userId];
+   const sumAddState = ctx.session.sumAddStates[userId];
+   const chatState = ctx.session.chatStates[userId];
+   const broadcastState = ctx.session.broadcastStates[userId];
+   const checkState = ctx.session.checkStates[userId];
 
    if (chatState && chatState.calling && !chatState.userId) {
       const expectingID = ctx.message.text;
@@ -1593,7 +1566,7 @@ bot.on("message", async (ctx) => {
             "Ýüzlenme ugradyldy, kabul edilenden soň habar beriler."
          );
       } catch (error: any) {
-         chatStates.delete(userId);
+         delete ctx.session.chatStates[userId];
          console.error(`---chatState calling yalnyslygy---`, error);
          // Kullanıcı botu engellediyse veya başka bir hata varsa
          if (
@@ -1662,13 +1635,13 @@ bot.on("message", async (ctx) => {
       ctx.deleteMessage().catch((e) =>
          console.error("---reasonState deleteMessage yalnyslygy---", e)
       );
-      reasonStates.delete(userId);
+      delete ctx.session.reasonStates[userId];
    } else if (sumAddState) {
       // addSumm data collector
       // collect walletNumber
       if (sumAddState.walNum === "") {
          if (!ctx.message.text) {
-            sumAddStates.delete(userId);
+            delete ctx.session.sumAddStates[userId];
             return ctx
                .reply("Hasap nomer girizilmedi. Başdan synanyşyň.")
                .catch((e) =>
@@ -1701,7 +1674,7 @@ bot.on("message", async (ctx) => {
          // collect sum
          const sum = ctx.message.text;
          if (!sum && isNaN(Number(sum))) {
-            sumAddStates.delete(userId);
+            delete ctx.session.sumAddStates[userId];
             return ctx.reply("Girizen mukdaryňyz nädogry. Başdan synanyşyň.");
          }
          sumAddState.sum = Number(Number(sum).toFixed(2));
@@ -1761,7 +1734,7 @@ bot.on("message", async (ctx) => {
          .catch((e) =>
             console.error("---broadcastState reply yalnyslygy---", e)
          );
-      broadcastStates.delete(userId);
+      delete ctx.session.broadcastStates[userId];
    } else if (checkState) {
       const message = ctx.message.text || "";
       ctx.deleteMessage().catch((e) =>
@@ -1788,7 +1761,7 @@ bot.on("message", async (ctx) => {
          }
       }
       if (!user) {
-         checkStates.delete(userId);
+         delete ctx.session.checkStates[userId];
          return ctx.api
             .editMessageText(
                userId,
@@ -1799,7 +1772,7 @@ bot.on("message", async (ctx) => {
                console.error("---checkState editMessageText yalnyslygy---", e)
             );
       }
-      checkStates.delete(userId);
+      delete ctx.session.checkStates[userId];
       return ctx.api
          .editMessageText(
             userId,

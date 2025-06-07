@@ -1,23 +1,7 @@
-import {
-   Admin,
-   PaymentMethod,
-   Product,
-   ProductType,
-   SummUpdate,
-   User,
-} from "../prisma/prismaSett";
-
-import { Bot } from "grammy";
+import { Admin, Product, ProductType } from "../prisma/prismaSett";
 
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.3;
-
-export interface SessionData {
-   chattingWith?: number;
-   adminChattingWith?: number;
-}
-
-export const bot = new Bot(process.env.BOT_TOKEN || "123");
 
 export const adminidS = [
    process.env.PALWAN || "1",
@@ -26,20 +10,8 @@ export const adminidS = [
    process.env.HAJY_2 || "4",
    process.env.YYLDYZ || "5",
 ];
-interface SumAddState {
-   mssgId: number;
-   walNum: User["walNum"];
-   crrncy: PaymentMethod | "";
-   sum: SummUpdate["sum"];
-}
-interface OrdrMsgEdtSt {
-   mssgIds: number[];
-}
-export const reasonStates = new Map();
-export const sumAddStates: Map<number | undefined, SumAddState> = new Map();
-export const ordrMsgEdtStts: Map<number, OrdrMsgEdtSt> = new Map();
-// functions
 
+// functions
 // admins seed data returner
 export function adminDatas(): Admin[] {
    const data: Admin[] = [];
