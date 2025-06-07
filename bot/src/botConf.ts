@@ -67,7 +67,7 @@ export const bot = new Bot<MyContext>(
 );
 
 // Tek bir global oturumun kaydedileceği dosya yolu
-const GLOBAL_STATE_FILE = path.join(process.cwd(), "sessions", "global_bot_state.json");
+const GLOBAL_STATE_FILE = path.join(process.cwd(), "sessions", "states.json");
 
 // Oturum middleware'ını bot'a ekliyoruz
 bot.use(
