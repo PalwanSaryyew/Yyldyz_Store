@@ -243,16 +243,16 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
    const userID = parseInt(ctx.match[1]);
    const chatState = ctx.session.chatStates[userID];
    console.log(chatState);
-   
 
    if (!chatState || !userID || !acceptorId) {
-      return ctx.reply('Yalnyslyk');
+      return ctx.reply("Yalnyslyk");
    }
    if (ctx.session.chatStates[acceptorId]) {
       return ctx
-         .answerCallbackQuery(
-            "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň! \n /stop"
-         )
+         .answerCallbackQuery({
+            text: "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň! \n /stop",
+            show_alert: true,
+         })
          .catch((e) => {
             console.error(
                "---acceptChat duwmesinde answerCallbackQuery yalnyslygy---",
