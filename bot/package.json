@@ -4,7 +4,7 @@
    "main": "start.js",
    "scripts": {
       "dev": "ts-node start.ts",
-      "build": "tsc",
+      "build": "mkdir sessions && touch sessions/states.json && tsc",
       "start": "node start.js",
       "test": "echo \"Error: no test specified\" && exit 1"
    },

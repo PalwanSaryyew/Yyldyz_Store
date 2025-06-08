@@ -20,6 +20,7 @@ import {
    prdctDtlMssg,
    sspcsCaseMs,
    userLink,
+   welcome,
 } from "./src/messages";
 import { cnclAddSumBtnn, dlvrOrdrKybrd } from "./src/keyboards";
 
@@ -457,8 +458,9 @@ bot.command("start", async (ctx) => {
       });
    }
 
-   ctx.reply("Hoş geldiň " + ctx.from?.first_name, {
+   ctx.reply(welcome, {
       reply_markup: mainKEybiard,
+      parse_mode: 'HTML'
    }).catch((e) => {
       console.error("---start komandynda reply yalnyslygy---", e);
    });
@@ -844,6 +846,19 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
 bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
    const orderId = parseInt(ctx.match[1]);
    const adminId = ctx.from?.id;
+   if (ctx.session.chatStates[adminId]) {
+      return await ctx
+         .answerCallbackQuery({
+            text: "Siz häzir hem söhbetdeşlikde. Öňki söhbetdeşligi ýapmak üçin 👉 /stop 👈",
+            show_alert: true,
+         })
+         .catch((e) => {
+            console.error(
+               "---declineOrder duwmesinde answerCallbackQuery yalnyslygy---",
+               e
+            );
+         });
+   }
    // admin checker
    const isAdmin = adminValid(adminId);
    if (isAdmin.error) {

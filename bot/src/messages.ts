@@ -13,6 +13,18 @@ import {
    tonPriceCalculator,
 } from "./settings";
 
+export const welcome =
+`<b>Salam! Sanly dükanymyza hoş geldiňiz! 🛍️
+
+Bu ýerde sanly önümleri aňsat we ygtybarly satyn alyp bilersiňiz. Önümlerimize göz aýlaň we sanly dünýäniň peýdalaryndan lezzet alyň.</b> 
+
+Umumy pikir alyşmak üçin çat: @yyldyzchat
+Habarlar we bildirişler üçin kanal: @yyldyzkanal
+
+Balansyňyzy doldurmak, dükanda bolmadyk önümleri sargyt etmek ýa-da soraglaryňyz bar bolsa "Admini çagyr" düwmesine basyň.
+
+<b>Täze söwda tejribesine taýyn bolsaňyz, başlalyň!</b> ✨`;
+
 // hasap message
 export function hspMsg(hnum: string, sum1: number, sum2: number) {
    return `Hasap Belgi: <code>${hnum}</code> \n Hasabyňyz: \n ${sum1} TMT \n ${sum2} USDT`;
