@@ -39,3 +39,6 @@ app/.vercel
 # typescript
 app/*.tsbuildinfo
 app/next-env.d.ts
+
+# session storage
+bot/sessions/states.json
