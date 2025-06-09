@@ -243,7 +243,6 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
    const acceptorId = ctx.from.id;
    const userID = parseInt(ctx.match[1]);
    const chatState = ctx.session.chatStates[userID];
-   console.log(chatState);
 
    if (!chatState || !userID || !acceptorId) {
       return ctx.reply("Yalnyslyk");
@@ -261,10 +260,15 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
             );
          });
    }
+   chatState.userId = acceptorId;
+   ctx.session.chatStates[acceptorId] = {
+      userId: userID,
+      messageIds: chatState.messageIds,
+   };
    if (chatState.messageIds.length > 0) {
       for (let i = 0; i < adminidS.length; i++) {
          try {
-            ctx.api.editMessageText(
+            await ctx.api.editMessageText(
                adminidS[i],
                chatState?.messageIds[i],
                `${userLink({
@@ -277,6 +281,9 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
                } söhbetdeşlik edýär.`,
                { parse_mode: "HTML" }
             );
+            if (acceptorId.toString() === adminidS[i]) {
+               ctx.pinChatMessage(chatState?.messageIds[i]);
+            }
          } catch (e) {
             console.error(
                "---acceptChat duwmesinde fot-editMessageText yalnyslygy---",
@@ -284,6 +291,15 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
             );
          }
       }
+   } else {
+      ctx.editMessageText(
+         "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar."
+      ).catch((e) => {
+         console.error(
+            "---acceptChat duwmesinde editMessageText yalnyslygy---",
+            e
+         );
+      });
    }
    await ctx.api
       .sendMessage(
@@ -293,25 +309,10 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
       .catch((e) => {
          console.error("---acceptChat duwmesinde sendMessage yalnyslygy---", e);
       });
-   chatState.userId = acceptorId;
-   ctx.session.chatStates[acceptorId] = {
-      userId: userID,
-      messageIds: chatState.messageIds,
-   };
-   return ctx.api
-      .sendMessage(
-         acceptorId,
-         "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar."
-      )
-      .catch((e) => {
-         console.error(
-            "---acceptChat duwmesinde editMessageText yalnyslygy---",
-            e
-         );
-      });
 });
 bot.command("stop", async (ctx) => {
    const userID = ctx.from?.id || 0;
+   const isAmdin = isAdminId(userID);
    const chatState = ctx.session.chatStates[userID];
    if (!userID || !chatState) {
       return ctx.deleteMessage().catch((e) => {
@@ -333,18 +334,38 @@ bot.command("stop", async (ctx) => {
       });
    if (chatState.messageIds.length > 0) {
       for (let i = 0; i < adminidS.length; i++) {
+         const messageToSend = isAmdin.error
+            ? `${userLink({
+                 id: userID,
+                 nick: ctx.from?.first_name,
+              })}${
+                 ctx.from?.username ? ` / @${ctx.from?.username}` : ""
+              }\n${userLink({
+                 id: chatState.userId,
+              })} bilen söhbetdeşligi tamamlady`
+            : `${userLink({
+                 id: userID,
+                 nick: ctx.from?.first_name,
+              })}\n${userLink({
+                 id: chatState.userId,
+              })}${
+                 ctx.session.chatStates[chatState.userId].username !== undefined
+                    ? ` / @${ctx.session.chatStates[chatState.userId].username}`
+                    : ""
+              } bilen söhbetdeşligi tamamlady.`;
          try {
-            ctx.api.editMessageText(
+            await ctx.api.editMessageText(
                adminidS[i],
                chatState?.messageIds[i],
-               `${userLink({
-                  id: userID,
-                  nick: ctx.from?.first_name,
-               })} ${userLink({
-                  id: chatState.userId,
-               })} bilen söhbetdeşligi tamamlady.`,
+               messageToSend,
                { parse_mode: "HTML" }
             );
+
+            if (userID.toString() === adminidS[i]) {
+               ctx.unpinChatMessage(chatState?.messageIds[i]);
+            } else if (chatState.userId.toString() === adminidS[i]) {
+               ctx.api.unpinChatMessage(adminidS[i], chatState?.messageIds[i]);
+            }
          } catch (e) {
             console.error(
                "---stop komandasynda fot-editMessageText yalnyslygy---",
@@ -460,7 +481,7 @@ bot.command("start", async (ctx) => {
 
    ctx.reply(welcome, {
       reply_markup: mainKEybiard,
-      parse_mode: 'HTML'
+      parse_mode: "HTML",
    }).catch((e) => {
       console.error("---start komandynda reply yalnyslygy---", e);
    });
