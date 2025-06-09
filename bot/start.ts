@@ -323,15 +323,17 @@ bot.command("stop", async (ctx) => {
    await ctx.reply(`Söhbetdeşlik tamamlandy.`).catch((e) => {
       console.error("---stop komandasynda reply yalnyslygy---", e);
    });
-   await ctx.api
-      .sendMessage(
-         chatState.userId,
-         `<blockquote>bot</blockquote> Söhbetdeşlik tamamlandy.`,
-         { parse_mode: "HTML" }
-      )
-      .catch((e) => {
-         console.error("---stop komandasynda sendMessage yalnyslygy---", e);
-      });
+   if (chatState.userId !== 0) {
+      await ctx.api
+         .sendMessage(
+            chatState.userId,
+            `<blockquote>bot</blockquote> Söhbetdeşlik tamamlandy.`,
+            { parse_mode: "HTML" }
+         )
+         .catch((e) => {
+            console.error("---stop komandasynda sendMessage yalnyslygy---", e);
+         });
+   }
    if (chatState.messageIds.length > 0) {
       for (let i = 0; i < adminidS.length; i++) {
          const messageToSend = isAmdin.error
