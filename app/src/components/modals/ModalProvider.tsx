@@ -3,6 +3,7 @@ import { useHandleModal } from "@/utils/UniStore";
 import ChktMdl from "./ChktMdl";
 import { cn } from "@/utils/tailwindMerge";
 import Summ from "./Summ";
+import InfoModal from "./InfoModal";
 
 const ModalProvider = () => {
    const modalCloser = useHandleModal((state) => state.toogleOpen);
@@ -27,7 +28,7 @@ const ModalProvider = () => {
                }
             }}
          ></div>
-         {isOpen === 1 ? <ChktMdl /> : <Summ />}
+         {isOpen === 1 ? <ChktMdl /> : isOpen === 2 ?  <Summ />: <InfoModal/>}
       </div>
    );
 };
