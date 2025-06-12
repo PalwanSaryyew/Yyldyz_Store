@@ -15,7 +15,7 @@ const InfoModal = () => {
    return (
       <div
          className={cn(
-            "w-[80%] fixed bg-slate-300 rounded-2xl flex flex-col p-2"
+            "w-[80%] fixed bg-slate-300 rounded-2xl flex flex-col p-2 max-h-[90vh] overflow-y-auto",
          )}
       >
          {description}
