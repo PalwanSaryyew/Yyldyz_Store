@@ -13,5 +13,6 @@ export const paths: ProductType[] = [
    "steam",
    "royale",
    "lis",
+   'gplay'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";

@@ -144,6 +144,7 @@ enum ProductType {
   royale
   gpt
   lis
+  gplay
 }
 
 enum UserRole {

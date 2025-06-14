@@ -108,6 +108,8 @@ export const productTitle = (name: ProductType) => {
          return "ChatGPT abunasy";
       case "lis":
          return "LIS-SKINS balans";
+      case "gplay":
+         return "Google Play balans";
       default:
          return "";
    }
