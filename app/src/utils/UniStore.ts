@@ -54,7 +54,7 @@ export const useWhicIsOpen = create<WhichIsOpenState>((set) => ({
 interface UserState {
    user: {
       id: number;
-      username: string;
+      username?: string;
       name: string;
       photo_url: string;
       nmbr: string;
