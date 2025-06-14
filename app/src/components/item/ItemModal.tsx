@@ -158,7 +158,7 @@ const ItemModal = ({
                className={`${
                   currentUser === null ||
                   receiver.length > 0 ||
-                  (item.name !== "tgprem" && item.name !== "star")
+                  ((item.name !== "tgprem" && item.name !== "star") || !currentUser?.username)
                      ? "hidden"
                      : "block"
                } bg-white text-black px-2 py-2 rounded-lg ring-1 ring-blue text-sm`}
