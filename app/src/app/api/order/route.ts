@@ -8,7 +8,6 @@ export async function GET(request: Request) {
    const { searchParams } = new URL(request.url);
    const productId = searchParams.get("pid");
    const userId = searchParams.get("bid");
-   const busername = searchParams.get("bsrnm");
    const receiver = searchParams.get("rsrnm");
    const currency = (searchParams.get("crrnc") ?? "undefined") as
       | PaymentMethod
@@ -17,12 +16,10 @@ export async function GET(request: Request) {
    if (
       productId === "undefined" ||
       userId === "undefined" ||
-      busername === "undefined" ||
       receiver === "undefined" ||
       currency === "undefined" ||
       !productId ||
       !userId ||
-      !busername ||
       !receiver ||
       !currency
    ) {
