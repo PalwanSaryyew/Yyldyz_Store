@@ -1,20 +1,9 @@
 //message returners
 
-import {
-   Order,
-   PaymentMethod,
-   Product,
-   ProductType,
-} from "../prisma/prismaSett";
-import {
-   prdctDsplyNme,
-   productTitle,
-   statusIcons,
-   tonPriceCalculator,
-} from "./settings";
+import { Order, PaymentMethod, Product } from "../prisma/prismaSett";
+import { productTitle, statusIcons, tonPriceCalculator } from "./settings";
 
-export const welcome =
-`<b>Salam! Sanly dükanymyza hoş geldiňiz! 🛍️
+export const welcome = `<b>Salam! Sanly dükanymyza hoş geldiňiz! 🛍️
 
 Bu ýerde sanly önümleri aňsat we ygtybarly satyn alyp bilersiňiz. Önümlerimize göz aýlaň we sanly dünýäniň peýdalaryndan lezzet alyň.</b> 
 
@@ -27,7 +16,7 @@ Balansyňyzy doldurmak, dükanda bolmadyk önümleri sargyt etmek ýa-da soragla
 
 // hasap message
 export function hspMsg(hnum: string, sum1: number, sum2: number) {
-   return `Hasap Belgi: <code>${hnum}</code> \n Hasabyňyz: \n ${sum1} TMT \n ${sum2} USDT`;
+   return `Balans \n ID: <code>${hnum}</code> \n TMT: ${sum1} \n USDT: ${sum2}`;
 }
 // suspiçius çase message
 export function sspcsCaseMs(

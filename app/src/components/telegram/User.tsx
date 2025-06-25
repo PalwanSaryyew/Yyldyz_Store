@@ -42,7 +42,7 @@ const User = () => {
    }, [setUserState]);
 
    return (
-      <div className="flex items-center pr-2">
+      <div className="flex items-center pr-2 z-10">
          <Image
             alt=""
             src={getUserState?.photo_url || "/oth/no-user.png"}

@@ -1,22 +1,38 @@
+import { cn } from "@/utils/tailwindMerge";
+import Image from "next/image";
 import React from "react";
 
 interface WalletConnHandButtProps {
-   title: string ;
    handlerFunc?: () => void;
    isDisabled?: boolean;
+   children?: React.ReactNode;
+   status?: "loading" | "connected" | "disconnected";
 }
 const WalletConnHandButt: React.FC<WalletConnHandButtProps> = ({
-   title,
+   children,
    handlerFunc,
    isDisabled,
+   status,
 }) => {
    return (
       <button
-         className="bg-tonColor text-white p-1 px-2 font-bold rounded-3xl ring-2 text-sm ring-white"
+         className={cn(
+            status === "disconnected" ? "p-0" : "p-1 px-2 ",
+            "bg-tonColor text-whitefont-bold rounded-3xl text-sm text-white font-semibold ring-2 ring-gray-200 hover:ring-gray-300 active:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center",
+         )}
          onClick={handlerFunc}
          disabled={isDisabled}
       >
-         {title}
+         {status !== "disconnected" ? (
+            children
+         ) : (
+            <Image
+               alt="ton connect"
+               src="/icons/wallet.png"
+               width={40}
+               height={40}
+            />
+         )}
       </button>
    );
 };

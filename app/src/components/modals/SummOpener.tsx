@@ -9,7 +9,7 @@ const SummOpener = ({ children }: { children: ReactNode }) => {
    }
    return (
       <div
-         className="text-white  font-bold rounded-sm flex items-center gap-1 border-white cursor-pointer"
+         className="text-white font-bold rounded-sm flex items-center gap-1 border-white cursor-pointer"
          onClick={Open}
       >
          {children}

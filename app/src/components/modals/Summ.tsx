@@ -30,11 +30,11 @@ const Summ = () => {
                   {user?.name || "name"}
                </div>
             </div>
-            <div>Hasap:</div>
+            <div>Balans:</div>
          </div>
          <div className="rounded-md overflow-hidden mx-2">
             <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">
-               <div>Belgi:</div>
+               <div>ID:</div>
                <div>{user?.nmbr}</div>
             </div>
             <div className="bg-slate-100 p-1 even:bg-gray-200 flex justify-between">

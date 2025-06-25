@@ -7,6 +7,7 @@ import {
 import WalletConnHandButt from "./WalletConnHandButt";
 import { useEffect, useState } from "react";
 
+
 const WallConnHandler = () => {
    const [tonConnectUI /* setOptions */] = useTonConnectUI();
    const connectionRestored = useIsConnectionRestored();
@@ -21,9 +22,10 @@ const WallConnHandler = () => {
             return;
          }
          const response = await fetch("/api/walbal?adr=" + userFriendlyAddress);
-         const data: { balance: string; success: boolean } = await response.json();
+         const data: { balance: string; success: boolean } =
+            await response.json();
          if (data.success) {
-            setFormattedAddress(data.balance.toString().slice(0,6)+ " TON");
+            setFormattedAddress(data.balance.toString().slice(0, 6) + " TON");
          } else {
             setFormattedAddress(
                `${userFriendlyAddress.slice(
@@ -39,17 +41,21 @@ const WallConnHandler = () => {
    return (
       <>
          {!connectionRestored ? (
-            <WalletConnHandButt isDisabled={true} title={"..."} />
+            <WalletConnHandButt isDisabled={true} status={"loading"}>
+               ...
+            </WalletConnHandButt>
          ) : rawAddress ? (
             <WalletConnHandButt
-               title={formattedAddress}
                handlerFunc={() => tonConnectUI.disconnect()}
-            />
+               status={"connected"}
+            >
+               {formattedAddress}
+            </WalletConnHandButt>
          ) : (
             <WalletConnHandButt
-               title="TON"
                handlerFunc={() => tonConnectUI.openModal()}
-            />
+               status={"disconnected"}
+            ></WalletConnHandButt>
          )}
       </>
    );
