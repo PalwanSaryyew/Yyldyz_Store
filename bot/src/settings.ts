@@ -110,6 +110,8 @@ export const productTitle = (name: ProductType) => {
          return "LIS-SKINS balans";
       case "gplay":
          return "Google Play balans";
+      case "apple":
+         return "Apple sowgat karty";
       default:
          return "";
    }

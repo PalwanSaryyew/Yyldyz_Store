@@ -145,6 +145,7 @@ enum ProductType {
   gpt
   lis
   gplay
+  apple
 }
 
 enum UserRole {
