@@ -1651,8 +1651,8 @@ bot.on("message", async (ctx) => {
                `Hasap nomer: ${sumAddState.walNum} \n Walýuta ?`,
                {
                   reply_markup: new InlineKeyboard()
-                     .text("TMT", "choose_TMT")
-                     .text("USDT", "choose_USDT")
+                     .text("TMT", "choose_TMT").row()
+                     .text("USDT", "choose_USDT").row()
                      .text("Goýbolsun " + statusIcons.care[7], "declineAdd"),
                }
             )
