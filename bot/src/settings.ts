@@ -112,6 +112,10 @@ export const productTitle = (name: ProductType) => {
          return "Google Play balans";
       case "apple":
          return "Apple sowgat karty";
+      case "belet":
+         return "Belet Film tölegi";
+      case "alem":
+         return "Älem TV tölegi";
       default:
          return "";
    }

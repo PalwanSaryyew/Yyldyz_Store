@@ -146,6 +146,8 @@ enum ProductType {
   lis
   gplay
   apple
+  belet
+  alem
 }
 
 enum UserRole {

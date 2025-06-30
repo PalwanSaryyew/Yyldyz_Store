@@ -14,6 +14,8 @@ export const paths: ProductType[] = [
    "royale",
    "lis",
    'gplay',
-   'apple'
+   'apple',
+   'belet',
+   'alem'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
