@@ -279,7 +279,16 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
                      ? ` / @${chatState.username}`
                      : ""
                } söhbetdeşlik edýär.`,
-               { parse_mode: "HTML" }
+               {
+                  parse_mode: "HTML",
+                  reply_markup:
+                     adminidS[i] === acceptorId.toString()
+                        ? new InlineKeyboard().copyText(
+                             userID.toString(),
+                             userID.toString()
+                          )
+                        : undefined,
+               }
             );
             if (acceptorId.toString() === adminidS[i]) {
                ctx.pinChatMessage(chatState?.messageIds[i]);
@@ -498,7 +507,7 @@ bot.hears("Balansy barla", async (ctx) => {
       return ctx
          .reply(
             user.mssg +
-               " \n Täzeden synanşyň /hasap \n ýada /start berip boty başladyň"
+               " \n Täzeden synanşyň ýa-da /start berip boty başladyň"
          )
          .catch((e) => {
             console.error("---Balansy barla dinleyjide reply yalnyslygy---", e);
@@ -1465,9 +1474,13 @@ bot.callbackQuery("complateAdd", async (ctx) => {
       });
       ctx.api.sendMessage(
          user.id,
-         `Hasabyňyz ${fltdSum} ${chsdCrrnc} ${
-            fltdSum > 0 ? "köpeldi." : "azaldy."
-         }`
+         "<blockquote>bot</blockquote>" +
+            `Hasabyňyz ${fltdSum} ${chsdCrrnc} ${
+               fltdSum > 0 ? "köpeldi." : "azaldy."
+            }`,
+         {
+            parse_mode: "HTML",
+         }
       );
       return await ctx.deleteMessage();
    } catch (e) {
@@ -1692,6 +1705,56 @@ bot.on("message", async (ctx) => {
                console.error("---sumAddState editMessageText yalnyslygy---", e)
             );
       }
+   } else if (checkState) {
+      const message = ctx.message.text || "";
+      ctx.deleteMessage().catch((e) =>
+         console.error("---checkState deleteMessage yalnyslygy---", e)
+      );
+      let user;
+      const fromId = await prisma.user
+         .findUnique({
+            where: { id: message },
+         })
+         .catch((e) => console.error("---checkState prisma yalnyslygy---", e));
+      if (fromId) {
+         user = fromId;
+      } else {
+         const formWal = await prisma.user
+            .findUnique({
+               where: { walNum: message },
+            })
+            .catch((e) =>
+               console.error("---checkState prisma yalnyslygy---", e)
+            );
+         if (formWal) {
+            user = formWal;
+         }
+      }
+      if (!user) {
+         delete ctx.session.checkStates[userId];
+         return ctx.api
+            .editMessageText(
+               userId,
+               checkState.messageId,
+               "Hasap tapylmady, täzeden synanyşyň."
+            )
+            .catch((e) =>
+               console.error("---checkState editMessageText yalnyslygy---", e)
+            );
+      }
+      delete ctx.session.checkStates[userId];
+      return ctx.api
+         .editMessageText(
+            userId,
+            checkState.messageId,
+            `ID: <a href="tg://user?id=${user.id}">${user.id}</a> \n Hasap nomer: <code>${user.walNum}</code> \n TMT: ${user.sumTmt} \n USDT: ${user.sumUsdt}`,
+            {
+               parse_mode: "HTML",
+            }
+         )
+         .catch((e) =>
+            console.error("---checkState editMessageText yalnyslygy---", e)
+         );
    } else if (chatState && chatState.calling && !chatState.userId) {
       const expectingID = ctx.message.text;
       if (!expectingID) {
@@ -1756,7 +1819,10 @@ bot.on("message", async (ctx) => {
             await ctx.api.copyMessage(
                user.id, // Chat ID for the message to be sent
                userId, // Chat ID from which the message came
-               ctx.message.message_id // ID of the message to be copied
+               ctx.message.message_id,
+               {
+                  reply_markup: mainKEybiard,
+               } // ID of the message to be copied
             );
             console.log(`Habar ugradyldy: ${user.id}`);
             // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
@@ -1782,56 +1848,6 @@ bot.on("message", async (ctx) => {
             console.error("---broadcastState reply yalnyslygy---", e)
          );
       delete ctx.session.broadcastStates[userId];
-   } else if (checkState) {
-      const message = ctx.message.text || "";
-      ctx.deleteMessage().catch((e) =>
-         console.error("---checkState deleteMessage yalnyslygy---", e)
-      );
-      let user;
-      const fromId = await prisma.user
-         .findUnique({
-            where: { id: message },
-         })
-         .catch((e) => console.error("---checkState prisma yalnyslygy---", e));
-      if (fromId) {
-         user = fromId;
-      } else {
-         const formWal = await prisma.user
-            .findUnique({
-               where: { walNum: message },
-            })
-            .catch((e) =>
-               console.error("---checkState prisma yalnyslygy---", e)
-            );
-         if (formWal) {
-            user = formWal;
-         }
-      }
-      if (!user) {
-         delete ctx.session.checkStates[userId];
-         return ctx.api
-            .editMessageText(
-               userId,
-               checkState.messageId,
-               "Hasap tapylmady, täzeden synanyşyň."
-            )
-            .catch((e) =>
-               console.error("---checkState editMessageText yalnyslygy---", e)
-            );
-      }
-      delete ctx.session.checkStates[userId];
-      return ctx.api
-         .editMessageText(
-            userId,
-            checkState.messageId,
-            `ID: <a href="tg://user?id=${user.id}">${user.id}</a> \n Hasap nomer: <code>${user.walNum}</code> \n TMT: ${user.sumTmt} \n USDT: ${user.sumUsdt}`,
-            {
-               parse_mode: "HTML",
-            }
-         )
-         .catch((e) =>
-            console.error("---checkState editMessageText yalnyslygy---", e)
-         );
    }
 });
 
