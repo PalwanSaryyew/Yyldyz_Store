@@ -26,7 +26,7 @@ export default async function ProductPage({ params }: ProductPageParams) {
             },
          ],
       },
-      orderBy: [{ title: "asc" }, { duration: "asc" }, { amount: "asc" }],
+      orderBy: [{ priceTMT: "asc" }],
       include: {
          requirements: true,
          details: {
