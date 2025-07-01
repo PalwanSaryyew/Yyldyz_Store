@@ -25,7 +25,7 @@ import {
 import { cnclAddSumBtnn, dlvrOrdrKybrd } from "./src/keyboards";
 
 const mainKEybiard = new Keyboard()
-   .text("Dükana gir 🛒")
+   .webApp("Dükana gir 🛒", "https://yyldyz.store")
    .row()
    .text("Balansy barla")
    .text("Admini çagyr")
@@ -1651,8 +1651,10 @@ bot.on("message", async (ctx) => {
                `Hasap nomer: ${sumAddState.walNum} \n Walýuta ?`,
                {
                   reply_markup: new InlineKeyboard()
-                     .text("TMT", "choose_TMT").row()
-                     .text("USDT", "choose_USDT").row()
+                     .text("TMT", "choose_TMT")
+                     .row()
+                     .text("USDT", "choose_USDT")
+                     .row()
                      .text("Goýbolsun " + statusIcons.care[7], "declineAdd"),
                }
             )
