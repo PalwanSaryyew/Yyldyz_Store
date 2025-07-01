@@ -12,7 +12,7 @@ import { cn } from "@/utils/tailwindMerge";
 import { getUser } from "@/lib/fetchs";
 import { webApp } from "@/lib/webApp";
 import { Product } from "../../../prisma/prismaSett";
-import { Detail, Details, Requirements } from "@prisma/client";
+import { Detail, Details, DetailTitle, Requirements } from "@prisma/client";
 import PrimeItemsBox from "../pubg/PrimeItemsBox";
 import { tonFee } from "bot/src/settings";
 const ItemModal = ({
@@ -20,7 +20,7 @@ const ItemModal = ({
    tonPrice,
 }: {
    item: Product & { requirements: Requirements | null } & {
-      details: (Details & { detail: Detail[] })[];
+      details: (Details & { detail: Detail[]; title: DetailTitle | null })[];
    };
    tonPrice: number;
 }) => {

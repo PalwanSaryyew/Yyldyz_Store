@@ -1,8 +1,8 @@
-import { Detail, Details } from "@prisma/client";
+import { Detail, Details, DetailTitle } from "@prisma/client";
 import PrimeItem from "./PrimeItem";
 
 interface PrimeItemsBoxProps {
-   detail: (Details & { detail: Detail[] }) | null;
+   detail: (Details & { detail: Detail[]; title: DetailTitle | null }) | null;
 }
 
 const PrimeItemsBox = ({ detail }: PrimeItemsBoxProps) => {
@@ -11,7 +11,7 @@ const PrimeItemsBox = ({ detail }: PrimeItemsBoxProps) => {
    }
    return (
       <div className="pb-2 border-t">
-         <div className="text-base">{detail.title}</div>
+         <div className="text-base">{detail.title?.text}</div>
          <div className="flex gap-4 flex-wrap">
             {detail.detail.map((item, index) => (
                <PrimeItem key={index} text={item.text} image={item.image} />

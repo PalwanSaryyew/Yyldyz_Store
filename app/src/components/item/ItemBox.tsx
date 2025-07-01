@@ -4,10 +4,10 @@ import ItemPrice from "./ItemPrice";
 import ItemIcon from "./ItemIcon";
 import ItemAmount from "./ItemAmount";
 import { Product } from "../../../prisma/prismaSett";
-import { Detail, Details, Requirements } from "@prisma/client";
+import { Detail, Details, DetailTitle, Requirements } from "@prisma/client";
 interface ItemBoxProps {
    item: Product & { requirements: Requirements | null } & {
-      details: (Details & { detail: Detail[] })[];
+      details: (Details & { detail: Detail[]; title: DetailTitle | null })[];
    };
    tonPrice: number;
 }

@@ -65,18 +65,28 @@ model Requirements {
 }
 
 model Details {
-  id        Int       @id @default(autoincrement())
-  title     String
+  id        Int          @id @default(autoincrement())
+  titleId   Int?
   detail    Detail[]
+  title     DetailTitle? @relation(fields: [titleId], references: [id])
   product   Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
 
 model Detail {
   id        Int       @id @default(autoincrement())
   text      String
   image     String
+  belongs   Details[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model DetailTitle {
+  id        Int       @id @default(autoincrement())
+  text      String
+  image     String?
   belongs   Details[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

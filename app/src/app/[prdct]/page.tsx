@@ -26,14 +26,13 @@ export default async function ProductPage({ params }: ProductPageParams) {
             },
          ],
       },
-      orderBy: {
-         amount: "asc",
-      },
+      orderBy: [{ title: "asc" }, { duration: "asc" }, { amount: "asc" }],
       include: {
          requirements: true,
          details: {
             include: {
                detail: true,
+               title: true,
             },
          },
       },
@@ -41,18 +40,14 @@ export default async function ProductPage({ params }: ProductPageParams) {
 
    const tonPrice = await cmcApi(toncoinId);
 
-
    return (
       <>
-
-            
-
          <div className="flex flex-col gap-4 py-4 w-full items-center">
             {/* recording path */}
             <UseTrackLastVisitedPage />
-            { data.map((item) => (
-                    <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
-                 ))}
+            {data.map((item) => (
+               <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
+            ))}
          </div>
       </>
    );
