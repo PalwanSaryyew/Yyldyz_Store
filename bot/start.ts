@@ -1849,6 +1849,7 @@ bot.on("message", async (ctx) => {
          );
       delete ctx.session.broadcastStates[userId];
    }
+   //! barik mainketboardy goy
 });
 
 bot.start();
