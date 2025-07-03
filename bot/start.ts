@@ -1150,7 +1150,7 @@ bot.command("check", async (ctx) => {
             console.error("---check komandynda deleteMessage yalnyslygy---", e)
          );
    }
-   if (ctx.session.chatStates[Number(userID)]) {
+   /* if (ctx.session.chatStates[Number(userID)]) {
       return ctx
          .reply(
             "Siz şu wagt söhbetdeşlikde, ilki söhbetdeşligi tamamlaň! \n /stop"
@@ -1158,7 +1158,7 @@ bot.command("check", async (ctx) => {
          .catch((e) =>
             console.error("---check komandynda reply yalnyslygy---", e)
          );
-   }
+   } */
    // if user not admin notify admins
    const isAdmin = adminValid(userID);
    if (isAdmin.error) {

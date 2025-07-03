@@ -10,7 +10,7 @@ const PrimeItemsBox = ({ detail }: PrimeItemsBoxProps) => {
       return null;
    }
    return (
-      <div className="pb-2 border-t border-gray-400">
+      <div className="pb-2 border-t border-gray-300">
          <div className="text-base">{detail.title?.text}</div>
          <div className="flex gap-4 flex-wrap">
             {detail.detail.map((item, index) => (
