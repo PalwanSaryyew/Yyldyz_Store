@@ -1,5 +1,5 @@
 import { InlineKeyboard, Keyboard } from "grammy";
-import { prisma } from "./prisma/prismaSett";
+import { prisma, User } from "./prisma/prismaSett";
 import { adminidS, editSummComand, statusIcons } from "./src/settings";
 import { bot } from "./src/botConf";
 import { PaymentMethod } from "./prisma/prismaSett";
@@ -27,7 +27,7 @@ import { cnclAddSumBtnn, dlvrOrdrKybrd } from "./src/keyboards";
 const mainKEybiard = new Keyboard()
    .webApp("Dükana gir 🛒", "https://yyldyz.store")
    .row()
-   .text("Balansy barla")
+   .text("Balans")
    .text("Admini çagyr")
    .resized()
    .persistent();
@@ -499,26 +499,30 @@ bot.command("start", async (ctx) => {
 });
 
 // hasap command
-bot.hears("Balansy barla", async (ctx) => {
+bot.hears("Balans", async (ctx) => {
    const userID = ctx.from?.id;
    // geting user
    const user = await userValid(userID);
    if ("error" in user) {
       return ctx
          .reply(
-            user.mssg +
-               " \n Täzeden synanşyň ýa-da /start berip boty başladyň"
+            user.mssg + " \n Täzeden synanşyň ýa-da /start berip boty başladyň"
          )
          .catch((e) => {
             console.error("---Balansy barla dinleyjide reply yalnyslygy---", e);
          });
    }
-   ctx.reply(hspMsg(user.walNum, user.sumTmt, user.sumUsdt), {
-      reply_markup: new InlineKeyboard().copyText(user.walNum, user.walNum),
-      parse_mode: "HTML",
-   }).catch((e) => {
-      console.error("---Balansy barla dinleyjide reply yalnyslygy---", e);
-   });
+   return ctx
+      .reply(hspMsg(user.walNum, user.sumTmt, user.sumUsdt), {
+         reply_markup: new InlineKeyboard()
+            .copyText(user.walNum, user.walNum)
+            .row()
+            .text("Geçirim " + statusIcons.wait[15], "transfer"),
+         parse_mode: "HTML",
+      })
+      .catch((e) => {
+         console.error("---Balansy barla dinleyjide reply yalnyslygy---", e);
+      });
 });
 // if order aççept by the çlient
 bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
@@ -1302,6 +1306,34 @@ bot.callbackQuery(/^choose_(\w+)$/, (ctx) => {
          )
       );
 });
+bot.callbackQuery(/^select_(\w+)$/, (ctx) => {
+   const userID = ctx.from?.id;
+   const transferState = ctx.session.transferStates[userID];
+
+   // set çurrençy
+   if (transferState) {
+      transferState.currency = ctx.match[1] as PaymentMethod;
+   }
+   // next message
+   return ctx
+      .editMessageText(
+         /* adminId,
+      sumAddState?.mssgId || 0, */
+         `Balans ID: ${transferState?.recieverWalNum} \n Näçe ? ${transferState?.currency}`,
+         {
+            reply_markup: new InlineKeyboard().text(
+               "Ýatyr " + statusIcons.care[7],
+               "declineTransfer"
+            ),
+         }
+      )
+      .catch((e) =>
+         console.error(
+            "---editSummComand komandynda editMessageText yalnyslygy---",
+            e
+         )
+      );
+});
 // complate add sum
 bot.callbackQuery("complateAdd", async (ctx) => {
    const adminId = ctx.from?.id;
@@ -1501,6 +1533,252 @@ bot.callbackQuery("complateAdd", async (ctx) => {
          );
    }
 });
+bot.callbackQuery("complateTransfer", async (ctx) => {
+   const userID = ctx.from?.id;
+   const transferState = ctx.session.transferStates[userID];
+   // validating user
+   const sender = await prisma.user
+      .findUnique({
+         where: {
+            id: userID.toString(),
+         },
+      })
+      .catch((error) => {
+         console.error("---complateTransfer prisma yalnyslygy---", error);
+      });
+
+   if (!sender) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx.editMessageText(
+         "Siz hasaba alynmadyk. \n /start komandasy bilen gaýtadan başlaň."
+      );
+   }
+   // validating receiver walnum exist
+   const reciever = await prisma.user
+      .findUnique({
+         where: { walNum: transferState.recieverWalNum },
+      })
+      .catch((e) =>
+         console.error("---complateTransfer prisma yalnyslygy---", e)
+      );
+
+   if (!reciever) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx
+         .editMessageText("Ýalňyş beýle balans ID tapylmady gaýtadan synanşyň.")
+         .catch((e) =>
+            console.error(
+               "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+               e
+            )
+         );
+   }
+   // validating if sum is correct
+   const fltdSum = transferState?.amount;
+   if (
+      fltdSum === undefined ||
+      isNaN(fltdSum) ||
+      fltdSum === 0 ||
+      fltdSum < 0
+   ) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx
+         .editMessageText("Ýalňyş! Pul mukdary nädogry. Gaýtadan synanşyň.")
+         .catch((e) =>
+            console.error(
+               "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+               e
+            )
+         );
+   }
+   // is choosed currency correct
+   const chsdCrrnc = transferState?.currency;
+   if (typeof chsdCrrnc !== "string" || !(chsdCrrnc in PaymentMethod)) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx
+         .editMessageText("Ýalňyş walyuta, başdan synanşyň ")
+         .catch((e) =>
+            console.error(
+               "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+               e
+            )
+         );
+   }
+   // if user and reciever are same
+   if (sender.id === reciever.id) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx.editMessageText("WTH are you doing?");
+   }
+   // if user has not enough money
+   if (
+      (chsdCrrnc === "TMT" && sender.sumTmt < fltdSum) ||
+      (chsdCrrnc === "USDT" && sender.sumUsdt < fltdSum)
+   ) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx
+         .editMessageText("Balansyňyz ýeterlik däl. Gaýtadan synanşyň.")
+         .catch((e) =>
+            console.error(
+               "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+               e
+            )
+         );
+   }
+   // decreasing sender money
+   const senderData =
+      transferState?.currency === "TMT"
+         ? { sumTmt: Number((sender.sumTmt - fltdSum).toFixed(2)) }
+         : { sumUsdt: Number((sender.sumUsdt - fltdSum).toFixed(2)) };
+
+   const subSum = await prisma.user
+      .update({
+         where: {
+            id: sender.id,
+         },
+         data: senderData,
+      })
+      .catch((e) =>
+         console.error("---complateTransfer duwmesinde prisma yalnyslygy---", e)
+      );
+   // if updating went wrong
+   if (!subSum) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx
+         .editMessageText(
+            "Biz tarapda bir ýalňyşlyk döredi, haýyş gaýtadan synanyşyň ýa-da adminlere habar beriň."
+         )
+         .catch((e) =>
+            console.error(
+               "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+               e
+            )
+         );
+   }
+
+   // choosing currency
+   const recieverData =
+      transferState?.currency === "TMT"
+         ? { sumTmt: Number((reciever.sumTmt + fltdSum).toFixed(2)) }
+         : { sumUsdt: Number((reciever.sumUsdt + fltdSum).toFixed(2)) };
+   // increasing receiver money
+   const addSum = await prisma.user
+      .update({
+         where: {
+            id: reciever.id,
+         },
+         data: recieverData,
+      })
+      .catch((e) =>
+         console.error("---complateTransfer duwmesinde prisma yalnyslygy---", e)
+      );
+   // if updating went wrong
+   if (!addSum) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx
+         .editMessageText(
+            "Biz tarapda bir ýalňyşlyk döredi, siziň balansyňyz azaldy ýöne kabul edijiň balansy köpelmedi, haýyş adminlere habar beriň."
+         )
+         .catch((e) =>
+            console.error(
+               "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+               e
+            )
+         );
+   }
+
+   // save transaction to db
+   const save = await prisma.transfer
+      .create({
+         data: {
+            senderid: sender.id,
+            recieverid: reciever.id,
+            currency: chsdCrrnc as PaymentMethod,
+            amount: fltdSum,
+         },
+      })
+      .catch((e) =>
+         console.error("---complateTransfer duwmesinde prisma yalnyslygy---", e)
+      );
+   // if went wrong
+   if (!save) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx
+         .editMessageText(
+            `Geçirim tamamlandy ýöne proses hasaba alynmady. Bu bildirişi belläp goýuň, mümkin bolsa adminlere habar beriň.`
+         )
+         .catch((e) =>
+            console.error(
+               "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+               e
+            )
+         );
+   }
+   ctx.unpinChatMessage(transferState.messageId);
+   delete ctx.session.transferStates[userID];
+   try {
+      adminidS.map((adminId) => {
+         ctx.api.sendMessage(
+            adminId,
+            `geçirim \n Kimden: ${userLink({
+               id: Number(ctx.from.id),
+               nick: ctx.from.first_name,
+            })} \n Kime: ${userLink({
+               id: Number(reciever.id),
+               nick: reciever.walNum,
+            })} \n Mukdar: ${save.amount} ${save.currency}`,
+            {
+               parse_mode: "HTML",
+            }
+         );
+      });
+      ctx.api.sendMessage(
+         reciever.id,
+         "<blockquote>bot</blockquote>" +
+            `Hasabyňyz ${fltdSum} ${chsdCrrnc} ${
+               fltdSum > 0 ? "köpeldi." : "azaldy."
+            } \n Ugradan: ${userLink({
+               id: Number(sender.id),
+               nick: sender.walNum,
+            })}`,
+         {
+            parse_mode: "HTML",
+         }
+      );
+      return ctx.editMessageText(
+         "<blockquote>bot</blockquote>" +
+            `${fltdSum} ${chsdCrrnc} üstünlikli ugradyldy. \n Nirä: ${reciever.walNum}`,
+         {
+            parse_mode: "HTML",
+         }
+      );
+   } catch (e) {
+      console.error(
+         "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+         e
+      );
+      ctx.unpinChatMessage();
+      await ctx
+         .editMessageText(
+            "Proses tutush amala asyryldy yone adminlere yada ulanyja habar berilmedi" +
+               e
+         )
+         .catch((e) =>
+            console.error(
+               "---complateTransfer duwmesinde editMessageText yalnyslygy---",
+               e
+            )
+         );
+   }
+});
 // cancel add sum comand
 bot.callbackQuery("declineAdd", async (ctx) => {
    const adminId = ctx.from?.id;
@@ -1551,6 +1829,33 @@ bot.callbackQuery("declineAdd", async (ctx) => {
          console.error("---declineAdd editMessageText reply yalnyslygy---", e)
       );
 });
+bot.callbackQuery("declineTransfer", async (ctx) => {
+   const userID = ctx.from?.id;
+   // if user not admin notify admins
+
+   const sumAddState = ctx.session.transferStates[userID];
+   if (!sumAddState) {
+      return ctx
+         .editMessageText(
+            "Hasap goşmak eýýäm ýatyryldy ýa-da amala aşyryldy ýa-da ýalňyşlyk döredi!"
+         )
+         .catch((e) =>
+            console.error(
+               "---declineAdd editMessageText reply yalnyslygy---",
+               e
+            )
+         );
+   }
+   ctx.unpinChatMessage(sumAddState.messageId).catch((e) =>
+      console.error("---declineTransfer unpinChatMessage yalnyslygy---", e)
+   );
+   delete ctx.session.transferStates[userID];
+   return await ctx
+      .editMessageText("Hasap goşmak ýatyryldy.")
+      .catch((e) =>
+         console.error("---declineAdd editMessageText reply yalnyslygy---", e)
+      );
+});
 bot.callbackQuery("declineCheck", async (ctx) => {
    const adminId = ctx.from?.id;
    // if user not admin notify admins
@@ -1592,14 +1897,72 @@ bot.callbackQuery("declineCheck", async (ctx) => {
          )
       );
 });
+bot.callbackQuery("transfer", async (ctx) => {
+   const userID = ctx.from?.id;
+   if (!userID) {
+      return;
+   }
+   if (ctx.session.transferStates[userID]) {
+      return ctx
+         .reply("Birinji öňki geçirimi tamamlaň, soňra täzeden synanyşyň!")
+         .catch((e) =>
+            console.error("---reply komandynda deleteMessage yalnyslygy---", e)
+         );
+   }
+
+   // asking walnum
+   const message = await ctx
+      .reply(`Balans ID?`, {
+         reply_markup: new InlineKeyboard().text(
+            "Ýatyr " + statusIcons.care[7],
+            "declineTransfer"
+         ),
+      })
+      .catch((e) =>
+         console.error("---transfer komandynda reply yalnyslygy---", e)
+      );
+
+   // open the state
+   ctx.session.transferStates[userID] = {
+      messageId: message?.message_id || 0,
+      recieverID: 0,
+      senderWalNum: "",
+      recieverWalNum: "",
+      amount: 0,
+      currency: "",
+   };
+
+   if (ctx.session.transferStates[userID].messageId) {
+      ctx.pinChatMessage(ctx.session.transferStates[userID].messageId).catch(
+         (e) =>
+            console.error(
+               "---transfer komandynda pinChatMessage yalnyslygy---",
+               e
+            )
+      );
+      return ctx.answerCallbackQuery({
+         text: "Geçirimi hökman tamamlaň ýa-da ýatyryň",
+      });
+   }
+   delete ctx.session.transferStates[userID];
+   return ctx
+      .reply("Ýalňyşlyk ýüze çykdy täzeden synanyşyň.")
+      .catch((e) =>
+         console.error("---transfer komandynda reply yalnyslygy---", e)
+      );
+});
 
 bot.on("message", async (ctx) => {
    const userId = ctx.chat.id;
    const reasonState = ctx.session.reasonStates[userId];
    const sumAddState = ctx.session.sumAddStates[userId];
+   const transferState = ctx.session.transferStates[userId];
    const chatState = ctx.session.chatStates[userId];
    const broadcastState = ctx.session.broadcastStates[userId];
    const checkState = ctx.session.checkStates[userId];
+   if (ctx.message.pinned_message) {
+      return;
+   }
    if (reasonState) {
       const reason = ctx.message.text;
       const ordIdmess = ordrIdMssgFnc(reasonState.orderId);
@@ -1645,8 +2008,6 @@ bot.on("message", async (ctx) => {
       );
       return delete ctx.session.reasonStates[userId];
    } else if (sumAddState) {
-      // addSumm data collector
-      // collect walletNumber
       if (sumAddState.walNum === "") {
          if (!ctx.message.text) {
             delete ctx.session.sumAddStates[userId];
@@ -1699,6 +2060,95 @@ bot.on("message", async (ctx) => {
                   reply_markup: new InlineKeyboard()
                      .text("Ýalňyş", "declineAdd")
                      .text("Dogry", "complateAdd"),
+               }
+            )
+            .catch((e) =>
+               console.error("---sumAddState editMessageText yalnyslygy---", e)
+            );
+      }
+   } else if (transferState) {
+      if (transferState.recieverWalNum === "") {
+         if (!ctx.message.text) {
+            await ctx
+               .unpinChatMessage(transferState.messageId)
+               .catch((e) =>
+                  console.error(
+                     "---transferState unpinChatMessage yalnyslygy---",
+                     e
+                  )
+               );
+            delete ctx.session.transferStates[userId];
+            return ctx
+               .reply("Balans ID girizilmedi. Başdan synanyşyň.")
+               .catch((e) =>
+                  console.error("---transferState reply yalnyslygy---", e)
+               );
+         }
+         transferState.recieverWalNum = ctx.message.text;
+         ctx.api
+            .editMessageText(
+               userId,
+               transferState.messageId,
+               `Balans ID: ${userLink({
+                  id: Number(transferState.recieverWalNum),
+               })} \n Walýuta ?`,
+               {
+                  reply_markup: new InlineKeyboard()
+                     .text("TMT", "select_TMT")
+                     .row()
+                     .text("USDT", "select_USDT")
+                     .row()
+                     .text("Ýatyr " + statusIcons.care[7], "declineTransfer"),
+                  parse_mode: "HTML",
+               }
+            )
+            .catch((e) =>
+               console.error("---sumAddState editMessageText yalnyslygy---", e)
+            );
+         return await ctx
+            .deleteMessage()
+            .catch((e) =>
+               console.error("---sumAddState deleteMessage yalnyslygy---", e)
+            );
+      } else if (transferState.amount === 0) {
+         const sum = ctx.message.text;
+         if (!sum && isNaN(Number(sum))) {
+            await ctx
+               .unpinChatMessage(transferState.messageId)
+               .catch((e) =>
+                  console.error(
+                     "---transferState unpinChatMessage yalnyslygy---",
+                     e
+                  )
+               );
+            delete ctx.session.transferStates[userId];
+            await ctx
+               .deleteMessage()
+               .catch((e) =>
+                  console.error("---sumAddState deleteMessage yalnyslygy---", e)
+               );
+            return ctx
+               .editMessageText("Girizen mukdaryňyz nädogry. Başdan synanyşyň.")
+               .catch((e) =>
+                  console.error(
+                     "---transferState editMessageText yalnyslygy---",
+                     e
+                  )
+               );
+         }
+         transferState.amount = Number(Number(sum).toFixed(2));
+         ctx.deleteMessage().catch((e) =>
+            console.error("---sumAddState deleteMessage yalnyslygy---", e)
+         );
+         return ctx.api
+            .editMessageText(
+               userId,
+               transferState.messageId,
+               `Balans ID: ${transferState.recieverWalNum} \n ${transferState.amount} ${transferState.currency}`,
+               {
+                  reply_markup: new InlineKeyboard()
+                     .text("Ýalňyş", "declineTransfer")
+                     .text("Dogry", "complateTransfer"),
                }
             )
             .catch((e) =>

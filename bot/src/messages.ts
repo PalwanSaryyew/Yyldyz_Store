@@ -16,7 +16,7 @@ Balansyňyzy doldurmak, dükanda bolmadyk önümleri sargyt etmek ýa-da soragla
 
 // hasap message
 export function hspMsg(hnum: string, sum1: number, sum2: number) {
-   return `Balans \n ID: <code>${hnum}</code> \n TMT: ${sum1} \n USDT: ${sum2}`;
+   return `Balans ID: <code>${hnum}</code> \n TMT: ${sum1} \n USDT: ${sum2}`;
 }
 // suspiçius çase message
 export function sspcsCaseMs(

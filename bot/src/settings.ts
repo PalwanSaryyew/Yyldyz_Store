@@ -9,6 +9,7 @@ export const adminidS = [
    process.env.HAJY || "3",
    process.env.HAJY_2 || "4",
    process.env.YYLDYZ || "5",
+   process.env.ABADAN || "6",
 ];
 
 // functions
@@ -81,6 +82,7 @@ export const statusIcons = {
       "⌚",
       "⏱️",
       "⏲️",
+      '💸'
    ],
 };
 

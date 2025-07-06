@@ -104,6 +104,18 @@ model SummUpdate {
   updatedAt DateTime      @updatedAt
 }
 
+model Transfer {
+  id         Int           @id @default(autoincrement())
+  amount     Float
+  currency   PaymentMethod
+  sender     User          @relation("SentTransfers", fields: [senderid], references: [id])
+  reciever   User          @relation("ReceivedTransfers", fields: [recieverid], references: [id])
+  senderid   String
+  recieverid String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
 model TonTransaction {
   id        String   @id @default(cuid())
   price     Float
@@ -120,6 +132,8 @@ model User {
   sumUsdt    Float        @default(0)
   order      Order[]
   summUpdate SummUpdate[]
+  transfers  Transfer[]   @relation("SentTransfers")
+  deposits   Transfer[]   @relation("ReceivedTransfers")
   role       UserRole     @default(client)
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
