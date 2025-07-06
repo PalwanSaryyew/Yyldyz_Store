@@ -25,7 +25,7 @@ import {
 import { cnclAddSumBtnn, dlvrOrdrKybrd } from "./src/keyboards";
 
 const mainKEybiard = new Keyboard()
-   .webApp("Dükana gir 🛒", "https://yyldyz.store")
+   .text("Dükana gir 🛒")
    .row()
    .text("Balans")
    .text("Admini çagyr")
