@@ -172,6 +172,7 @@ enum ProductType {
   apple
   belet
   alem
+  clash
 }
 
 enum UserRole {
