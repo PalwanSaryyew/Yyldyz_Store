@@ -26,7 +26,12 @@ export default async function ProductPage({ params }: ProductPageParams) {
             },
          ],
       },
-      orderBy: [{ priceTMT: "asc" }],
+      orderBy: [
+         {
+            title: { sort: "asc", nulls: "last" }, // Başlık boş olmayanları üste almak için
+         },
+         { priceTMT: "asc" }, // priceTMT'ye göre artan sıralama
+      ],
       include: {
          requirements: true,
          details: {

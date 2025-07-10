@@ -106,6 +106,8 @@ export const productTitle = (name: ProductType) => {
          return "Steam balans";
       case "royale":
          return "Clash Royale";
+      case "clash":
+         return "Clash of Clans";
       case "gpt":
          return "ChatGPT abunasy";
       case "lis":

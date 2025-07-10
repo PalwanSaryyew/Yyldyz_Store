@@ -27,7 +27,7 @@ const Header = () => {
             <LuAlignRight size={45} color="white" />
          </div> */}
          <Link href={'https://t.me/YyldyzKanal/50'} className="relative">
-            <div className="rounded-full bg-red-600 p-1 absolute"></div>
+            <div className="rounded-full bg-red-600 p-1 absolute hidden"></div>
             <RiMailVolumeFill size={28} color="white"/>
          </Link>
       </header>
