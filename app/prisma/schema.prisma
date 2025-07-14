@@ -18,20 +18,22 @@ model Admin {
 }
 
 model Order {
-  id             Int             @id @default(autoincrement())
-  user           User            @relation(fields: [userId], references: [id])
-  product        Product         @relation(fields: [productId], references: [id])
-  payment        PaymentMethod
-  receiver       String
-  admin          Admin?          @relation(fields: [courierid], references: [tgId])
-  status         OrderStatus
-  tonTransaction TonTransaction?
-  userId         String
-  productId      Int
-  courierid      String?
-  mssgIds        Int[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id              Int             @id @default(autoincrement())
+  user            User            @relation(fields: [userId], references: [id])
+  product         Product         @relation(fields: [productId], references: [id])
+  payment         PaymentMethod
+  receiver        String
+  admin           Admin?          @relation(fields: [courierid], references: [tgId])
+  status          OrderStatus
+  tonTransaction  TonTransaction?
+  userId          String
+  productId       Int
+  courierid       String?
+  mssgIds         Int[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  ProductAmount   ProductAmount?  @relation(fields: [productAmountId], references: [id])
+  productAmountId Int?
 }
 
 model Product {
@@ -55,23 +57,44 @@ model Product {
   updatedAt      DateTime      @updatedAt
 }
 
+model ProductAmount {
+  id             Int           @id @default(autoincrement())
+  name           ProductType
+  min            Int
+  amount         Int
+  max            Int
+  details        Details[]
+  requirements   Requirements? @relation(fields: [requirementsId], references: [id])
+  priceBuy       Float
+  priceTMT       Float
+  priceUSDT      Float
+  picture        String?
+  order          Order[]
+  requirementsId Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
 model Requirements {
-  id        Int       @id @default(autoincrement())
-  asking    String
-  expecting String
-  product   Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            Int             @id @default(autoincrement())
+  asking        String
+  expecting     String
+  product       Product[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  ProductAmount ProductAmount[]
 }
 
 model Details {
-  id        Int          @id @default(autoincrement())
-  titleId   Int?
-  detail    Detail[]
-  title     DetailTitle? @relation(fields: [titleId], references: [id])
-  product   Product[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id              Int            @id @default(autoincrement())
+  titleId         Int?
+  detail          Detail[]
+  title           DetailTitle?   @relation(fields: [titleId], references: [id])
+  product         Product[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  ProductAmount   ProductAmount? @relation(fields: [productAmountId], references: [id])
+  productAmountId Int?
 }
 
 model Detail {

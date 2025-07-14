@@ -3,6 +3,7 @@ import {
    Admin,
    Order,
    Product,
+   ProductAmount,
    SummUpdate,
    TonTransaction,
    User,
@@ -33,11 +34,13 @@ export {
    UserRole,
    $Enums,
    Prisma,
+   
 };
 export type {
    Admin,
    Order,
    Product,
+   ProductAmount,
    SummUpdate,
    TonTransaction,
    User,

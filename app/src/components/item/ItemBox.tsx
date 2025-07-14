@@ -1,3 +1,4 @@
+"use client";
 import ItemModal from "./ItemModal";
 import ItemModalOpener from "./ItemModalOpener";
 import ItemPrice from "./ItemPrice";
@@ -5,14 +6,21 @@ import ItemIcon from "./ItemIcon";
 import ItemAmount from "./ItemAmount";
 import { Product } from "../../../prisma/prismaSett";
 import { Detail, Details, DetailTitle, Requirements } from "@prisma/client";
+import ProductPriceCalculator from "../amount/ProductPriceCalculator";
+import { useState } from "react";
 interface ItemBoxProps {
    item: Product & { requirements: Requirements | null } & {
       details: (Details & { detail: Detail[]; title: DetailTitle | null })[];
    };
    tonPrice: number;
+   onAmount: boolean;
 }
 
-const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
+const ItemBox = ({ item, tonPrice, onAmount }: ItemBoxProps) => {
+   const [amountPriceTMT, setTotalPriceTMT] = useState<number>(0);
+   const [amountPriceUSDT, setTotalPriceUSDT] = useState<number >(0);
+   const [quantity, setQuantity] = useState<string>(item.min?.toString());
+
    const bg =
       item.title === "Prime"
          ? "from-[#289692] to-[#058CD0]"
@@ -43,11 +51,24 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
                      "text-[1.3rem] font-semibold text-gray-600 " + textColor
                   }
                >
-                  <ItemAmount
-                     amount={item.amount || 0}
-                     duration={item.duration}
-                     title={item.title}
-                  />
+                  {" "}
+                  {onAmount ? (
+                     <ProductPriceCalculator
+                        setQuantity={setQuantity}
+                        quantity={quantity}
+                        setTotalPriceTMT={setTotalPriceTMT}
+                        setTotalPriceUSDT={setTotalPriceUSDT}
+                        amountPriceTMT={item.priceTMT}
+                        amountPriceUSDT={item.priceUSDT}
+                        item={item}
+                     />
+                  ) : (
+                     <ItemAmount
+                        amount={item.amount || 0}
+                        duration={item.duration}
+                        title={onAmount ? "Sany Ýaz" : item.title}
+                     />
+                  )}
                </div>
             </div>
 
@@ -56,13 +77,14 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
             <ItemPrice
                textColor={textColor}
                tonPrice={tonPrice}
-               priceTMT={item.priceTMT}
-               priceUSDT={item.priceUSDT}
+               priceTMT={onAmount ? amountPriceTMT : item.priceTMT}
+               priceUSDT={onAmount ? amountPriceUSDT : item.priceUSDT}
             />
          </ItemModalOpener>
 
          {/* openable bottom section */}
-         <ItemModal item={item} tonPrice={tonPrice} />
+         {}
+         <ItemModal item={item} tonPrice={tonPrice} onAmount={onAmount} />
       </div>
    );
 };

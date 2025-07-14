@@ -2,6 +2,7 @@ import { Admin, Product, ProductType } from "../prisma/prismaSett";
 
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.3;
+ export const unitPrice: number = 0.015; 
 
 export const adminidS = [
    process.env.PALWAN || "1",

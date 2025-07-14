@@ -20,3 +20,4 @@ export const paths: ProductType[] = [
    'clash'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
+

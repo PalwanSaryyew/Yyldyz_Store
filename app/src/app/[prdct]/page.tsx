@@ -3,20 +3,18 @@ import { cmcApi } from "@/lib/fetchs";
 import { prisma, ProductType } from "../../../prisma/prismaSett";
 import UseTrackLastVisitedPage from "@/lib/UseTrackLastVisitedPage";
 import { toncoinId } from "bot/src/settings";
+import ItemOnAmount from "@/components/amount/ItemOnAmount";
 
 // import PubtItem from "@/components/pubg/PubtItem";
 
-interface ProductPageParams {
-   params: {
-      prdct: ProductType;
-   };
-}
-
-export default async function ProductPage({ params }: ProductPageParams) {
-   const { prdct } = params;
+export default async function ProductPage({
+   params,
+}: {
+   params: { prdct: ProductType };
+}) {
    const data = await prisma.product.findMany({
       where: {
-         name: prdct as ProductType,
+         name: params.prdct,
          OR: [
             {
                priceTMT: { not: 0 },
@@ -27,10 +25,10 @@ export default async function ProductPage({ params }: ProductPageParams) {
          ],
       },
       orderBy: [
+         { priceTMT: "asc" }, // priceTMT'ye göre artan sıralama
          {
             title: { sort: "asc", nulls: "last" }, // Başlık boş olmayanları üste almak için
          },
-         { priceTMT: "asc" }, // priceTMT'ye göre artan sıralama
       ],
       include: {
          requirements: true,
@@ -50,6 +48,7 @@ export default async function ProductPage({ params }: ProductPageParams) {
          <div className="flex flex-col gap-4 py-4 w-full items-center">
             {/* recording path */}
             <UseTrackLastVisitedPage />
+            <ItemOnAmount product={params.prdct} />
             {data.map((item) => (
                <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
             ))}
