@@ -23,8 +23,7 @@ export async function GET(request: Request) {
       userId === "undefined" ||
       receiver === "undefined" ||
       currency === "undefined" ||
-      quantity === "undefined" ||
-      !quantity ||
+      
       !productId ||
       !userId ||
       !receiver ||
