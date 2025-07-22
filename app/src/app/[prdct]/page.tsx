@@ -3,7 +3,6 @@ import { cmcApi } from "@/lib/fetchs";
 import { prisma, ProductType } from "../../../prisma/prismaSett";
 import UseTrackLastVisitedPage from "@/lib/UseTrackLastVisitedPage";
 import { toncoinId } from "bot/src/settings";
-import ItemOnAmount from "@/components/amount/ItemOnAmount";
 
 // import PubtItem from "@/components/pubg/PubtItem";
 
@@ -48,7 +47,6 @@ export default async function ProductPage({
          <div className="flex flex-col gap-4 py-4 w-full items-center">
             {/* recording path */}
             <UseTrackLastVisitedPage />
-            <ItemOnAmount product={params.prdct} />
             {data.map((item) => (
                <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
             ))}

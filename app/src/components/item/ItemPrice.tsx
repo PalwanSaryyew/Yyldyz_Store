@@ -1,27 +1,74 @@
 "use client";
 import { cn } from "@/utils/tailwindMerge";
-import { useCurrency } from "@/utils/UniStore";
+import { useCurrency, useQuantity } from "@/utils/UniStore";
+import { Product } from "@prisma/client";
 import { tonFee } from "bot/src/settings";
+import { useEffect, useState } from "react";
 
 interface ItemPriceProps {
-   priceTMT: number;
-   priceUSDT: number;
+   item: Product;
    tonPrice: number;
-   textColor: string
+   textColor: string;
+   onQuantity: boolean;
 }
 
-const ItemPrice = ({ priceTMT, priceUSDT, tonPrice, textColor }: ItemPriceProps) => {
+const ItemPrice = ({
+   item,
+   tonPrice,
+   textColor,
+   onQuantity,
+}: ItemPriceProps) => {
    const currency = useCurrency((state) => state.currency);
+   const quantity = useQuantity((state) => state.quantity);
+   const orgPriceTMT = useQuantity((state) => state.orgPriceTMT);
+   const orgPriceUSDT = useQuantity((state) => state.orgPriceUSDT);
+   const [priceOnCurrency, setPriceOnCurrency] = useState<string>("");
+   useEffect(() => {
+      if (onQuantity) {
+         // pricingTiers zaten bir obje/dizi olarak geliyor, doğrudan kullanın.
+         // JSON.parse() adımına gerek yok.
+         const pricingTiers = item.pricingTiers as Array<{
+            threshold: number;
+            discount: number;
+         }>; // Type assertion Prisma.JsonValue'dan dönüştürme için
 
-   const priceOnCurrency =
-      currency === "TMT"
-         ? priceTMT
-         : currency === "USDT"
-         ? priceUSDT
-         : Number((priceUSDT / tonPrice +tonFee).toFixed(4));
+         let finalUnitPriceTMT = orgPriceTMT;
+         let finalUnitPriceUSDT = orgPriceUSDT;
+
+         for (let i = pricingTiers.length - 1; i >= 0; i--) {
+            const tier = pricingTiers[i];
+            if (Number(quantity) >= tier.threshold) {
+               finalUnitPriceTMT = orgPriceTMT * (1 - tier.discount);
+               finalUnitPriceUSDT = orgPriceUSDT * (1 - tier.discount);
+               break; // İlk bulunan uygun kademeyi kullan ve döngüden çık
+            }
+         }
+
+         item.priceTMT = finalUnitPriceTMT * Number(quantity);
+         item.priceUSDT = finalUnitPriceUSDT * Number(quantity);
+      }
+      const basePrice =
+         currency === "TMT"
+            ? item.priceTMT
+            : currency === "USDT"
+            ? item.priceUSDT
+            : Number(item.priceUSDT / tonPrice + tonFee);
+
+      setPriceOnCurrency(
+         currency === "TON" ? basePrice.toFixed(4) : basePrice.toFixed(2)
+      );
+   }, [
+      currency,
+      item,
+      onQuantity,
+      orgPriceTMT,
+      orgPriceUSDT,
+      quantity,
+      tonPrice,
+   ]);
    return (
       <div className="flex items-center gap-4">
-         <div className={"text-lg font-semibold "+textColor}>
+         <div className={"text-lg font-semibold " + textColor}>
             {priceOnCurrency}
          </div>
          <div

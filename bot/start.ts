@@ -1,6 +1,11 @@
 import { InlineKeyboard, Keyboard } from "grammy";
-import { prisma, User } from "./prisma/prismaSett";
-import { adminidS, editSummComand, statusIcons } from "./src/settings";
+import { prisma } from "./prisma/prismaSett";
+import {
+   adminidS,
+   editSummComand,
+   pricingTiersFunc,
+   statusIcons,
+} from "./src/settings";
 import { bot } from "./src/botConf";
 import { PaymentMethod } from "./prisma/prismaSett";
 import { err_6, err_7 } from "./src/errCodes";
@@ -12,6 +17,7 @@ import {
    validator,
 } from "./src/validators";
 import {
+   afterOrderConfirmedMess,
    hspMsg,
    ordrCmltdMssgFnc,
    ordrDclngMssgFnc,
@@ -559,7 +565,18 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             );
          });
    }
-   // order belongs to ovner of wallet ?
+
+   if (order.quantity) {
+      const { tmtPrice, usdtPrice, amount } = pricingTiersFunc({
+         product: order.product,
+         quantity: order.quantity,
+      });
+      order.product.priceTMT = tmtPrice;
+      order.product.priceUSDT = usdtPrice;
+      order.product.amount = amount;
+   }
+
+   // order belongs to this user ?
    if (order.userId !== clntID.toString()) {
       return await ctx
          .answerCallbackQuery({
@@ -580,7 +597,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       const mssgIds: number[] = [];
       for (const adminid of adminidS) {
          try {
-            const data = await bot.api.sendMessage(
+            const data = await ctx.api.sendMessage(
                adminid,
                `${ordIdMssg} ${prdctDtlMssg({
                   order: order,
@@ -603,15 +620,10 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
 
       let adminOnlineStatus = false;
 
-      const clntmssg = `${statusIcons.care[1]} ${
-         order.product.chatRequired
-            ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
-                 adminOnlineStatus
-                    ? "admin size ýazar haýyş garaşyň"
-                    : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminlardan biri size ýazýança garaşyp bilersiňiz"
-              }.`
-            : "Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."
-      }`;
+      const clntmssg = afterOrderConfirmedMess({
+         order: order,
+         adminOnlineStatus,
+      });
 
       await ctx
          .editMessageText(
@@ -705,8 +717,16 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
    // user sum update
    const data =
       order.payment === "TMT"
-         ? { sumTmt: order.user.sumTmt + order.product.priceTMT }
-         : { sumUsdt: order.user.sumUsdt + order.product.priceUSDT };
+         ? {
+              sumTmt:
+                 order.user.sumTmt +
+                 (order.total ? order.total : order.product.priceTMT),
+           }
+         : {
+              sumUsdt:
+                 order.user.sumUsdt +
+                 (order.total ? order.total : order.product.priceUSDT),
+           };
    const userData = await prisma.user
       .update({
          where: {
@@ -961,8 +981,16 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
    // user sum update
    const data =
       order.payment === "TMT"
-         ? { sumTmt: order.user.sumTmt + order.product.priceTMT }
-         : { sumUsdt: order.user.sumUsdt + order.product.priceUSDT };
+         ? {
+              sumTmt:
+                 order.user.sumTmt +
+                 (order.total ? order.total : order.product.priceTMT),
+           }
+         : {
+              sumUsdt:
+                 order.user.sumUsdt +
+                 (order.total ? order.total : order.product.priceUSDT),
+           };
    const userData = await prisma.user
       .update({
          where: {
@@ -2302,4 +2330,16 @@ bot.on("message", async (ctx) => {
    //! barik mainketboardy goy
 });
 
+// Error handling
+bot.catch((err) => {
+   const ctx = err.ctx;
+   console.error(`[Bot Error] ${ctx.update.update_id}:`, err);
+});
+
+// Start the bot
 bot.start();
+console.log("Telegram bot işjeň.");
+
+// Whern prosess is terminated, disconnect from Prisma
+process.once("SIGINT", () => prisma.$disconnect());
+process.once("SIGTERM", () => prisma.$disconnect());

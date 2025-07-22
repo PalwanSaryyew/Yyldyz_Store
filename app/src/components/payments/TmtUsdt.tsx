@@ -1,6 +1,6 @@
 import { webApp } from "@/lib/webApp";
 import { cn } from "@/utils/tailwindMerge";
-import { CartItemState, useHandleModal, useUser } from "@/utils/UniStore";
+import { CartItemState, useHandleModal, useQuantity, useUser } from "@/utils/UniStore";
 
 const TmtUsdt = ({
    item,
@@ -21,6 +21,7 @@ const TmtUsdt = ({
    );
    const user = useUser((state) => state.user);
    const toogleModal = useHandleModal((state) => state.toogleOpen);
+   const quantity = useQuantity((state) => state.quantity);
 
    async function handleClick() {
       //set loadind true
@@ -29,7 +30,7 @@ const TmtUsdt = ({
       app.requestWriteAccess(async (perm) => {
          if (perm) {
             await fetch(
-               `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver[1]}&crrnc=${item?.currency}`
+               `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver[1]}&crrnc=${item?.currency}&qty=${quantity}`,
             )
                .then(async (response) => await response.json())
                .then(async (data) => {

@@ -3,6 +3,7 @@ import {
    useCartItem,
    useCurrency,
    useHandleModal,
+   useQuantity,
    useReceiver,
    useUser,
    useWhicIsOpen,
@@ -18,12 +19,17 @@ import { tonFee } from "bot/src/settings";
 const ItemModal = ({
    item,
    tonPrice,
+   quantity,
+   onQuantity,
 }: {
    item: Product & { requirements: Requirements | null } & {
       details: (Details & { detail: Detail[]; title: DetailTitle | null })[];
    };
    tonPrice: number;
+   quantity?: string;
+   onQuantity: boolean;
 }) => {
+   const amount = useQuantity((state) => state.quantity);
    const isOpen = useWhicIsOpen((state) => state.opened);
    const change = useCartItem((state) => state.add);
    const modalOpener = useHandleModal((state) => state.toogleOpen);
@@ -31,9 +37,9 @@ const ItemModal = ({
    const currentUser = useUser((state) => state.user);
    const priceOnCurrency =
       currency === "TMT"
-         ? item.priceTMT
+         ? item.priceTMT.toFixed(2)
          : currency === "USDT"
-         ? item.priceUSDT
+         ? item.priceUSDT.toFixed(2)
          : Number((item.priceUSDT / tonPrice + tonFee).toFixed(4));
    const currentColor = cn(
       item.name === "pubg"
@@ -94,7 +100,7 @@ const ItemModal = ({
                      id: item.id,
                      name: item.name,
                      title: item.title,
-                     amount: item.amount,
+                     amount: onQuantity ? Number(amount) : item.amount,
                      duration: item.duration,
                      receiver: [
                         item.requirements?.expecting
@@ -105,10 +111,9 @@ const ItemModal = ({
                            : receiver,
                      ],
                      currency: currency,
-                     total:
-                        currency === "TON"
-                           ? parseFloat(priceOnCurrency.toFixed(4))
-                           : Number(priceOnCurrency),
+                     total: quantity
+                        ? Number(quantity) * Number(priceOnCurrency)
+                        : Number(priceOnCurrency),
                   });
                   if (item.name === "tgprem" || item.name === "star") {
                      setIsLoading(true);
@@ -158,7 +163,8 @@ const ItemModal = ({
                className={`${
                   currentUser === null ||
                   receiver.length > 0 ||
-                  ((item.name !== "tgprem" && item.name !== "star") || !currentUser?.username)
+                  (item.name !== "tgprem" && item.name !== "star") ||
+                  !currentUser?.username
                      ? "hidden"
                      : "block"
                } bg-white text-black px-2 py-2 rounded-lg ring-1 ring-blue text-sm`}

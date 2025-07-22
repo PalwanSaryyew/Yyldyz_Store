@@ -1,23 +1,30 @@
 import { PaymentMethod, prisma } from "../../../../prisma/prismaSett";
-import { cmcApi } from "@/lib/fetchs";
 import { rndmNmrGnrtr } from "@/utils/functions";
 import { orderScript } from "bot/src/funcs";
-import { toncoinId, tonFee } from "bot/src/settings";
+import {
+   pricingTiersFunc,
+   productTitle,
+   tonPriceCalculator,
+} from "bot/src/settings";
 
 export async function GET(request: Request) {
    const { searchParams } = new URL(request.url);
    const productId = searchParams.get("pid");
    const userId = searchParams.get("bid");
    const receiver = searchParams.get("rsrnm");
+   const quantity = searchParams.get("qty");
    const currency = (searchParams.get("crrnc") ?? "undefined") as
       | PaymentMethod
       | "undefined";
 
+   // checking params
    if (
       productId === "undefined" ||
       userId === "undefined" ||
       receiver === "undefined" ||
       currency === "undefined" ||
+      quantity === "undefined" ||
+      !quantity ||
       !productId ||
       !userId ||
       !receiver ||
@@ -44,10 +51,52 @@ export async function GET(request: Request) {
             success: false,
             message: "Product not found",
          },
-         { status: 400 }
+         { status: 404 }
       );
    }
-   // user checker and creator to do user gives message permision before this func run
+
+   // if order has custom quantity, we need to calculate the price base on the quantity
+   if (productData.min && quantity) {
+      if (isNaN(Number(quantity))) {
+         console.error("Quantity is not a number");
+         return Response.json(
+            {
+               success: false,
+               message: "Mukdar san bolmaly!",
+            },
+            { status: 400 }
+         );
+      }
+      if (Number(quantity) < productData.min) {
+         console.error("Quantity is less than minimum");
+         return Response.json(
+            {
+               success: false,
+               message: `Mukdar ${productData.min}-dan az bolmaly däl!`,
+            },
+            { status: 400 }
+         );
+      }
+      if (Number(quantity) > productData.max) {
+         console.error("Quantity is more than maximum");
+         return Response.json(
+            {
+               success: false,
+               message: `Mukdar ${productData.max}-dan köp bolmaly däl!`,
+            },
+            { status: 400 }
+         );
+      }
+      const { tmtPrice, usdtPrice, amount } = pricingTiersFunc({
+         product: productData,
+         quantity: Number(quantity),
+      });
+      productData.priceTMT = tmtPrice;
+      productData.priceUSDT = usdtPrice;
+      productData.amount = amount;
+   }
+
+   // user checking or creating do to user gives message permision before this function run
    const userData = await prisma.user
       .findUnique({
          where: { id: userId },
@@ -93,11 +142,14 @@ export async function GET(request: Request) {
          : 0;
    if (userSum < productSum) {
       console.error("insufficient funds");
-      return Response.json({
-         success: false,
-         funds: true,
-         message: "Balansyňyz ýetenok!",
-      });
+      return Response.json(
+         {
+            success: false,
+            funds: true,
+            message: "Balansyňyz ýetenok!",
+         },
+         { status: 400 }
+      );
    }
 
    // user sum updater
@@ -115,21 +167,29 @@ export async function GET(request: Request) {
    });
    if (!sumUpdate) {
       console.error("User db update error");
-      return Response.json({
-         success: false,
-         message: "User db update error",
-      });
+      return Response.json(
+         {
+            success: false,
+            message: "User db update error",
+         },
+         { status: 500 }
+      );
    }
 
    // ton priçe çheçker
-   const tonPrice = currency === "TON" ? await cmcApi(toncoinId) : 1;
+   const tonPrice =
+      currency === "TON" ? await tonPriceCalculator(productData.priceUSDT) : 1;
    if (!tonPrice) {
-      console.error("CMC api error");
-      return Response.json({
-         success: false,
-         message: "CMC api error",
-      });
+      console.error("Crypto price api error");
+      return Response.json(
+         {
+            success: false,
+            message: "Crypto price error",
+         },
+         { status: 500 }
+      );
    }
+
    // order and transaction creator
    const transaction = await prisma.$transaction(async (prisma) => {
       const newOrder = await prisma.order.create({
@@ -139,6 +199,13 @@ export async function GET(request: Request) {
             status: "pending",
             payment: currency,
             receiver: receiver,
+            quantity: productData.amount,
+            total:
+               currency === "TMT"
+                  ? productData.priceTMT
+                  : currency === "USDT"
+                  ? productData.priceUSDT
+                  : tonPrice,
          },
       });
       const tonCommentData = async () => {
@@ -148,9 +215,7 @@ export async function GET(request: Request) {
 
          const transactionData = await prisma.tonTransaction.create({
             data: {
-               price: Number(
-                  (productData.priceUSDT / Number(tonPrice) + tonFee).toFixed(4)
-               ),
+               price: tonPrice,
                orderId: newOrder.id,
             },
          });
@@ -161,10 +226,14 @@ export async function GET(request: Request) {
    });
    if (!transaction.orderData) {
       console.error("order db error");
-      return Response.json({
-         success: false,
-         message: "order db error",
-      });
+      return Response.json(
+         {
+            success: false,
+            message:
+               "Hasabyňyzdan pul alyndy ýöne sargyt döredilmedi. Admin bilen habarlaşyň.",
+         },
+         { status: 500 }
+      );
    }
 
    // sending messages from bot
@@ -176,32 +245,44 @@ export async function GET(request: Request) {
    });
    if (!botRes) {
       console.error("Bot message failed");
-      return Response.json({
-         success: false,
-         message: "Bot message failed",
-      });
+      return Response.json(
+         {
+            success: false,
+            message:
+               "Hasabyňyzdan pul alyndy ýöne sargyt döredilmedi. Admin bilen habarlaşyň",
+         },
+         { status: 500 }
+      );
    }
 
+   // if order payment method is TON, we return the ton transaction data
    if (transaction.orderData.payment === "TON") {
       if (transaction.tonTransaction) {
          return Response.json({
             orderId: transaction.orderData.id,
             success: true,
-            tonComment: `${productData.amount} ${
-               productData.name === "star" ? " stars" : "Month Tg Premium"
-            } for ${transaction.tonTransaction.price} TON\n\n${
+            tonComment: `${productData.amount} ${productTitle(
+               productData.name
+            )} for ${transaction.tonTransaction.price} TON\n\n${
                transaction.tonTransaction.id
             }`,
             price: transaction.tonTransaction.price,
          });
       }
       console.error("Transaction db error");
-      return Response.json({
-         success: false,
-         message: "Transaction db error",
-      });
+      return Response.json(
+         {
+            success: false,
+            message: "Transaction db error",
+         },
+         { status: 500 }
+      );
    }
-   return Response.json({
-      success: true,
-   });
+   // if order payment method isn't TON, we return just success
+   return Response.json(
+      {
+         success: true,
+      },
+      { status: 200 }
+   );
 }

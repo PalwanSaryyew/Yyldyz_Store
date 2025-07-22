@@ -23,6 +23,8 @@ model Order {
   product         Product         @relation(fields: [productId], references: [id])
   payment         PaymentMethod
   receiver        String
+  quantity        Int?            @default(0)
+  total           Float?            @default(0)
   admin           Admin?          @relation(fields: [courierid], references: [tgId])
   status          OrderStatus
   tonTransaction  TonTransaction?
@@ -32,7 +34,6 @@ model Order {
   mssgIds         Int[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  ProductAmount   ProductAmount?  @relation(fields: [productAmountId], references: [id])
   productAmountId Int?
 }
 
@@ -42,6 +43,9 @@ model Product {
   title          String?
   amount         Int?
   duration       String?
+  min            Int           @default(0)
+  max            Int           @default(0)
+  pricingTiers   Json          @default("[]")
   details        Details[]
   requirements   Requirements? @relation(fields: [requirementsId], references: [id])
   chatRequired   Boolean       @default(false)
@@ -57,43 +61,23 @@ model Product {
   updatedAt      DateTime      @updatedAt
 }
 
-model ProductAmount {
-  id             Int           @id @default(autoincrement())
-  name           ProductType
-  min            Int
-  amount         Int
-  max            Int
-  details        Details[]
-  requirements   Requirements? @relation(fields: [requirementsId], references: [id])
-  priceBuy       Float
-  priceTMT       Float
-  priceUSDT      Float
-  picture        String?
-  order          Order[]
-  requirementsId Int?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-}
-
 model Requirements {
-  id            Int             @id @default(autoincrement())
-  asking        String
-  expecting     String
-  product       Product[]
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  ProductAmount ProductAmount[]
+  id        Int       @id @default(autoincrement())
+  asking    String
+  expecting String
+  product   Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Details {
-  id              Int            @id @default(autoincrement())
+  id              Int          @id @default(autoincrement())
   titleId         Int?
   detail          Detail[]
-  title           DetailTitle?   @relation(fields: [titleId], references: [id])
+  title           DetailTitle? @relation(fields: [titleId], references: [id])
   product         Product[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  ProductAmount   ProductAmount? @relation(fields: [productAmountId], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   productAmountId Int?
 }
 

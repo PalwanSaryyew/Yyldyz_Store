@@ -14,6 +14,7 @@ export async function orderScript({
    order,
 }: {
    order: Order & { product: Product };
+
 }) {
    try {
       if (order.payment === "TON") {
@@ -33,7 +34,7 @@ export async function orderScript({
          return true;
       }
    } catch (error) {
-      console.error(`SMS gitmedi: ${error}`);
+      console.error(`SMS gitmedi: ${error} Order: ${order.id}`);
       return false;
    }
 }

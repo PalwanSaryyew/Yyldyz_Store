@@ -40,6 +40,7 @@ export function prdctDtlMssg({
    forWhom: "admin" | "client";
 }) {
    return ` ${productTitle(order.product.name)}\n${prdcAmnt({
+      quantity: order.quantity,
       title: order.product.title,
       amount: order.product.amount,
       duration: order.product.duration,
@@ -50,17 +51,22 @@ export function prdctDtlMssg({
    }${toWhere()}: ${order.receiver}\nJemi töleg: ${orderTotal({
       currency: order.payment,
       product: order.product,
+      total: order.total,
    })}`;
 }
 export function orderTotal({
    currency,
    product,
+   total,
 }: {
+   total: Order["total"];
    currency: PaymentMethod;
    product: Product;
 }) {
    return `<b>${
-      currency === "TMT"
+      total
+         ? total
+         : currency === "TMT"
          ? product.priceTMT
          : currency === "USDT"
          ? product.priceUSDT
@@ -110,12 +116,32 @@ export function prdcAmnt({
    duration,
    title,
    amount,
+   quantity,
 }: {
+   quantity: Order["quantity"];
    duration: Product["duration"];
    title: Product["title"];
    amount: Product["amount"];
 }) {
    return `${title !== null ? `Haryt: ${title}\n` : ""}${
-      amount ? `Mukdary: ${amount}\n` : ""
+      amount ? `Mukdary: ${quantity ? quantity : amount}\n` : ""
    }${duration ? `Möhleti: ${duration}\n` : ""}`;
+}
+
+export function afterOrderConfirmedMess({
+   order,
+   adminOnlineStatus,
+}: {
+   order: Order & { product: Product };
+   adminOnlineStatus: boolean;
+}): string {
+   return `${statusIcons.care[1]} ${
+      order.product.chatRequired
+         ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
+              adminOnlineStatus
+                 ? "admin size ýazar haýyş garaşyň"
+                 : "ýöne şu waglykça adminlaryň hiçbiri online däl. Sargydyňyzy ýatyryp ýa-da adminlardan biri size ýazýança garaşyp bilersiňiz"
+           }.`
+         : "Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."
+   }`;
 }

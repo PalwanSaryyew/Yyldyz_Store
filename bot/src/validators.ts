@@ -100,7 +100,7 @@ export async function validator(
          id: orderId,
       },
    });
-   // order validator
+   // check order
    if (!order) {
       console.log(err_4.d);
       return {
@@ -112,7 +112,7 @@ export async function validator(
    if (!oldSatus.includes(order.status)) {
       return {
          error: true,
-         mssg: `Sargyt eýýäm "${order.status}" ýagdaýda!`,
+         mssg: `Sargyt eýýäm "${order.status}" ýagdaýynda!`,
       };
    }
    // order status update

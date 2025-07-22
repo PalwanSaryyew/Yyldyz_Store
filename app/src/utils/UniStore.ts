@@ -18,7 +18,7 @@ export const useHandleModal = create<ModalState>((set) => ({
 export interface CartItemState {
    item: {
       id: number;
-      name: Product["name"] | Product['title'];
+      name: Product["name"] | Product["title"];
       title: string | null;
       amount: number | null;
       duration: string | null;
@@ -80,3 +80,22 @@ export const useReceiver = create<ReceiverState>((set) => ({
    add: (user: ReceiverState["user"]) => set(() => ({ user: user })),
 }));
 
+interface QuantityState {
+   quantity: string;
+   orgPriceTMT: number;
+   orgPriceUSDT: number;
+   change: (quantity: QuantityState["quantity"]) => void;
+   changeTMT: (orgPriceTMT: QuantityState["orgPriceTMT"]) => void;
+   changeUSDT: (orgPriceUSDT: QuantityState["orgPriceTMT"]) => void;
+}
+export const useQuantity = create<QuantityState>((set) => ({
+   quantity: "",
+   orgPriceTMT: 0,
+   orgPriceUSDT: 0,
+   change: (quantity: QuantityState["quantity"]) =>
+      set(() => ({ quantity: quantity })),
+   changeTMT: (orgPriceTMT: QuantityState["orgPriceTMT"]) =>
+      set(() => ({ orgPriceTMT: orgPriceTMT })),
+   changeUSDT: (orgPriceUSDT: QuantityState["orgPriceUSDT"]) =>
+      set(() => ({ orgPriceUSDT: orgPriceUSDT })),
+}));

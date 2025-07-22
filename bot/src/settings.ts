@@ -2,7 +2,7 @@ import { Admin, Product, ProductType } from "../prisma/prismaSett";
 
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.3;
- export const unitPrice: number = 0.015; 
+export const unitPrice: number = 0.015;
 
 export const adminidS = [
    process.env.PALWAN || "1",
@@ -83,7 +83,7 @@ export const statusIcons = {
       "⌚",
       "⏱️",
       "⏲️",
-      '💸'
+      "💸",
    ],
 };
 
@@ -144,5 +144,42 @@ export async function cmcApi(id: string) {
 
 export async function tonPriceCalculator(USDTPrice: number): Promise<number> {
    const tonprice = await cmcApi(toncoinId);
+   if (tonprice === 0) {
+      console.error("Crypto price api error");
+      return 0; // Hata durumunda 0 döndür
+      
+   }
    return Number((USDTPrice / tonprice + tonFee).toFixed(4));
+}
+
+export function pricingTiersFunc({
+   product,
+   quantity,
+}: {
+   product: Product;
+   quantity: number;
+}): { tmtPrice: number; usdtPrice: number; amount: number } {
+   const pricingTiers = product.pricingTiers as Array<{
+      threshold: number;
+      discount: number;
+   }>;
+   let finalUnitPriceTMT = product.priceTMT;
+   let finalUnitPriceUSDT = product.priceUSDT;
+   for (let i = pricingTiers.length - 1; i >= 0; i--) {
+      const tier = pricingTiers[i];
+      if (Number(quantity) >= tier.threshold) {
+         finalUnitPriceTMT = product.priceTMT * (1 - tier.discount);
+         finalUnitPriceUSDT = product.priceUSDT * (1 - tier.discount);
+         break; // İlk bulunan uygun kademeyi kullan ve döngüden çık
+      }
+   }
+   return {
+      tmtPrice: (product.priceTMT = Number(
+         (Number(quantity) * finalUnitPriceTMT).toFixed(2)
+      )),
+      usdtPrice: (product.priceUSDT = Number(
+         (Number(quantity) * finalUnitPriceUSDT).toFixed(2)
+      )),
+      amount: (product.amount = Number(quantity)),
+   };
 }
