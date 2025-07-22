@@ -2112,6 +2112,27 @@ bot.on("message", async (ctx) => {
                   console.error("---transferState reply yalnyslygy---", e)
                );
          }
+         const user = await prisma.user.findUnique({
+            where: {
+               id: ctx.message.text,
+            },
+         });
+         if (!user) {
+            await ctx
+               .unpinChatMessage(transferState.messageId)
+               .catch((e) =>
+                  console.error(
+                     "---transferState unpinChatMessage yalnyslygy---",
+                     e
+                  )
+               );
+            delete ctx.session.transferStates[userId];
+            return ctx
+               .reply("Balans ID ýalňyş. Başdan synanyşyň.")
+               .catch((e) =>
+                  console.error("---transferState reply yalnyslygy---", e)
+               );
+         }
          transferState.recieverWalNum = ctx.message.text;
          ctx.api
             .editMessageText(
