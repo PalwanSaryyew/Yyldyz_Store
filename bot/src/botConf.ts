@@ -61,6 +61,7 @@ export interface BotSessionData {
       number,
       {
          message: string;
+         message_id: number
       }
    >;
 

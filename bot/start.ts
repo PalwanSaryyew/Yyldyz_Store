@@ -98,15 +98,20 @@ bot.command("broadcast", async (ctx) => {
    }
 
    if (ctx.from?.id !== undefined) {
-      ctx.session.broadcastStates[ctx.from.id] = { message: "" };
-      ctx.reply("Texti ugradyn", {
-         reply_markup: new InlineKeyboard().text(
-            "Ýatyr",
-            "cancelBroad_" + ctx.from.id
-         ),
-      }).catch((e) => {
-         console.error("---brodcast komandada reply yalnyslygy---", e);
-      });
+      try {
+         const message = await ctx.reply("Texti ugradyn", {
+            reply_markup: new InlineKeyboard().text(
+               "Ýatyr",
+               "cancelBroad_" + ctx.from.id
+            ),
+         });
+         ctx.session.broadcastStates[ctx.from.id] = {
+            message: "",
+            message_id: message.message_id,
+         };
+      } catch (error) {
+         console.error("---brodcast komandada reply yalnyslygy---", error);
+      }
    }
 });
 // cancel sending bulk messages
@@ -2312,9 +2317,20 @@ bot.on("message", async (ctx) => {
       });
 
       console.log(`Jemi ${users.length} ulanyja habar ugradylýar...`);
+      ctx.api.editMessageText(
+         userId,
+         broadcastState.message_id,
+         `Jemi ${users.length} ulanyja habar ugradylýar...`
+      );
 
+      let sentCount = 0;
+      let failedCount = 0;
       for (const user of users) {
          try {
+            if (user.id === userId.toString()) {
+               // Özüne habar ugratma
+               continue;
+            }
             await ctx.api.copyMessage(
                user.id, // Chat ID for the message to be sent
                userId, // Chat ID from which the message came
@@ -2324,10 +2340,13 @@ bot.on("message", async (ctx) => {
                } // ID of the message to be copied
             );
             console.log(`Habar ugradyldy: ${user.id}`);
+            sentCount++;
             // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
             await new Promise((resolve) => setTimeout(resolve, 100));
          } catch (error: any) {
+            delete ctx.session.broadcastStates[userId];
             console.error(`Habar ugratma ýalňyşlygy ${user.id}:`, error);
+            failedCount++;
             // Kullanıcı botu engellediyse veya başka bir hata varsa
             if (
                error.description &&
@@ -2338,10 +2357,12 @@ bot.on("message", async (ctx) => {
             // Diğer hatalar için farklı işlemler yapabilirsiniz.
          }
       }
-
-      await ctx
-         .reply(
-            "Köpçülikleýin habar ibermek prosesi tamamlandy (nogsanlyklar bolup biler)."
+      ctx.deleteMessage();
+      await ctx.api
+         .editMessageText(
+            userId,
+            broadcastState.message_id,
+            `Jemi ${users.length} ulanyjydan ${sentCount} ulanyja habar ugradyldy, ${failedCount} ulanyja habar ugradyp bolmady.`
          )
          .catch((e) =>
             console.error("---broadcastState reply yalnyslygy---", e)
