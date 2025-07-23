@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { paths, STORAGE_KEY } from "@/lib/settings";
 import { ProductType } from "../../../prisma/prismaSett";
 import Image from "next/image";
+import { paths, STORAGE_KEY } from "bot/src/settings";
 
 export default function HomePage() {
    const router = useRouter();

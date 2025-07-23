@@ -180,6 +180,7 @@ enum ProductType {
   belet
   alem
   clash
+  bc
 }
 
 enum UserRole {

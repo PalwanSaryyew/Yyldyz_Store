@@ -1,9 +1,9 @@
 // app/page.js
 "use client"; // Yönlendirme ve localStorage erişimi client-side olmalı
 import { useRouter } from "next/navigation";
-import { paths } from "@/lib/settings";
 import { ProductType } from "../../prisma/prismaSett";
 import { useEffect } from "react";
+import { paths } from "bot/src/settings";
 
 const ALLOWED_PATHS = paths; // Takip edilen sayfalar (hook'daki ile aynı olmalı)
 const STORAGE_KEY = "lastVisitedPage"; // Yerel depo anahtarı (hook'daki ile aynı olmalı)

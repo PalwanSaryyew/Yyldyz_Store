@@ -1,5 +1,4 @@
 "use client";
-import { paths } from "@/lib/settings";
 import { cn } from "@/utils/tailwindMerge";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { ProductType } from "../../../prisma/prismaSett";
 import { useEffect, useState } from "react";
 import { MdMore } from "react-icons/md";
-import { productTitle } from "bot/src/settings";
+import { paths, productTitle } from "bot/src/settings";
 
 const ItemMenu = () => {
    const currentPath = usePathname();

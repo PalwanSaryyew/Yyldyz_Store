@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { paths, STORAGE_KEY } from "./settings";
 import { ProductType } from "../../prisma/prismaSett";
+import { paths, STORAGE_KEY } from "bot/src/settings";
 
 export default function UseTrackLastVisitedPage() {
    const pathname = usePathname();

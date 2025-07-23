@@ -121,6 +121,8 @@ export const productTitle = (name: ProductType) => {
          return "Belet Film tölegi";
       case "alem":
          return "Älem TV tölegi";
+      case "bc":
+         return "PUBG Mobile Lite BC";
       default:
          return "";
    }
@@ -183,3 +185,25 @@ export function pricingTiersFunc({
       amount: (product.amount = Number(quantity)),
    };
 }
+
+export const ourTonAddress = "UQDi3J28_M_iFFZ9IiukdK7adLkY5SXiMUgWFMFZNAktkDsO";
+export const rootUrl = "http://localhost:3000";
+export const paths: ProductType[] = [
+   "star",
+   "tgprem",
+   "uc",
+   "jtn",
+   "exit",
+   "pubg",
+   "psp",
+   "steam",
+   "royale",
+   "lis",
+   'gplay',
+   'apple',
+   'belet',
+   'alem',
+   'clash',
+   'bc'
+];
+export const STORAGE_KEY = "lastVisitedPageMyapp";

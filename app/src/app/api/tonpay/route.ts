@@ -1,7 +1,7 @@
 import { prisma } from "../../../../prisma/prismaSett";
-import { ourTonAddress } from "@/lib/settings";
 import { NextRequest, NextResponse } from "next/server";
 import { noticeAdmins, sendMessages } from "bot/src/funcs";
+import { ourTonAddress } from "bot/src/settings";
 
 const apiKey = process.env.TON_API;
 const MAX_RETRIES = 20;

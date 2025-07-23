@@ -1,5 +1,4 @@
 "use client";
-import { ourTonAddress } from "@/lib/settings";
 import { webApp } from "@/lib/webApp";
 import { useCartItem, useHandleModal, useUser } from "@/utils/UniStore";
 import { beginCell, toNano } from "@ton/ton";
@@ -8,6 +7,7 @@ import {
    useTonAddress,
    useTonConnectUI,
 } from "@tonconnect/ui-react";
+import { ourTonAddress } from "bot/src/settings";
 import { useState } from "react";
 
 const Transactions = () => {
