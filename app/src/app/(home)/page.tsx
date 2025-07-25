@@ -1,6 +1,6 @@
 
 
-import UseReplaceLastVisitedPage from "@/lib/UseReplaceLastVisitedPage";
+import UseReplaceLastVisitedPage from "@/lib/UseReplaceLastVisitedPage"; 
 import Image from "next/image";
 
 
