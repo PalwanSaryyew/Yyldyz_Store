@@ -1,6 +1,5 @@
+'use client'
 
-
-import UseReplaceLastVisitedPage from "@/lib/UseReplaceLastVisitedPage"; 
 import { ProductType } from "@prisma/client";
 import { paths, STORAGE_KEY } from "bot/src/settings";
 import Image from "next/image";
@@ -43,7 +42,7 @@ const router = useRouter();
    }, [router]); 
    return (
       <div className="text-white flex items-center justify-center h-[75vh] text-lg">
-         <UseReplaceLastVisitedPage/> 
+         {/* <UseReplaceLastVisitedPage/> */}
          <Image
             src={"/svg/star.svg"}
             width={75}
