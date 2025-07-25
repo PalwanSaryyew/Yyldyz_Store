@@ -1,14 +1,10 @@
-'use client'
+
 
 import Image from "next/image";
 
-import { paths, STORAGE_KEY } from "bot/src/settings";
-import { ProductType } from "@prisma/client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function HomePage() {
-   const router = useRouter();
+/*    const router = useRouter();
 
    useEffect(() => {
       const prepair = async () => {
@@ -38,11 +34,11 @@ export default function HomePage() {
             router.refresh();
          }
       };
-      prepair()
-   }, [router]); // This useeffect usually only works once because the router object will not change.
+      prepair();
+   }, [router]); // This useeffect usually only works once because the router object will not change. */
    return (
       <div className="text-white flex items-center justify-center h-[75vh] text-lg">
-{/*          <UseReplaceLastVisitedPage/> */}
+         {/*          <UseReplaceLastVisitedPage/> */}
          <Image
             src={"/svg/star.svg"}
             width={75}
