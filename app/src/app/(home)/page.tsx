@@ -1,11 +1,15 @@
 
 
 import UseReplaceLastVisitedPage from "@/lib/UseReplaceLastVisitedPage"; 
+import { ProductType } from "@prisma/client";
+import { paths, STORAGE_KEY } from "bot/src/settings";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 
 export default function HomePage() {
-/*    const router = useRouter();
+const router = useRouter();
 
    useEffect(() => {
       const prepair = async () => {
@@ -36,7 +40,7 @@ export default function HomePage() {
          }
       };
       prepair();
-   }, [router]); // This useeffect usually only works once because the router object will not change. */
+   }, [router]); 
    return (
       <div className="text-white flex items-center justify-center h-[75vh] text-lg">
          <UseReplaceLastVisitedPage/> 
