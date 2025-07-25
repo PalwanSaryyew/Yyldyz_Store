@@ -1,5 +1,6 @@
 
 
+import UseReplaceLastVisitedPage from "@/lib/UseReplaceLastVisitedPage";
 import Image from "next/image";
 
 
@@ -38,7 +39,7 @@ export default function HomePage() {
    }, [router]); // This useeffect usually only works once because the router object will not change. */
    return (
       <div className="text-white flex items-center justify-center h-[75vh] text-lg">
-         {/*          <UseReplaceLastVisitedPage/> */}
+         <UseReplaceLastVisitedPage/> 
          <Image
             src={"/svg/star.svg"}
             width={75}
