@@ -2344,7 +2344,6 @@ bot.on("message", async (ctx) => {
             // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
             await new Promise((resolve) => setTimeout(resolve, 100));
          } catch (error: any) {
-            delete ctx.session.broadcastStates[userId];
             console.error(`Habar ugratma ýalňyşlygy ${user.id}:`, error);
             failedCount++;
             // Kullanıcı botu engellediyse veya başka bir hata varsa

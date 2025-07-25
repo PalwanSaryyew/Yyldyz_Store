@@ -3,7 +3,6 @@ import {
    Admin,
    Order,
    Product,
-
    SummUpdate,
    TonTransaction,
    User,
@@ -40,7 +39,6 @@ export type {
    Admin,
    Order,
    Product,
-
    SummUpdate,
    TonTransaction,
    User,

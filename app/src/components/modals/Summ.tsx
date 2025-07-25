@@ -58,6 +58,7 @@ const Summ = () => {
                Hasaby Doldur
             </button> */}
          </div>
+         
       </div>
    );
 };

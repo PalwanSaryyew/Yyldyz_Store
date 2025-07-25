@@ -1,16 +1,18 @@
-"use client";
+'use client'
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ProductType } from "../../../prisma/prismaSett";
 import Image from "next/image";
+
 import { paths, STORAGE_KEY } from "bot/src/settings";
+import { ProductType } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function HomePage() {
    const router = useRouter();
 
    useEffect(() => {
       const prepair = async () => {
+         // prepare WAPAPP
          const WebApp = (await import("@twa-dev/sdk")).default;
          await WebApp.ready();
          let lastVisited = null;
@@ -40,6 +42,7 @@ export default function HomePage() {
    }, [router]); // This useeffect usually only works once because the router object will not change.
    return (
       <div className="text-white flex items-center justify-center h-[75vh] text-lg">
+{/*          <UseReplaceLastVisitedPage/> */}
          <Image
             src={"/svg/star.svg"}
             width={75}

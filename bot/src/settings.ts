@@ -204,6 +204,5 @@ export const paths: ProductType[] = [
    'belet',
    'alem',
    'clash',
-   'bc'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
