@@ -10,7 +10,8 @@ export default function UseReplaceLastVisitedPage() {
 
    useEffect(() => {
       const prepair = async () => {
-         // prepare WAPAPP
+         // prepare WAPAPP 
+         
          const WebApp = (await import("@twa-dev/sdk")).default;
          await WebApp.ready();
          let lastVisited = null;
