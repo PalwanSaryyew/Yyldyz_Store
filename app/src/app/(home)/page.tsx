@@ -5,10 +5,8 @@ import Image from 'next/image';
 export default function HomePage() {
     return (
         <div className="text-white flex items-center justify-center h-[75vh] text-lg">
-            {/* Yönlendirme mantığını yöneten istemci bileşenini çağırıyoruz */}
+            {/* We call the client component that handles the routing logic */}
             <ClientRedirectHandler />
-
-            {/* Bu kısım hala sunucu tarafından render edilebilir */}
             <Image
                 src={"/svg/star.svg"}
                 width={75}

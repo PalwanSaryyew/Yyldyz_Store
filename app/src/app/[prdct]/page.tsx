@@ -4,8 +4,6 @@ import { prisma, ProductType } from "../../../prisma/prismaSett";
 import UseTrackLastVisitedPage from "@/lib/UseTrackLastVisitedPage";
 import { toncoinId } from "bot/src/settings";
 
-// import PubtItem from "@/components/pubg/PubtItem";
-
 export default async function ProductPage({
    params,
 }: {
@@ -24,10 +22,10 @@ export default async function ProductPage({
          ],
       },
       orderBy: [
-         { priceTMT: "asc" }, // priceTMT'ye göre artan sıralama
          {
             title: { sort: "asc", nulls: "last" }, // Başlık boş olmayanları üste almak için
          },
+         { priceTMT: "asc" }, // priceTMT'ye göre artan sıralama
       ],
       include: {
          requirements: true,
