@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../prisma/prismaSett";
 
+// user balance api
 export async function GET(request: Request): Promise<NextResponse> {
    const { searchParams } = new URL(request.url);
    const uId = searchParams.get("uid");
@@ -15,10 +16,16 @@ export async function GET(request: Request): Promise<NextResponse> {
    });
 
    if (user) {
-      return NextResponse.json({
-         success: true,
-         sum: { tmt: user.sumTmt, usdt: user.sumUsdt, nmbr: user.walNum },
-      });
+      return NextResponse.json(
+         {
+            success: true,
+            sum: { tmt: user.sumTmt, usdt: user.sumUsdt, nmbr: user.walNum },
+         },
+         { status: 200 }
+      );
    }
-   return NextResponse.json({ success: false, message: "user not found" });
+   return NextResponse.json(
+      { success: false, message: "user not found" },
+      { status: 404 }
+   );
 }

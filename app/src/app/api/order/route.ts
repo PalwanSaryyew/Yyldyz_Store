@@ -1,7 +1,11 @@
 import { PaymentMethod, prisma } from "../../../../prisma/prismaSett";
-import { rndmNmrGnrtr } from "@/utils/functions";
+
 import { orderScript } from "bot/src/funcs";
 import {
+   generateWalnum,
+   getProductPrice,
+   getUserBalance,
+   newUserBalanceData,
    pricingTiersFunc,
    productTitle,
    tonPriceCalculator,
@@ -23,13 +27,12 @@ export async function GET(request: Request) {
       userId === "undefined" ||
       receiver === "undefined" ||
       currency === "undefined" ||
-      
       !productId ||
       !userId ||
       !receiver ||
       !currency
    ) {
-      console.error("Wrong request");
+      console.error("Wrong request", productId, userId, receiver, currency);
       return Response.json(
          {
             success: false,
@@ -48,7 +51,7 @@ export async function GET(request: Request) {
       return Response.json(
          {
             success: false,
-            message: "Product not found",
+            message: "Product not found.",
          },
          { status: 404 }
       );
@@ -56,6 +59,7 @@ export async function GET(request: Request) {
 
    // if order has custom quantity, we need to calculate the price base on the quantity
    if (productData.min && quantity) {
+      // checking quantity
       if (isNaN(Number(quantity))) {
          console.error("Quantity is not a number");
          return Response.json(
@@ -86,6 +90,7 @@ export async function GET(request: Request) {
             { status: 400 }
          );
       }
+      // price returner base on the quantity
       const { tmtPrice, usdtPrice, amount } = pricingTiersFunc({
          product: productData,
          quantity: Number(quantity),
@@ -105,9 +110,8 @@ export async function GET(request: Request) {
          if (resuserData) {
             return resuserData;
          } else {
-            const randomNum = rndmNmrGnrtr(4);
-            const generateNum =
-               randomNum.toString() + userId.toString().slice(-4);
+            // generating walnum
+            const generateNum = await generateWalnum(userId);
             const newUserData = await prisma.user.create({
                data: { id: userId, walNum: generateNum },
             });
@@ -126,19 +130,9 @@ export async function GET(request: Request) {
       );
    }
 
-   // user sum checker
-   const userSum =
-      currency === "TMT"
-         ? userData.sumTmt
-         : currency === "USDT"
-         ? userData.sumUsdt
-         : 1;
-   const productSum =
-      currency === "TMT"
-         ? productData.priceTMT
-         : currency === "USDT"
-         ? productData.priceUSDT
-         : 0;
+   // user balance checker
+   const userSum = getUserBalance(userData, currency);
+   const productSum = getProductPrice(productData, currency);
    if (userSum < productSum) {
       console.error("insufficient funds");
       return Response.json(
@@ -151,13 +145,10 @@ export async function GET(request: Request) {
       );
    }
 
-   // user sum updater
-   const data =
-      currency === "TMT"
-         ? { sumTmt: Number((userSum - productSum).toFixed(2)) }
-         : currency === "USDT"
-         ? { sumUsdt: Number((userSum - productSum).toFixed(2)) }
-         : {};
+   // preparing data for user balance update
+   const data = newUserBalanceData(userSum, productSum, currency);
+
+   // reduce user balance
    const sumUpdate = await prisma.user.update({
       where: {
          id: userData.id,
@@ -191,6 +182,7 @@ export async function GET(request: Request) {
 
    // order and transaction creator
    const transaction = await prisma.$transaction(async (prisma) => {
+      // creating an order
       const newOrder = await prisma.order.create({
          data: {
             userId: userData.id,
@@ -229,13 +221,13 @@ export async function GET(request: Request) {
          {
             success: false,
             message:
-               "Hasabyňyzdan pul alyndy ýöne sargyt döredilmedi. Admin bilen habarlaşyň.",
+               "Bagyşläň ýalňyşlyk döredi. Eger balansyňyzdan pul alynan bolsa admin bilen habarlaşyň.",
          },
          { status: 500 }
       );
    }
 
-   // sending messages from bot
+   // sending message to user from bot
    const botRes = await orderScript({
       order: {
          ...transaction.orderData,
@@ -248,7 +240,7 @@ export async function GET(request: Request) {
          {
             success: false,
             message:
-               "Hasabyňyzdan pul alyndy ýöne sargyt döredilmedi. Admin bilen habarlaşyň",
+               "Bagyşläň ýalňyşlyk döredi. Eger balansyňyzdan pul alynan bolsa admin bilen habarlaşyň.",
          },
          { status: 500 }
       );
@@ -268,6 +260,7 @@ export async function GET(request: Request) {
             price: transaction.tonTransaction.price,
          });
       }
+      // if order payment method is TON, but transaction data is not created
       console.error("Transaction db error");
       return Response.json(
          {

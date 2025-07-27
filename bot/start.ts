@@ -188,6 +188,66 @@ bot.hears("Admini çagyr", async (ctx) => {
       console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
    });
 });
+/* bot.hears("Lobi", async (ctx) => {
+   const userID = ctx.from?.id;
+   if (!userID) {
+      return;
+   }
+   if (ctx.session.chatStates[userID]) {
+      return await ctx
+         .reply(
+            "Siz häzir hem admin bilen söhbetdeşlikde. Öňki söhbetdeşligi ýapmak üçin 👉 /stop 👈"
+         )
+         .catch((e) => {
+            console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
+         });
+   }
+   if (isAdminId(userID).error === false) {
+      return await ctx.reply("Admin admini çagyryp bilmeýär!").catch((e) => {
+         console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
+      });
+   }
+   const messageIds: number[] = [];
+   for (const adminId of adminidS) {
+      try {
+         const { message_id } = await ctx.api.sendMessage(
+            adminId,
+            `${userLink({
+               id: userID,
+               nick: ctx.from?.first_name,
+            })}${
+               ctx.from?.username !== undefined
+                  ? ` / @${ctx.from?.username}`
+                  : ""
+            } söhbetdeşlik talap edýär`,
+            {
+               reply_markup: new InlineKeyboard().text(
+                  "Tassykla",
+                  "acceptChat_" + userID
+               ),
+               parse_mode: "HTML",
+            }
+         );
+
+         messageIds.push(message_id);
+      } catch (e) {
+         console.error(
+            "---Admini çagyr duwmesinde for-sendMessage yalnyslygy---",
+            e
+         );
+      }
+   }
+   ctx.session.chatStates[userID] = {
+      userId: 0,
+      username: ctx.from?.username,
+      messageIds: messageIds,
+   };
+   ctx.reply(
+      "Admin söhbetdeşligi kabul etýänçä garaşyň. Size habar beriler."
+   ).catch((e) => {
+      console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
+   });
+}); */
 bot.command("cagyr", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID) {

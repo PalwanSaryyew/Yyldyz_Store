@@ -1,4 +1,10 @@
-import { Admin, Product, ProductType } from "../prisma/prismaSett";
+import {
+   Admin,
+   PaymentMethod,
+   prisma,
+   Product,
+   ProductType,
+} from "../prisma/prismaSett";
 
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.3;
@@ -149,7 +155,6 @@ export async function tonPriceCalculator(USDTPrice: number): Promise<number> {
    if (tonprice === 0) {
       console.error("Crypto price api error");
       return 0; // Hata durumunda 0 döndür
-      
    }
    return Number((USDTPrice / tonprice + tonFee).toFixed(4));
 }
@@ -199,10 +204,58 @@ export const paths: ProductType[] = [
    "steam",
    "royale",
    "lis",
-   'gplay',
-   'apple',
-   'belet',
-   'alem',
-   'clash',
+   "gplay",
+   "apple",
+   "belet",
+   "alem",
+   "clash",
+   'bc'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
+
+export async function generateWalnum(userID: string): Promise<string> {
+   let randomNum = rndmNmrGnrtr(4);
+   let generateNum = randomNum.toString() + userID.toString().slice(-4);
+   // Check if the generated number already exists in the database
+   const existingUser = await prisma.user.findUnique({
+      where: { walNum: generateNum },
+   });
+   if (existingUser) {
+      randomNum = await generateWalnum(userID); // Recursively generate a new number if it exists
+   }
+   return generateNum;
+}
+
+export function getUserBalance(
+   userData: { sumTmt: number; sumUsdt: number },
+   currency: PaymentMethod
+): number {
+   return currency === "TMT"
+      ? userData.sumTmt
+      : currency === "USDT"
+      ? userData.sumUsdt
+      : 1;
+}
+export function getProductPrice(
+   productdata: { priceTMT: number; priceUSDT: number },
+   currency: PaymentMethod
+): number {
+   return currency === "TMT"
+      ? productdata.priceTMT
+      : currency === "USDT"
+      ? productdata.priceUSDT
+      : 0;
+}
+
+export function newUserBalanceData(
+   userBalalnce: number,
+   productSum: number,
+   currency: PaymentMethod
+): { sumTmt?: number; sumUsdt?: number } {
+   const newBalance = userBalalnce - productSum;
+   return currency === "TMT"
+      ? { sumTmt: Number(newBalance.toFixed(2)) }
+      : currency === "USDT"
+      ? { sumUsdt: Number(newBalance.toFixed(2)) }
+      : {};
+}
