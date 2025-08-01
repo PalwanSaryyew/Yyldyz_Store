@@ -10,7 +10,7 @@ Bu ýerde sanly önümleri aňsat we ygtybarly satyn alyp bilersiňiz. Önümler
 Umumy pikir alyşmak üçin çat: @yyldyzchat
 Habarlar we bildirişler üçin kanal: @yyldyzkanal
 
-Balansyňyzy doldurmak, dükanda bolmadyk önümleri sargyt etmek ýa-da soraglaryňyz bar bolsa "Admini çagyr" düwmesine basyň.
+Balansyňyzy doldurmak we dükanda bolmadyk önümleri sargyt etmek üçin ýa-da soraglaryňyz bar bolsa "Admini çagyr" düwmesine basyň.
 
 <b>Täze söwda tejribesine taýyn bolsaňyz, başlalyň!</b> ✨`;
 
