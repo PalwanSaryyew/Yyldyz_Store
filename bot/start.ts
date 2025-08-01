@@ -1699,12 +1699,6 @@ bot.callbackQuery("complateTransfer", async (ctx) => {
             )
          );
    }
-   // if user and reciever are same
-   if (sender.id === reciever.id) {
-      ctx.unpinChatMessage(transferState.messageId);
-      delete ctx.session.transferStates[userID];
-      return ctx.editMessageText("WTH are you doing?");
-   }
    // if user has not enough money
    if (
       (chsdCrrnc === "TMT" && sender.sumTmt < fltdSum) ||
@@ -1720,6 +1714,12 @@ bot.callbackQuery("complateTransfer", async (ctx) => {
                e
             )
          );
+   }
+   // if user and reciever are same
+   if (sender.id === reciever.id) {
+      ctx.unpinChatMessage(transferState.messageId);
+      delete ctx.session.transferStates[userID];
+      return ctx.editMessageText("Özüňden özüňe geçirim amala aşyrylmaýar!");
    }
    // decreasing sender money
    const senderData =
