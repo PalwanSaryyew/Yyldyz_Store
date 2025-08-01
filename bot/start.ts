@@ -587,8 +587,7 @@ bot.hears("Balans", async (ctx) => {
       .reply(hspMsg(user.walNum, user.sumTmt, user.sumUsdt), {
          reply_markup: new InlineKeyboard()
             .copyText(user.walNum, user.walNum)
-            .row()
-            .text("Geçirim " + statusIcons.wait[15], "transfer"),
+
          parse_mode: "HTML",
       })
       .catch((e) => {
