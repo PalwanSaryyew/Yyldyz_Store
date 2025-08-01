@@ -585,8 +585,7 @@ bot.hears("Balans", async (ctx) => {
    }
    return ctx
       .reply(hspMsg(user.walNum, user.sumTmt, user.sumUsdt), {
-         reply_markup: new InlineKeyboard()
-            .copyText(user.walNum, user.walNum)
+         reply_markup: new InlineKeyboard().copyText(user.walNum, user.walNum),
 
          parse_mode: "HTML",
       })
