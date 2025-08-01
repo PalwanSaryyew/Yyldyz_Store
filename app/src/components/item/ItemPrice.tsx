@@ -31,6 +31,11 @@ const ItemPrice = ({
             threshold: number;
             discount: number;
          }>; // Type assertion Prisma.JsonValue'dan dönüştürme için
+         /* const pricingTiers = [
+            { discount: 0.25, threshold: 140 },
+            { discount: 0.4, threshold: 350 },
+            { discount: 0.4166666, threshold: 700 },
+         ]; // Type assertion Prisma.JsonValue'dan dönüştürme için */
 
          let finalUnitPriceTMT = orgPriceTMT;
          let finalUnitPriceUSDT = orgPriceUSDT;

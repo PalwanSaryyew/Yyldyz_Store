@@ -1990,7 +1990,7 @@ bot.callbackQuery("declineCheck", async (ctx) => {
          )
       );
 });
-bot.callbackQuery("transfer", async (ctx) => {
+bot.command("0804", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID) {
       return;
@@ -2005,7 +2005,7 @@ bot.callbackQuery("transfer", async (ctx) => {
 
    // asking walnum
    const message = await ctx
-      .reply(`Balans ID?`, {
+      .reply(`Kabul edijiniň balans ID-si?`, {
          reply_markup: new InlineKeyboard().text(
             "Ýatyr " + statusIcons.care[7],
             "declineTransfer"
@@ -2179,7 +2179,7 @@ bot.on("message", async (ctx) => {
          }
          const user = await prisma.user.findUnique({
             where: {
-               id: ctx.message.text,
+               walNum: ctx.message.text,
             },
          });
          if (!user) {
