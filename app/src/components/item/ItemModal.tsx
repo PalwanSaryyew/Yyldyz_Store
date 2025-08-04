@@ -60,7 +60,7 @@ const ItemModal = ({
       >
          {item.details.length > 0 &&
             item.details.map((detail, index) => (
-               <PrimeItemsBox key={index} detail={detail} />
+               <PrimeItemsBox key={index} detail={detail} textLight={item.name === 'pubg' ? true : false}/>
             ))}
          {/* input box */}
          <div
