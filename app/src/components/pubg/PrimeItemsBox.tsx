@@ -12,11 +12,11 @@ const PrimeItemsBox = ({ detail, textLight }: PrimeItemsBoxProps) => {
       return null;
    }
    return (
-      <div className="pb-2 border-t border-gray-300">
+      <div className="pb-2 pt-[0.2rem] border-t border-gray-300">
          <div
             className={cn(
                textLight ? "text-gray-200" : "text-gray-700",
-               "text-sm font-semibold "
+               "text-sm font-semibold pb-[0.2rem]"
             )}
          >
             {detail.title?.text}
