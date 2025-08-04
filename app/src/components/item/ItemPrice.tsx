@@ -72,8 +72,8 @@ const ItemPrice = ({
       tonPrice,
    ]);
    return (
-      <div className="flex items-center gap-4">
-         <div className={"text-lg font-semibold " + textColor}>
+      <div className="flex items-center gap-1">
+         <div className={"text-base text-gray-700 font-medium " + textColor}>
             {priceOnCurrency}
          </div>
          <div

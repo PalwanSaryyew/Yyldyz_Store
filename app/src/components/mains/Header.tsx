@@ -26,7 +26,7 @@ const Header = () => {
          {/* <div className="cursor-pointer">
             <LuAlignRight size={45} color="white" />
          </div> */}
-         <Link href={'https://t.me/YyldyzKanal/50'} className="relative">
+         <Link href={'https://t.me/YyldyzKanal'} className="relative">
             <div className="rounded-full bg-red-600 p-1 absolute hidden"></div>
             <RiMailVolumeFill size={28} color="white"/>
          </Link>

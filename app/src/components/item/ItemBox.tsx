@@ -37,12 +37,12 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
             style="w-full cursor-pointer flex p-2 items-center justify-between mx-auto"
          >
             {/* left */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
                <ItemIcon picture={item.picture} />
 
                <div
                   className={
-                     "text-[1.3rem] font-semibold text-gray-600 " + textColor
+                     "text-base font-bold text-gray-600 " + textColor
                   }
                >
                   {" "}
@@ -69,7 +69,6 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
          </ItemModalOpener>
 
          {/* openable bottom section */}
-         {}
          <ItemModal item={item} tonPrice={tonPrice} onQuantity={item.min ? true : false}/>
       </div>
    );
