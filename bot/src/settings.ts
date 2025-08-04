@@ -129,6 +129,8 @@ export const productTitle = (name: ProductType) => {
          return "Älem TV tölegi";
       case "bc":
          return "PUBG Mobile Lite BC";
+      case "brawl":
+         return "Brawl Stars";
       default:
          return "";
    }
@@ -209,7 +211,8 @@ export const paths: ProductType[] = [
    "belet",
    "alem",
    "clash",
-   'bc'
+   "bc",
+   "brawl",
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
 

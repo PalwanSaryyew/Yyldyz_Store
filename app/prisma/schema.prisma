@@ -43,20 +43,20 @@ model Product {
   title          String?
   amount         Int?
   duration       String?
-  min            Int           @default(0)
-  max            Int           @default(0)
-  pricingTiers   Json          @default("[]")
-  details        Details[]
-  requirements   Requirements? @relation(fields: [requirementsId], references: [id])
-  chatRequired   Boolean       @default(false)
+  picture        String?
+  requirementsId Int?
   priceBuy       Float
   priceTMT       Float
   priceUSDT      Float
-  picture        String?
+  chatRequired   Boolean       @default(false)
+  details        Details[]
+  min            Int           @default(0)
+  max            Int           @default(0)
+  pricingTiers   Json          @default("[]")
+  requirements   Requirements? @relation(fields: [requirementsId], references: [id])
   pictures       String[]
   description    String?
   order          Order[]
-  requirementsId Int?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
@@ -181,6 +181,7 @@ enum ProductType {
   alem
   clash
   bc
+  brawl
 }
 
 enum UserRole {
