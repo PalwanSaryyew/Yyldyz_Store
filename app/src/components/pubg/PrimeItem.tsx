@@ -7,9 +7,18 @@ type PrimeItemProps = {
 
 const PrimeItem = ({ text, image }: PrimeItemProps) => {
    return (
-      <div className="flex items-center gap-1 text-sm">
-         {" "}
-         <Image src={image} alt={image} width={30} height={30} /> {text}
+      <div className="flex items-center gap-1 text-xs text-gray-600 font-medium">
+         <div className="w-5 h-5 relative">
+            <Image
+               src={image}
+               alt={image}
+               fill
+               rel="preload"
+               priority
+               style={{ objectFit: "contain" }}
+            />
+         </div>
+         {text}
       </div>
    );
 };

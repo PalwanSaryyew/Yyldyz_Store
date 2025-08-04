@@ -11,7 +11,9 @@ const PrimeItemsBox = ({ detail }: PrimeItemsBoxProps) => {
    }
    return (
       <div className="pb-2 border-t border-gray-300">
-         <div className="text-base">{detail.title?.text}</div>
+         <div className="text-sm font-semibold text-gray-700">
+            {detail.title?.text}
+         </div>
          <div className="flex gap-4 flex-wrap">
             {detail.detail.map((item, index) => (
                <PrimeItem key={index} text={item.text} image={item.image} />
