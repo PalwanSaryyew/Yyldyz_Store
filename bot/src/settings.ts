@@ -118,7 +118,7 @@ export const productTitle = (name: ProductType) => {
       case "gpt":
          return "ChatGPT abunasy";
       case "lis":
-         return "LIS-SKINS balans";
+         return "LIS-SKINS USD balans";
       case "gplay":
          return "Google Play balans";
       case "apple":
@@ -131,6 +131,8 @@ export const productTitle = (name: ProductType) => {
          return "PUBG Mobile Lite BC";
       case "brawl":
          return "Brawl Stars";
+      case "gpt":
+         return "ChatGPT abuna";
       default:
          return "";
    }
