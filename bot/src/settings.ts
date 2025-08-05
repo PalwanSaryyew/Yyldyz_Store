@@ -197,6 +197,7 @@ export function pricingTiersFunc({
 
 export const ourTonAddress = "UQDi3J28_M_iFFZ9IiukdK7adLkY5SXiMUgWFMFZNAktkDsO";
 export const rootUrl = "http://localhost:3000";
+
 export const paths: ProductType[] = [
    "star",
    "tgprem",
@@ -215,6 +216,7 @@ export const paths: ProductType[] = [
    "clash",
    "bc",
    "brawl",
+   'gpt'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
 
