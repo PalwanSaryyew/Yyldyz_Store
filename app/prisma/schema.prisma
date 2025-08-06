@@ -182,6 +182,7 @@ enum ProductType {
   clash
   bc
   brawl
+  roblox
 }
 
 enum UserRole {

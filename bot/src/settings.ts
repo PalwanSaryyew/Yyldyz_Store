@@ -133,6 +133,8 @@ export const productTitle = (name: ProductType) => {
          return "Brawl Stars";
       case "gpt":
          return "ChatGPT abuna";
+      case "roblox":
+         return "Roblox";
       default:
          return "";
    }
@@ -216,7 +218,8 @@ export const paths: ProductType[] = [
    "clash",
    "bc",
    "brawl",
-   'gpt'
+   'gpt',
+    'roblox'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
 
