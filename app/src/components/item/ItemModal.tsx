@@ -50,7 +50,7 @@ const ItemModal = ({
          ? "bg-tonColor"
          : "bg-usdtColor"
    );
-   const [receiver, setReceiver] = useState<string>("");
+   const [receiver, setReceiver] = useState<string>(/* item.title?.includes('Telekom') ? '+993 ' : item.title?.includes('AŞTU') ? '+993 12 ' :  */'');
    const boxDisplay = cn(isOpen === item.id ? "block" : "hidden");
    const setReceiverState = useReceiver((state) => state.add);
    const [isLoading, setIsLoading] = useState(false);

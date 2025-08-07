@@ -24,7 +24,7 @@ model Order {
   payment         PaymentMethod
   receiver        String
   quantity        Int?            @default(0)
-  total           Float?            @default(0)
+  total           Float?          @default(0)
   admin           Admin?          @relation(fields: [courierid], references: [tgId])
   status          OrderStatus
   tonTransaction  TonTransaction?
@@ -183,6 +183,9 @@ enum ProductType {
   bc
   brawl
   roblox
+  bmusic
+  aydym
+  wifi
 }
 
 enum UserRole {

@@ -135,6 +135,8 @@ export const productTitle = (name: ProductType) => {
          return "ChatGPT abuna";
       case "roblox":
          return "Roblox";
+      case "wifi":
+         return "Internet we Telefon tölegi";
       default:
          return "";
    }
@@ -219,7 +221,8 @@ export const paths: ProductType[] = [
    "bc",
    "brawl",
    'gpt',
-    'roblox'
+    'roblox',
+    'wifi'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
 

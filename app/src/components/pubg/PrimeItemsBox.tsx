@@ -8,7 +8,7 @@ interface PrimeItemsBoxProps {
 }
 
 const PrimeItemsBox = ({ detail, textLight }: PrimeItemsBoxProps) => {
-   if (!detail || !detail.detail || detail.detail.length === 0) {
+   if (!detail ) {
       return null;
    }
    return (
