@@ -1,6 +1,6 @@
 "use client";
 import { webApp } from "@/lib/webApp";
-import { useCartItem, useHandleModal, useUser } from "@/utils/UniStore";
+import { useCartItem, useHandleModal, useQuantity, useUser } from "@/utils/UniStore";
 import { beginCell, toNano } from "@ton/ton";
 import {
    SendTransactionRequest,
@@ -17,13 +17,14 @@ const Transactions = () => {
    const user = useUser((state) => state.user);
    const toogleModal = useHandleModal((state) => state.toogleOpen);
    const [isLoading, setIsLoading] = useState(false);
+   const quantity = useQuantity((state) => state.quantity);
 
    async function handleClick() {
       setIsLoading(true);
       const app = await webApp();
       try {
          const response = await fetch(
-            `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver}&crrnc=${item?.currency}`
+            `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver}&crrnc=${item?.currency}&qty=${quantity}`
          ).then(async (response) => await response.json());
 
          if (response.success && response.tonComment) {
@@ -36,7 +37,7 @@ const Transactions = () => {
                validUntil: Date.now() + 15 * 60 * 1000, // 15min
                messages: [
                   {
-                     address: ourTonAddress, // Use receiver address
+                     address: ourTonAddress, 
                      amount: toNano(response.price).toString(),
                      payload: body.toBoc().toString("base64"),
                   },

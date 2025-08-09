@@ -151,7 +151,7 @@ export async function cmcApi(id: string) {
       )
          .then((response) => response.json())
          .then((data) => data.price);
-      return Number(data);
+      return Number(data); 
    } catch (error: unknown) {
       console.log((error as Error).message);
       return 0;
