@@ -24,7 +24,7 @@ const Transactions = () => {
       const app = await webApp();
       try {
          const response = await fetch(
-            `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver}&crrnc=${item?.currency}&qty=${quantity}`
+            `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver[1]}&crrnc=${item?.currency}&qty=${quantity}`
          ).then(async (response) => await response.json());
 
          if (response.success && response.tonComment) {
