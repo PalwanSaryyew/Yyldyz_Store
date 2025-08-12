@@ -132,18 +132,42 @@ model TonTransaction {
   updatedAt DateTime @updatedAt
 }
 
+model ReferralCampaign {
+  id             Int        @id @default(autoincrement())
+  name           String     @unique
+  commissionRate Float      @default(0) // Yüzde kaç komisyon verileceği (örneğin, 0.05 = %5)
+  isActive       Boolean    @default(true)
+  referrals      Referral[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Referral {
+  id         Int               @id @default(autoincrement())
+  referrer   User              @relation("ReferralsMade", fields: [referrerId], references: [id])
+  referred   User              @relation("ReferralsReceived", fields: [referredId], references: [id])
+  referrerId String
+  referredId String            @unique
+  campaign   ReferralCampaign? @relation(fields: [campaignId], references: [id])
+  campaignId Int?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}
+
 model User {
-  id         String       @id
-  walNum     String       @unique
-  sumTmt     Float        @default(0)
-  sumUsdt    Float        @default(0)
-  order      Order[]
-  summUpdate SummUpdate[]
-  transfers  Transfer[]   @relation("SentTransfers")
-  deposits   Transfer[]   @relation("ReceivedTransfers")
-  role       UserRole     @default(client)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id                String       @id
+  walNum            String       @unique
+  sumTmt            Float        @default(0)
+  sumUsdt           Float        @default(0)
+  referralsMade     Referral[]   @relation("ReferralsMade")
+  referralsReceived Referral?    @relation("ReferralsReceived")
+  order             Order[]
+  summUpdate        SummUpdate[]
+  transfers         Transfer[]   @relation("SentTransfers")
+  deposits          Transfer[]   @relation("ReceivedTransfers")
+  role              UserRole     @default(client)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 }
 
 enum OrderStatus {

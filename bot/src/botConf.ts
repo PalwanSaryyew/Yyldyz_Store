@@ -86,6 +86,9 @@ export type MyContext = Context & SessionFlavor<BotSessionData>;
 export const bot = new Bot<MyContext>(
    process.env.BOT_TOKEN || "YOUR_FALLBACK_TOKEN"
 );
+export const bot2 = new Bot(
+   process.env.BOT_TOKEN_2 || "YOUR_FALLBACK_TOKEN"
+);
 
 // Tek bir global oturumun kaydedileceği dosya yolu
 const GLOBAL_STATE_FILE = path.join(process.cwd(), "sessions", "states.json");

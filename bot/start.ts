@@ -555,6 +555,9 @@ bot.command("start", async (ctx) => {
    const userID = ctx.from?.id;
    // çreating user to do geting message permission
    const user = await userValid(userID, true);
+   const referrerId = ctx.match;
+   console.log("ref:", Boolean(referrerId));
+
    if ("error" in user) {
       return ctx.reply(user.mssg + " \n Täzeden synanşyň /start").catch((e) => {
          console.error("---start komandynda reply yalnyslygy---", e);
@@ -681,7 +684,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       }
       ctx.session.ordrMsgEdtStts[orderId] = { mssgIds: mssgIds };
 
-      let adminOnlineStatus = false;
+      let adminOnlineStatus = true;
 
       const clntmssg = afterOrderConfirmedMess({
          order: order,
