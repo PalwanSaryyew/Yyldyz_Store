@@ -12,10 +12,10 @@ const PrimeItem = ({ text, image, lightText }: PrimeItemProps) => {
       <div
          className={cn(
             lightText ? "text-gray-300" : "text-gray-600",
-            "flex items-center gap-1 text-xs  font-medium"
+            "flex items-center gap-1 text-xs font-medium"
          )}
       >
-         <div className="w-5 h-5 relative">
+         <div className="min-w-5 min-h-5 relative self-start">
             <Image
                src={image}
                alt={image}
