@@ -213,7 +213,6 @@ export const paths: ProductType[] = [
    "steam",
    "royale",
    "lis",
-   "gplay",
    "apple",
    "belet",
    "alem",
