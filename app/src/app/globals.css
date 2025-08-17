@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 body {
-    background: #111827;
-    background-image: url("/bg/bg-1.png");
-    background-size: 200px;
-    background-repeat: repeat;
-    background-attachment: fixed;
-    background-position: center; /* veya istediğin başka bir konum */
-    overflow-x: auto;
+   background: #111827;
+   background-image: url("/bg/bg-1.png");
+   background-size: 200px;
+   background-repeat: repeat;
+   background-attachment: fixed;
+   background-position: center; /* veya istediğin başka bir konum */
+   overflow-x: auto;
 }
 
 @layer utilities {
@@ -84,6 +84,19 @@ body {
       transform: translateX(-100%);
    } /* Sola doğru tamamen kaydır */
 }
+@keyframes bounceX {
+    0%, 100% {
+        transform: translateX(-25%);
+        animation-timing-function: cubic-bezier(0.8,0,1,1);
+    }
+    50% {
+        transform: none;
+        animation-timing-function: cubic-bezier(0,0,0.2,1);
+    }
+}
+.animate-bounceX {
+    animation: bounceX 1.1s 3 2s;
+}
 
 .animate-marquee {
    animation: marquee 15s linear infinite;
@@ -103,3 +116,4 @@ body {
      Amacımız, `marquee-container`'ın metnin görünen alanını kısıtlaması,
      ancak `animate-marquee` içindeki metnin bu kısıtlamayı aşmasını sağlamaktır. */
 }
+
