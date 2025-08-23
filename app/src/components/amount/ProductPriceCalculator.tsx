@@ -40,7 +40,7 @@ const ProductPriceCalculator = ({ item }: Props) => {
 
    // Eğer setTMT ve setUSDT'nin item.min gibi sadece bir kez ayarlanmasını istiyorsan,
    // onları da aynı useEffect bloğuna taşıyabilirsin.
-   if (item.name === "jtn" && currency === "USDT") {
+   if (item.name === "jtn" && (currency === "USDT" || currency === "TON")) {
       return (
          <ItemAmount
             amount={item.min || 0}
