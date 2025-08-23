@@ -211,6 +211,8 @@ enum ProductType {
   aydym
   wifi
   music
+  pes
+  stand
 }
 
 enum UserRole {
