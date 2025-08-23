@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuantity } from "@/utils/UniStore";
+import { useCurrency, useQuantity } from "@/utils/UniStore";
 import {
    Detail,
    Details,
@@ -9,6 +9,7 @@ import {
    Requirements,
 } from "@prisma/client";
 import React, { useEffect } from "react";
+import ItemAmount from "../item/ItemAmount";
 
 interface Props {
    item: Product & { requirements: Requirements | null } & {
@@ -17,6 +18,8 @@ interface Props {
 }
 
 const ProductPriceCalculator = ({ item }: Props) => {
+   const currency = useCurrency((state) => state.currency);
+
    const quantity = useQuantity((state) => state.quantity);
    const setQuantity = useQuantity((state) => state.change);
    const setTMT = useQuantity((state) => state.changeTMT);
@@ -37,7 +40,15 @@ const ProductPriceCalculator = ({ item }: Props) => {
 
    // Eğer setTMT ve setUSDT'nin item.min gibi sadece bir kez ayarlanmasını istiyorsan,
    // onları da aynı useEffect bloğuna taşıyabilirsin.
-
+   if (item.name === "jtn" && currency === "USDT") {
+      return (
+         <ItemAmount
+            amount={item.min || 0}
+            duration={item.duration}
+            title={item.title}
+         />
+      );
+   }
    return (
       <input
          className={
@@ -48,18 +59,16 @@ const ProductPriceCalculator = ({ item }: Props) => {
          autoComplete="off"
          value={quantity}
          onChange={(e) => {
-            
-            setQuantity(e.target.value.replace(/[^0-9]/g, ''));
+            setQuantity(e.target.value.replace(/[^0-9]/g, ""));
          }}
          placeholder={`${item.min} - ${item.max}`}
          onBlur={() => {
             if (Number(quantity) < item.min) {
                setQuantity(item.min.toString());
-            }
-            else if (Number(quantity) > item.max) {
+            } else if (Number(quantity) > item.max) {
                setQuantity(item.max.toString());
             }
-            return
+            return;
          }}
       />
    );

@@ -137,6 +137,8 @@ export const productTitle = (name: ProductType) => {
          return "Roblox";
       case "wifi":
          return "Internet we Telefon tölegi";
+      case "music":
+         return "Aýdym-saz abunalary";
       default:
          return "";
    }
@@ -151,7 +153,7 @@ export async function cmcApi(id: string) {
       )
          .then((response) => response.json())
          .then((data) => data.price);
-      return Number(data); 
+      return Number(data);
    } catch (error: unknown) {
       console.log((error as Error).message);
       return 0;
@@ -219,9 +221,10 @@ export const paths: ProductType[] = [
    "clash",
    "bc",
    "brawl",
-   'gpt',
-    'roblox',
-    'wifi'
+   "gpt",
+   "roblox",
+   "wifi",
+   'music'
 ];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
 
