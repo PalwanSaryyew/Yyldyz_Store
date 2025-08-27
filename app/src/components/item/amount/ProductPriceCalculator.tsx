@@ -9,7 +9,7 @@ import {
    Requirements,
 } from "@prisma/client";
 import React, { useEffect } from "react";
-import ItemAmount from "../item/ItemAmount";
+import ItemAmount from "./ItemAmount";
 
 interface Props {
    item: Product & { requirements: Requirements | null } & {

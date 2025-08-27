@@ -2,14 +2,8 @@ import { Order, OrderStatus, Product, User } from "../prisma/prismaSett";
 import { prisma } from "../../app/prisma/prismaSett";
 import { err_1, err_2, err_3, err_4, err_5 } from "./errCodes";
 import { adminidS, rndmNmrGnrtr } from "./settings";
-type errMess = {
-   error: boolean;
-   mssg: string;
-};
-interface ValidatorOrder extends Order {
-   product: Product;
-   user: User;
-}
+import { errMess, ValidatorOrder } from "./types";
+
 // chat id controller
 export function chatIdV(userID: number | undefined): errMess {
    if (!userID) {

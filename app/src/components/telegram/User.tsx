@@ -13,19 +13,20 @@ const User = () => {
          const Webapp = await webApp();
          const { initDataUnsafe } = Webapp;
          const { user } = initDataUnsafe;
-         /* if (!user) {
-            Webapp.showAlert("Ýalňyşlyk döredi! Haýyş täzeden giriň.")
-            Webapp.close();
-            window.alert("Ýalňyşlyk döredi! Haýyş täzeden giriň.")
-            window.close()
+         if (!user) {
+            Webapp.showAlert("Ýalňyşlyk döredi! Haýyş täzeden giriň.");
+            window.alert("Siz Teklegramda däl.");
+            /*  Webapp.close();
+            window.close() */
          }
- */
+
          if (user && user.id && user.photo_url) {
             const data = await fetch("/api/sum?uid=" + user.id);
             const {
                sum,
             }: { sum: { tmt: number; usdt: number; nmbr: string } } =
                await data.json();
+               
             setUserState({
                id: user.id,
                photo_url: user.photo_url,

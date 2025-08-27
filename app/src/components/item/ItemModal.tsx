@@ -14,7 +14,7 @@ import { getUser } from "@/lib/fetchs";
 import { webApp } from "@/lib/webApp";
 import { Product } from "../../../prisma/prismaSett";
 import { Detail, Details, DetailTitle, Requirements } from "@prisma/client";
-import PrimeItemsBox from "../pubg/PrimeItemsBox";
+import PrimeItemsBox from "./details/PrimeItemsBox";
 import { tonFee } from "bot/src/settings";
 const ItemModal = ({
    item,

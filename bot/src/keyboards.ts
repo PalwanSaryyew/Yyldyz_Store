@@ -1,7 +1,7 @@
 
 import { Order } from "../prisma/prismaSett";
 import { statusIcons } from "./settings";
-import { InlineKeyboard } from "grammy";
+import { InlineKeyboard, Keyboard } from "grammy";
 
 // order confirmation admins buton
 export function dlvrOrdrKybrd(order: Order) {
@@ -29,3 +29,11 @@ export function cnclAddSumBtnn() {
       "declineAdd"
    );
 }
+// main client keyboard
+export const mainKEybiard = new Keyboard()
+   .text("Dükana gir 🛒")
+   .row()
+   .text("Balans")
+   .text("Admini çagyr")
+   .resized()
+   .persistent();

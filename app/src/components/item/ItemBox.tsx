@@ -2,10 +2,10 @@ import ItemModal from "./ItemModal";
 import ItemModalOpener from "./ItemModalOpener";
 import ItemPrice from "./ItemPrice";
 import ItemIcon from "./ItemIcon";
-import ItemAmount from "./ItemAmount";
+import ItemAmount from "./amount/ItemAmount";
 import { Product } from "../../../prisma/prismaSett";
 import { Detail, Details, DetailTitle, Requirements } from "@prisma/client";
-import ProductPriceCalculator from "../amount/ProductPriceCalculator";
+import ProductPriceCalculator from "./amount/ProductPriceCalculator";
 
 interface ItemBoxProps {
    item: Product & { requirements: Requirements | null } & {
@@ -41,9 +41,7 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
                <ItemIcon picture={item.picture} />
 
                <div
-                  className={
-                     "text-base font-bold text-gray-600 " + textColor
-                  }
+                  className={"text-base font-bold text-gray-600 " + textColor}
                >
                   {" "}
                   {item.min ? (
@@ -69,7 +67,11 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
          </ItemModalOpener>
 
          {/* openable bottom section */}
-         <ItemModal item={item} tonPrice={tonPrice} onQuantity={item.min ? true : false}/>
+         <ItemModal
+            item={item}
+            tonPrice={tonPrice}
+            onQuantity={item.min ? true : false}
+         />
       </div>
    );
 };
