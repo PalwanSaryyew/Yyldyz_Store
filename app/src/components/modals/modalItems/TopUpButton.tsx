@@ -4,7 +4,7 @@ const TopUpButton = () => {
    function handleTopUp() {
       // Pencereyi kapatmayı dener. Çoğu modern tarayıcıda güvenlik nedeniyle çalışmaz.
       window.close(); // Yeni bir sekmede belirtilen linki açar.
-      window.open("https://t.me/officialstarstorebot?start=calladmin");
+      window.open("https://t.me/yyldyzbot?start=calladmin");
    }
    return (
       <button
