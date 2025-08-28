@@ -145,8 +145,12 @@ bot.command("start", async (ctx) => {
    const userID = ctx.from?.id;
    // çreating user to do geting message permission
    const user = await userValid(userID, true);
-   const referrerId = ctx.match;
-   console.log("ref:", Boolean(referrerId));
+   const param = ctx.match;
+   if (param === "calladmin") {
+      return ctx.reply("Balansyňyzy doldurmak üçin admini çagyryň.", {
+         reply_markup: mainKEybiard,
+      });
+   }
 
    if ("error" in user) {
       return ctx.reply(user.mssg + " \n Täzeden synanşyň /start").catch((e) => {

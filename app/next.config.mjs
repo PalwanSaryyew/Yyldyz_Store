@@ -12,6 +12,10 @@ const nextConfig = {
        },
        {
          protocol: 'https',
+         hostname: 'cdn4.telesco.pe',
+       },
+       {
+         protocol: 'https',
          hostname: 'telegram.org',
        },
      ],

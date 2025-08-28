@@ -35,8 +35,9 @@ const SumBox = () => {
    }, [user?.id, setSumm]); */
    return (
       <div className="flex -translate-x-12 backdrop-blur-sm bg-black/20 rounded-full">
-         <Sum sum={user?.tmt } crrncy="TMT" />
+         <Sum sum={user?.tmt} crrncy="TMT" />
          <Sum sum={user?.usdt} crrncy="USDT" />
+         
       </div>
    );
 };

@@ -1,9 +1,10 @@
 "use client";
 import { useHandleModal } from "@/utils/UniStore";
-import ChktMdl from "./ChktMdl";
 import { cn } from "@/utils/tailwindMerge";
-import Summ from "./Summ";
-import InfoModal from "./InfoModal";
+import ChktMdl from "../ChktMdl";
+import Summ from "../SummModal";
+import InfoModal from "../InfoModal";
+import BalansModal from "../BalansModal";
 
 const ModalProvider = () => {
    const modalCloser = useHandleModal((state) => state.toogleOpen);
@@ -28,7 +29,15 @@ const ModalProvider = () => {
                }
             }}
          ></div>
-         {isOpen === 1 ? <ChktMdl /> : isOpen === 2 ?  <Summ />: <InfoModal/>}
+         {isOpen === 1 ? (
+            <ChktMdl />
+         ) : isOpen === 2 ? (
+            <Summ />
+         ) : isOpen === 3 ? (
+            <InfoModal />
+         ) : isOpen === 4 ? (
+            <BalansModal />
+         ) : null}
       </div>
    );
 };
