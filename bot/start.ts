@@ -581,7 +581,7 @@ bot.hears("Dükana gir 🛒", async (ctx) => {
    ctx.reply("Dükana girmek üçin aşaky düwma basyň.", {
       reply_markup: new InlineKeyboard().webApp(
          "Söwda 🛒",
-         "https://yyldyz.store"
+         "https://srv982236.hstgr.cloud"
       ),
    }).catch((e) => {
       console.error("---Dükana gir dinleyjisinde reply yalnyslygy---", e);
