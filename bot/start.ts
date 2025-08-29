@@ -2,6 +2,7 @@ import { InlineKeyboard } from "grammy";
 import { prisma } from "./prisma/prismaSett";
 import {
    adminidS,
+   domain,
    editSummComand,
    pricingTiersFunc,
    statusIcons,
@@ -581,7 +582,7 @@ bot.hears("Dükana gir 🛒", async (ctx) => {
    ctx.reply("Dükana girmek üçin aşaky düwma basyň.", {
       reply_markup: new InlineKeyboard().webApp(
          "Söwda 🛒",
-         "https://srv982236.hstgr.cloud"
+         domain
       ),
    }).catch((e) => {
       console.error("---Dükana gir dinleyjisinde reply yalnyslygy---", e);

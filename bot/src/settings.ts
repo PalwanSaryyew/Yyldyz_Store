@@ -9,6 +9,7 @@ import {
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.2;
 export const unitPrice: number = 0.015;
+export const domain = "https://srv982236.hstgr.cloud"
 
 export const adminidS = [
    process.env.PALWAN || "1",
