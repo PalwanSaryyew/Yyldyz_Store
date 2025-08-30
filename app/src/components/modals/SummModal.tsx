@@ -4,6 +4,8 @@
 import { cn } from "@/utils/tailwindMerge";
 import { useHandleModal, useUser } from "@/utils/UniStore";
 import Image from "next/image";
+import ModalOpener from "./modalDinam/ModalOpener";
+import { FaCalculator } from "react-icons/fa";
 
 const Summ = () => {
    const isOpen = useHandleModal((state) => state.isOpen);
@@ -47,18 +49,12 @@ const Summ = () => {
             </div>
          </div>
          <div className="w-full px-2 pt-2">
-            {/* <button
-               className="ring-inherit border-2 w-full py-2 bg-mainColor text-white rounded-lg flex items-center justify-center "
-               onClick={async () => {
-                  const app = await webApp();
-                  app.openTelegramLink("https://t.me/starStoreChat/26");
-                  close(0);
-               }}
-            >
-               Hasaby Doldur
-            </button> */}
+            <ModalOpener modalNumber={4}>
+               <button className="ring-inherit border-2 w-full py-2 bg-mainColor text-white rounded-lg flex items-center justify-center ">
+                  <FaCalculator />
+               </button>
+            </ModalOpener>
          </div>
-         
       </div>
    );
 };
