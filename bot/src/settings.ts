@@ -8,7 +8,7 @@ import {
 
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.2;
-export const domain = "https://www.yyldyz.store"
+export const domain = "https://www.yyldyz.store";
 
 export const adminidS = [
    process.env.PALWAN || "1",
@@ -139,10 +139,35 @@ export const productTitle = (name: ProductType) => {
          return "Internet we Telefon tölegi";
       case "music":
          return "Aýdym-saz abunalary";
+      case "trgt":
+         return "Instagram";
       default:
          return "";
    }
 };
+export const paths: ProductType[] = [
+   "star",
+   "tgprem",
+   "uc",
+   "jtn",
+   "exit",
+   "pubg",
+   "psp",
+   "steam",
+   "royale",
+   "lis",
+   "apple",
+   "belet",
+   "alem",
+   "clash",
+   "bc",
+   "brawl",
+   "gpt",
+   "roblox",
+   "wifi",
+   "music",
+   "trgt",
+];
 
 export async function cmcApi(id: string) {
    try {
@@ -204,28 +229,6 @@ export function pricingTiersFunc({
 export const ourTonAddress = "UQDi3J28_M_iFFZ9IiukdK7adLkY5SXiMUgWFMFZNAktkDsO";
 export const rootUrl = "http://localhost:3000";
 
-export const paths: ProductType[] = [
-   "star",
-   "tgprem",
-   "uc",
-   "jtn",
-   "exit",
-   "pubg",
-   "psp",
-   "steam",
-   "royale",
-   "lis",
-   "apple",
-   "belet",
-   "alem",
-   "clash",
-   "bc",
-   "brawl",
-   "gpt",
-   "roblox",
-   "wifi",
-   'music'
-];
 export const STORAGE_KEY = "lastVisitedPageMyapp";
 
 export async function generateWalnum(userID: string): Promise<string> {

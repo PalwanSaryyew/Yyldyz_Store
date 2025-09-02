@@ -20,7 +20,7 @@ function InfoBox() {
    }
 
    return (
-      <div className="absolute w-full top-12" onClick={Open}>
+      <div className="w-full top-12" onClick={Open}>
          <div
             className={`w-[90%] px-auto bg-transparent backdrop-blur-[2.5px] mt-3 mx-auto text-center font-bold text-base py-2 ring transition-all rounded-md shadow-md hover:shadow-lg hover:ring-2 hover:ring-blue-500 active:scale-95 active:bg-blue-500 active:text-white`}
          >

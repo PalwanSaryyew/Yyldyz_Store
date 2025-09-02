@@ -12,10 +12,10 @@ const ItemIcon = ({ picture }: { picture: string | null}) => {
       >
          <Image
             src={picture ? picture : `/jtns${currentPath}.png`}
-            fill
             alt={currentPath}
             rel="preload"
             priority
+            fill
             style={{ objectFit: "contain" }}
          />
       </div>
