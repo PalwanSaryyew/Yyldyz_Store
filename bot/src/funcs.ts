@@ -56,11 +56,11 @@ export async function noticeAdmins(order: OrderDetails) {
                .text(
                   "Kabul Et " + statusIcons.yes[3],
                   "deliverOrder_" + order.id
-               )
-               .row()
+               ),
+               /* .row()
                .text("Ýatyr " + statusIcons.no[3], "declineOrder_" + order.id)
                .row()
-               .copyText(order.receiver, order.receiver),
+               .copyText(order.receiver, order.receiver), */
             parse_mode: "HTML",
          }
       );
