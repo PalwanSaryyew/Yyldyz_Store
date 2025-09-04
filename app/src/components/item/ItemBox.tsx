@@ -26,6 +26,8 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
          ? "from-[#e67541] to-[#344409]"
          : item.title === "Gyzyl Sandyk"
          ? "from-[#69020E] to-[#050B0D] "
+         : item.title === "Mythic Emblem"
+         ? "from-[#0D010D] to-[#590111] "
          : "bg-gray-200";
    const textColor = item.name === "pubg" ? "text-white" : "";
    return (
