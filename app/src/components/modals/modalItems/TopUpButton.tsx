@@ -1,10 +1,14 @@
 "use client";
 
+import { webApp } from "@/lib/webApp";
+
 const TopUpButton = () => {
-   function handleTopUp() {
-      // Pencereyi kapatmayı dener. Çoğu modern tarayıcıda güvenlik nedeniyle çalışmaz.
-      window.close(); // Yeni bir sekmede belirtilen linki açar.
-      window.open("https://t.me/yyldyzbot?start=calladmin");
+   async function handleTopUp() {
+      
+      (await webApp()).openTelegramLink("https://t.me/yyldyzbot?start=calladmin");
+
+      /* window.close(); 
+      window.open("https://t.me/yyldyzbot?start=calladmin"); */
    }
    return (
       <button
