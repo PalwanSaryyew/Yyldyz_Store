@@ -3,6 +3,7 @@ import { cmcApi } from "@/lib/fetchs";
 import { prisma, ProductType } from "../../../prisma/prismaSett";
 import UseTrackLastVisitedPage from "@/lib/UseTrackLastVisitedPage";
 import { toncoinId } from "bot/src/settings";
+import { notFound } from "next/navigation";
 
 export default async function ProductPage({
    params,
@@ -11,7 +12,7 @@ export default async function ProductPage({
 }) {
    const isProductType = Object.values(ProductType).includes(params.prdct as ProductType);
    if (!isProductType) {
-      return { notFound: true };
+      notFound();
    }
    const data = await prisma.product.findMany({
       where: {

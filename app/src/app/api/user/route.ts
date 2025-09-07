@@ -1,5 +1,5 @@
 import { prisma } from "../../../../prisma/prismaSett";
-
+export const dynamic = 'force-dynamic'; 
 export async function GET(request: Request) {
    const { searchParams } = new URL(request.url);
    const uId = searchParams.get("uid");

@@ -21,7 +21,7 @@ const User = () => {
          }
 
          if (user && user.id && user.photo_url) {
-            const data = await fetch("/api/sum?uid=" + user.id);
+            const data = await fetch("/api/sum?uid=" + user.id, { cache: "no-store" });
             const {
                sum,
             }: { sum: { tmt: number; usdt: number; nmbr: string } } =
