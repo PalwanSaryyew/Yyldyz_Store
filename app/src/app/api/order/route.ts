@@ -22,6 +22,8 @@ export async function GET(request: Request) {
       | "undefined";
 
    // checking params
+   console.log(productId, userId, receiver, quantity, currency);
+   
    if (
       productId === "undefined" ||
       userId === "undefined" ||
@@ -46,6 +48,8 @@ export async function GET(request: Request) {
    const productData = await prisma.product.findUnique({
       where: { id: Number(productId) },
    });
+   console.log(productData);
+   
    if (!productData) {
       console.error("Product not found");
       return Response.json(
@@ -118,6 +122,8 @@ export async function GET(request: Request) {
             return newUserData;
          }
       });
+      console.log(userData);
+      
 
    if (!userData) {
       console.error("User db error");
@@ -155,6 +161,8 @@ export async function GET(request: Request) {
       },
       data,
    });
+   console.log(sumUpdate);
+   
    if (!sumUpdate) {
       console.error("User db update error");
       return Response.json(
@@ -215,6 +223,8 @@ export async function GET(request: Request) {
 
       return { orderData: newOrder, tonTransaction: await tonCommentData() };
    });
+   console.log(transaction);
+   
    if (!transaction.orderData) {
       console.error("order db error");
       return Response.json(
@@ -234,6 +244,8 @@ export async function GET(request: Request) {
          product: productData,
       },
    });
+   console.log(botRes);
+   
    if (!botRes) {
       console.error("Bot message failed");
       return Response.json(
