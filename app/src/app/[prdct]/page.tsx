@@ -7,11 +7,15 @@ import { toncoinId } from "bot/src/settings";
 export default async function ProductPage({
    params,
 }: {
-   params: { prdct: ProductType };
+   params: { prdct: string };
 }) {
+   const isProductType = Object.values(ProductType).includes(params.prdct as ProductType);
+   if (!isProductType) {
+      return { notFound: true };
+   }
    const data = await prisma.product.findMany({
       where: {
-         name: params.prdct,
+         name: params.prdct as ProductType,
          OR: [
             {
                priceTMT: { not: 0 },
