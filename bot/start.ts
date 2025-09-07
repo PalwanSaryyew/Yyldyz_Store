@@ -590,7 +590,9 @@ bot.hears("Dükana gir 🛒", async (ctx) => {
 });
 // hasap command
 bot.hears("Balans", async (ctx) => {
+   
    const userID = ctx.from?.id;
+   console.log("balans barlady: ", userID);
    // geting user
    const user = await userValid(userID);
    if ("error" in user) {
