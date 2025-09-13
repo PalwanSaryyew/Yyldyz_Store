@@ -620,6 +620,22 @@ bot.hears("Admini çagyr", async (ctx) => {
    if (!userID) {
       return;
    }
+   if (isAdminId(userID).error === false) {
+      return await ctx.reply("Admin admini çagyryp bilmeýär!").catch((e) => {
+         console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
+      });
+   }
+   if (ctx.session.transferStates[userID]) {
+      return await ctx
+         .reply(
+            "Geçirimi açyk wagty admin çagyryp bolmaýar. Geçirimiňizi tamamlap ýa-da ýatyryp admini gaýtadan çagyryň.", {
+               reply_to_message_id: ctx.session.transferStates[userID].messageId
+            }
+         )
+         .catch((e) => {
+            console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
+         });
+   }
    if (ctx.session.chatStates[userID]) {
       return await ctx
          .reply(
@@ -629,11 +645,7 @@ bot.hears("Admini çagyr", async (ctx) => {
             console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
          });
    }
-   if (isAdminId(userID).error === false) {
-      return await ctx.reply("Admin admini çagyryp bilmeýär!").catch((e) => {
-         console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
-      });
-   }
+   
    const messageIds: number[] = [];
    for (const adminId of adminidS) {
       try {
