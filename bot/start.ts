@@ -580,17 +580,13 @@ bot.command("0804", async (ctx) => {
 });
 bot.hears("Dükana gir 🛒", async (ctx) => {
    ctx.reply("Dükana girmek üçin aşaky düwma basyň.", {
-      reply_markup: new InlineKeyboard().webApp(
-         "Söwda 🛒",
-         domain
-      ),
+      reply_markup: new InlineKeyboard().webApp("Söwda 🛒", domain),
    }).catch((e) => {
       console.error("---Dükana gir dinleyjisinde reply yalnyslygy---", e);
    });
 });
 // hasap command
 bot.hears("Balans", async (ctx) => {
-   
    const userID = ctx.from?.id;
    console.log("balans barlady: ", userID);
    // geting user
@@ -628,8 +624,10 @@ bot.hears("Admini çagyr", async (ctx) => {
    if (ctx.session.transferStates[userID]) {
       return await ctx
          .reply(
-            "Geçirimi açyk wagty admin çagyryp bolmaýar. Geçirimiňizi tamamlap ýa-da ýatyryp admini gaýtadan çagyryň.", {
-               reply_to_message_id: ctx.session.transferStates[userID].messageId
+            "Geçirimi açyk wagty admin çagyryp bolmaýar. Geçirimiňizi tamamlap ýa-da ýatyryp admini gaýtadan çagyryň.",
+            {
+               reply_to_message_id:
+                  ctx.session.transferStates[userID].messageId,
             }
          )
          .catch((e) => {
@@ -645,7 +643,7 @@ bot.hears("Admini çagyr", async (ctx) => {
             console.error("---Admini çagyr duwmesinde reply yalnyslygy---", e);
          });
    }
-   
+
    const messageIds: number[] = [];
    for (const adminId of adminidS) {
       try {
@@ -2053,6 +2051,7 @@ bot.callbackQuery("declineCheck", async (ctx) => {
       );
 });
 
+const messageMappings = new Map();
 bot.on("message", async (ctx) => {
    const userId = ctx.chat.id;
    const reasonState = ctx.session.reasonStates[userId];
@@ -2365,18 +2364,63 @@ bot.on("message", async (ctx) => {
             );
          }
       }
+      /* ... kodunuzun önceki kısmı ... */
    } else if (chatState && chatState.userId) {
       if (ctx.message && !ctx.message.pinned_message) {
-         // If it is not a pinned message notification, copy the message
-         await ctx.api
-            .copyMessage(
-               chatState.userId, // Chat ID for the message to be sent
-               ctx.chat.id, // Chat ID from which the message came
-               ctx.message.message_id // ID of the message to be copied
-            )
-            .catch((e) =>
-               console.error("---chatState copyMessage yalnyslygy---", e)
+
+         let replyToMessageId = undefined;
+
+         // 1. Gelen mesajın bir yanıt olup olmadığını kontrol et
+         if (ctx.message.reply_to_message) {
+            // Yanıt verilen mesajın ID'sini ve chat ID'sini al
+            const originalReplyToMsgId =
+               ctx.message.reply_to_message.message_id;
+            const sourceChatId = ctx.chat.id;
+
+            // Bu orijinal mesaja karşılık gelen kopyalanmış mesajın ID'sini bulmak için
+            // bir anahtar oluştur.
+            const sourceKey = `${sourceChatId}:${originalReplyToMsgId}`;
+
+            // Eşleşme haritasından hedef mesajın bilgisini (key'ini) al.
+            const destinationKey = messageMappings.get(sourceKey);
+
+            if (destinationKey) {
+               // Hedef mesajın ID'sini key'den ayıkla.
+               // destinationKey formatı: "chatID:messageID"
+               replyToMessageId = parseInt(destinationKey.split(":")[1]);
+            }
+         }
+
+         // --- YENİ EKLENEN KISIM SONU ---
+
+         try {
+            // 2. Mesajı karşı tarafa kopyala. Eğer bir yanıtsa, reply_to_message_id parametresini ekle.
+            const copiedMessage = await ctx.api.copyMessage(
+               chatState.userId, // Mesajın gönderileceği sohbet ID'si (hedef)
+               ctx.chat.id, // Mesajın geldiği sohbet ID'si (kaynak)
+               ctx.message.message_id, // Kopyalanacak mesajın ID'si
+               {
+                  // Eğer bir `replyToMessageId` bulduysak, bunu seçeneklere ekle.
+                  reply_to_message_id: replyToMessageId,
+               }
             );
+
+            // --- YENİ EKLENEN KISIM BAŞLANGICI ---
+
+            // 3. İlerideki yanıtlarda kullanmak üzere bu iki mesajın ID'sini birbiriyle eşleştir.
+            // İki yönlü eşleştirme yapıyoruz ki, operatör de kullanıcıya yanıt verebilsin.
+            const sourceKey = `${ctx.chat.id}:${ctx.message.message_id}`;
+            const destinationKey = `${chatState.userId}:${copiedMessage.message_id}`;
+
+            messageMappings.set(sourceKey, destinationKey);
+            messageMappings.set(destinationKey, sourceKey);
+
+            // --- YENİ EKLENEN KISIM SONU ---
+
+            return copiedMessage;
+         } catch (e) {
+            console.error("---chatState copyMessage hatası---", e);
+         }
       }
    } else if (broadcastState) {
       const users = await prisma.user.findMany().catch((e) => {
