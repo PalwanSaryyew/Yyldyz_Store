@@ -2364,58 +2364,56 @@ bot.on("message", async (ctx) => {
             );
          }
       }
-      /* ... kodunuzun önceki kısmı ... */
    } else if (chatState && chatState.userId) {
       if (ctx.message && !ctx.message.pinned_message) {
-
          let replyToMessageId = undefined;
 
          // 1. Gelen mesajın bir yanıt olup olmadığını kontrol et
          if (ctx.message.reply_to_message) {
-            // Yanıt verilen mesajın ID'sini ve chat ID'sini al
             const originalReplyToMsgId =
                ctx.message.reply_to_message.message_id;
             const sourceChatId = ctx.chat.id;
-
-            // Bu orijinal mesaja karşılık gelen kopyalanmış mesajın ID'sini bulmak için
-            // bir anahtar oluştur.
             const sourceKey = `${sourceChatId}:${originalReplyToMsgId}`;
-
-            // Eşleşme haritasından hedef mesajın bilgisini (key'ini) al.
             const destinationKey = messageMappings.get(sourceKey);
 
             if (destinationKey) {
-               // Hedef mesajın ID'sini key'den ayıkla.
-               // destinationKey formatı: "chatID:messageID"
                replyToMessageId = parseInt(destinationKey.split(":")[1]);
             }
          }
 
-         // --- YENİ EKLENEN KISIM SONU ---
-
          try {
-            // 2. Mesajı karşı tarafa kopyala. Eğer bir yanıtsa, reply_to_message_id parametresini ekle.
+            // --- YENİ EKLENEN KISIM BAŞLANGICI ---
+
+            // 2. Karşı tarafa "yazıyor..." aksiyonunu gönder.
+            // Bu sayede kullanıcı, operatörün bir mesaj gönderdiğini anlar.
+            await ctx.api.sendChatAction(
+               chatState.userId, // Hedef chat ID'si
+               "typing" // Gönderilecek aksiyon: 'typing'
+            );
+
+            // (İsteğe Bağlı) Daha gerçekçi bir his için kısa bir bekleme ekleyelim.
+            // Bu, "yazıyor..." göründükten hemen sonra mesajın pat diye gelmesini engeller.
+            // const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+            // await sleep(1500); // 1.5 saniye bekle
+
+            // --- YENİ EKLENEN KISIM SONU ---
+
+            // 3. Mesajı karşı tarafa kopyala.
             const copiedMessage = await ctx.api.copyMessage(
                chatState.userId, // Mesajın gönderileceği sohbet ID'si (hedef)
                ctx.chat.id, // Mesajın geldiği sohbet ID'si (kaynak)
                ctx.message.message_id, // Kopyalanacak mesajın ID'si
                {
-                  // Eğer bir `replyToMessageId` bulduysak, bunu seçeneklere ekle.
                   reply_to_message_id: replyToMessageId,
                }
             );
 
-            // --- YENİ EKLENEN KISIM BAŞLANGICI ---
-
-            // 3. İlerideki yanıtlarda kullanmak üzere bu iki mesajın ID'sini birbiriyle eşleştir.
-            // İki yönlü eşleştirme yapıyoruz ki, operatör de kullanıcıya yanıt verebilsin.
+            // 4. İlerideki yanıtlarda kullanmak üzere bu iki mesajın ID'sini birbiriyle eşleştir.
             const sourceKey = `${ctx.chat.id}:${ctx.message.message_id}`;
             const destinationKey = `${chatState.userId}:${copiedMessage.message_id}`;
 
             messageMappings.set(sourceKey, destinationKey);
             messageMappings.set(destinationKey, sourceKey);
-
-            // --- YENİ EKLENEN KISIM SONU ---
 
             return copiedMessage;
          } catch (e) {
