@@ -691,10 +691,10 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
    const chatState = ctx.session.chatStates[userID];
 
    if (!chatState || !userID || !acceptorId) {
-      return ctx.reply("Yalnyslyk");
+      return await ctx.reply("Yalnyslyk");
    }
    if (ctx.session.chatStates[acceptorId]) {
-      return ctx
+      return await ctx
          .answerCallbackQuery({
             text: "Siz öňem sohbetdeşlikde, ilki öňki söhbetdeşligi tamamlaň! \n /stop",
             show_alert: true,
@@ -705,6 +705,11 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
                e
             );
          });
+   }
+   if (ctx.session.chatStates[userID].userId !== 0) {
+      return await ctx.editMessageText(
+         "Admin häzir başga söhbetdeşlikde, admini özüňiz çagyryň."
+      );
    }
    chatState.userId = acceptorId;
    ctx.session.chatStates[acceptorId] = {
