@@ -38,16 +38,17 @@ export default async function RootLayout({
             <TonProvider>
                <ModalProvider />
                <Header />
+               {/*  Mahabat
                <Link
                   href={"https://t.me/betindenvps"}
                   className="mt-3 flex relative w-11/12 h-20 bg-mainColor"
                >
-                  {/* The "Mahabat" label */}
+                  
                   <div className="absolute top-0 left-0 text-[.55rem] pr-[3px] rounded-br-lg bg-mainColor z-10">
                      Mahabat
                   </div>
 
-                  {/* Image container with the white border */}
+                  
 
                   <Image
                      src="/banners/betindenvps.jpg"
@@ -56,7 +57,8 @@ export default async function RootLayout({
                      style={{ objectFit: "contain" }}
                      className="object-left border-y-2 border-mainColor "
                   />
-               </Link>
+               </Link> 
+               */}
                {children}
                <Footer />
             </TonProvider>
