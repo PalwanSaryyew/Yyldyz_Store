@@ -2111,7 +2111,7 @@ bot.on("message", async (ctx) => {
       await bot.api
          .sendMessage(
             reasonState.client,
-            `${ordIdmess}  ${ordrDclngMssgFnc(
+            `${ordrDclngMssgFnc(
                userId.toString(),
                false,
                reason,
