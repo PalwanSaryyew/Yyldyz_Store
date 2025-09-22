@@ -13,6 +13,13 @@ interface SumAddState {
 }
 interface OrdrMsgEdtSt {
    mssgIds: number[];
+   clntMssgId: number;
+}
+interface ReasonState {
+   orderId: number;
+   client: string;
+   mssgIds: number[];
+   clntMssgId: number;
 }
 
 // *** YENİ BotSessionData YAPISI ***
@@ -33,7 +40,7 @@ export interface BotSessionData {
    // reasonStates'in eski Map yapısı: Map<any, any> idi.
    // Şimdi tek bir global obje olarak tutulacak.
    // Burada key'ler genellikle chat/user ID'leri olacak.
-   reasonStates: Record<string, any>; // Eğer key'ler string ve değerler herhangi bir tipteyse
+   reasonStates: Record<string, ReasonState>; // Eğer key'ler string ve değerler herhangi bir tipteyse
 
    // sumAddStates'in eski Map yapısı: Map<number, SumAddState> idi.
    // Şimdi tek bir global obje olarak tutulacak.
@@ -61,7 +68,7 @@ export interface BotSessionData {
       number,
       {
          message: string;
-         message_id: number
+         message_id: number;
       }
    >;
 
@@ -86,9 +93,7 @@ export type MyContext = Context & SessionFlavor<BotSessionData>;
 export const bot = new Bot<MyContext>(
    process.env.BOT_TOKEN || "YOUR_FALLBACK_TOKEN"
 );
-export const bot2 = new Bot(
-   process.env.BOT_TOKEN_2 || "YOUR_FALLBACK_TOKEN"
-);
+export const bot2 = new Bot(process.env.BOT_TOKEN_2 || "YOUR_FALLBACK_TOKEN");
 
 // Tek bir global oturumun kaydedileceği dosya yolu
 const GLOBAL_STATE_FILE = path.join(process.cwd(), "sessions", "states.json");

@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
 
    await sendMessages(
       [order.userId],
-      `Payment verification failed for order ${orderId} after ${MAX_RETRIES} retries.`
+      `TON tölegiňiz sistemamyz tarapyndan ýüze çykarylmady. Eger balansyňyzdan pul alynan bolsa, admin bilen habarlaşyň. Sargyt ID: ${orderId}`
    );
 
    return NextResponse.json(

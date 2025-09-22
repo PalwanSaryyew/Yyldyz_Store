@@ -32,6 +32,7 @@ model Order {
   productId       Int
   courierid       String?
   mssgIds         Int[]
+  clntMssgId      Int?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   productAmountId Int?

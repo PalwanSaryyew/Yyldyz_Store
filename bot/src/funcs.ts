@@ -87,7 +87,7 @@ export async function noticeAdmins(order: OrderDetails) {
          : "Sargydyňyz alyndy, mümkin bolan iň gysga wagtda size gowşurylar."
    }`;
 
-   await bot.api.sendMessage(
+   const clntMssg = await bot.api.sendMessage(
       order.userId,
       `${ordrIdMssgFnc(order.id)} <blockquote expandable>${prdctDtlMssg({
          order: order,
@@ -102,6 +102,7 @@ export async function noticeAdmins(order: OrderDetails) {
       },
       data: {
          mssgIds: mssgIds,
+         clntMssgId: clntMssg.message_id
       },
    });
 }

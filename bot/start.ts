@@ -868,7 +868,6 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             );
          }
       }
-      ctx.session.ordrMsgEdtStts[orderId] = { mssgIds: mssgIds };
 
       let adminOnlineStatus = true;
 
@@ -877,31 +876,43 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          adminOnlineStatus,
       });
 
-      await ctx
-         .editMessageText(
-            `${ordIdMssg} <blockquote expandable>${prdctDtlMssg({
-               order: order,
-               forWhom: "client",
-            })}</blockquote> \n ${clntmssg}`,
-            {
-               parse_mode: "HTML",
-               reply_markup:
-                  (order.product.chatRequired === false &&
-                     !adminOnlineStatus) ||
-                  adminOnlineStatus
-                     ? undefined
-                     : new InlineKeyboard().text(
-                          "Ýatyr " + statusIcons.no[2],
-                          "cancelOrder_" + order.id
-                       ),
-            }
-         )
-         .catch((e) =>
-            console.error(
+      const sentMessageToClient = await ctx.editMessageText(
+         `${ordIdMssg} <blockquote expandable>${prdctDtlMssg({
+            order: order,
+            forWhom: "client",
+         })}</blockquote> \n ${clntmssg}`,
+         {
+            parse_mode: "HTML",
+            reply_markup:
+               (order.product.chatRequired === false && !adminOnlineStatus) ||
+               adminOnlineStatus
+                  ? undefined
+                  : new InlineKeyboard().text(
+                       "Ýatyr " + statusIcons.no[2],
+                       "cancelOrder_" + order.id
+                    ),
+         }
+      );
+      if (sentMessageToClient !== true) {
+         ctx.session.ordrMsgEdtStts[orderId] = {
+            mssgIds: mssgIds,
+            clntMssgId: sentMessageToClient.message_id,
+         };
+      } else {
+         console.error(
+            "Ulanyjy sargydy kabul edende yalnyslyk doredi. Ulanjy: ",
+            clntID,
+            ", Sargyt ID: ",
+            orderId
+         );
+      }
+
+      /* .catch((e) =>
+               console.error(
                "---acceptOrder duwmesinde editMessageText yalnyslygy---",
                e
             )
-         );
+         ); */
    } catch (error) {
       console.error("SMS ERROR::", error);
       await ctx
@@ -1061,7 +1072,7 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
       adminId.toString()
    );
    if ("error" in order) {
-      await ctx
+      return await ctx
          .answerCallbackQuery({
             text: order.mssg,
             show_alert: true,
@@ -1072,17 +1083,13 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
                e
             )
          );
-      return ctx
-         .deleteMessage()
-         .catch((e) =>
-            console.error(
-               "---deliverOrder duwmesinde deleteMessage yalnyslygy---",
-               e
-            )
-         );
    }
+   // if it is ton paid order then message ids comes from database
    if (order.mssgIds.length > 0) {
-      ctx.session.ordrMsgEdtStts[order.id] = { mssgIds: order.mssgIds };
+      ctx.session.ordrMsgEdtStts[order.id] = {
+         mssgIds: order.mssgIds,
+         clntMssgId: order.clntMssgId || 0,
+      };
    }
    const ordrMsgIds = ctx.session.ordrMsgEdtStts[orderId];
 
@@ -1212,7 +1219,10 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
          );
    }
    if (order.mssgIds.length > 0) {
-      ctx.session.ordrMsgEdtStts[order.id] = { mssgIds: order.mssgIds };
+      ctx.session.ordrMsgEdtStts[order.id] = {
+         mssgIds: order.mssgIds,
+         clntMssgId: order.clntMssgId || 0,
+      };
    }
    const ordrMsgIds = ctx.session.ordrMsgEdtStts[orderId];
    if (!ordrMsgIds?.mssgIds) {
@@ -1295,11 +1305,25 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
             );
          }
       }
+
+      const clntMssgId = ctx.session.ordrMsgEdtStts[orderId].clntMssgId;
+      const clientMessage = `${ordrIdMssgFnc(
+         order.id
+      )} <blockquote expandable>${prdctDtlMssg({
+         order: order,
+         forWhom: "client",
+      })}</blockquote> \n ${statusIcons.no[2]} Ýatyryldy.`;
+
+      await ctx.api.editMessageText(order.userId, clntMssgId, clientMessage, {
+         parse_mode: "HTML",
+      });
+
       // yatyrma sebabi garasylyar
       ctx.session.reasonStates[adminId] = {
          orderId: order.id,
          client: order.userId,
          mssgIds: ordrMsgIds.mssgIds,
+         clntMssgId: clntMssgId,
       };
       delete ctx.session.ordrMsgEdtStts[orderId];
    } catch (error) {
@@ -1344,6 +1368,7 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
 
    // message ids
    const messageIds = ctx.session.ordrMsgEdtStts[orderId];
+
    if (!messageIds?.mssgIds) {
       console.log(err_7.d);
       return await ctx
@@ -1386,12 +1411,14 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
          }
       }
 
+      const clntMssgId = ctx.session.ordrMsgEdtStts[orderId].clntMssgId;
       await bot.api
          .sendMessage(
             order.userId,
-            `${ordIdmssg} ${statusIcons.wait[0]} Sargadyňyz Tabşyryldy`,
+            `${statusIcons.wait[0]} Sargadyňyz Tabşyryldy`,
             {
                parse_mode: "HTML",
+               reply_to_message_id: clntMssgId,
             }
          )
          .catch((e) =>
@@ -1400,6 +1427,16 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
                e
             )
          );
+      const clientMessage = `${ordrIdMssgFnc(
+         order.id
+      )} <blockquote expandable>${prdctDtlMssg({
+         order: order,
+         forWhom: "client",
+      })}</blockquote> \n ${statusIcons.yes[2]} Tabşyryldy.`;
+
+      await ctx.api.editMessageText(order.userId, clntMssgId, clientMessage, {
+         parse_mode: "HTML",
+      });
       delete ctx.session.ordrMsgEdtStts[order.id];
    } catch (error) {
       console.error("bot api error: ", error);
@@ -2082,6 +2119,7 @@ bot.on("message", async (ctx) => {
             )}`,
             {
                parse_mode: "HTML",
+               reply_to_message_id: reasonState.clntMssgId,
             }
          )
          .catch((e) =>
