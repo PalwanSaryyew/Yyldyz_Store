@@ -29,6 +29,8 @@ export function adminDatas(): Admin[] {
          createdAt: new Date(),
          updatedAt: new Date(),
          onlineSatus: false,
+         hashedPassword: null,
+         nick: null,
       });
       return;
    });
