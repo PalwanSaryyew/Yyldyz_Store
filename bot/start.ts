@@ -30,6 +30,7 @@ import {
    welcome,
 } from "./src/messages";
 import { cnclAddSumBtnn, dlvrOrdrKybrd, mainKEybiard } from "./src/keyboards";
+import bcrypt from "bcrypt";
 
 // for updating persistent buttons
 /* bot.command("update", async (ctx) => {
@@ -167,6 +168,25 @@ bot.command("start", async (ctx) => {
    });
 });
 // sending bulk messages
+bot.command("signup", async (ctx) => {
+   const isAmdin = isAdminId(ctx.from?.id);
+   if (isAmdin.error) {
+      return ctx.deleteMessage();
+   }
+
+   if (ctx.from?.id !== undefined) {
+      try {
+         const message = await ctx.reply("Nickname \n Parol");
+         ctx.session.signupState[ctx.from.id] = {
+            nick: undefined,
+            pass: undefined,
+            message_id: message.message_id,
+         };
+      } catch (error) {
+         console.error("---brodcast komandada reply yalnyslygy---", error);
+      }
+   }
+});
 bot.command("broadcast", async (ctx) => {
    const isAmdin = isAdminId(ctx.from?.id);
    if (isAmdin.error) {
@@ -2102,6 +2122,7 @@ bot.on("message", async (ctx) => {
    const chatState = ctx.session.chatStates[userId];
    const broadcastState = ctx.session.broadcastStates[userId];
    const checkState = ctx.session.checkStates[userId];
+   const signupState = ctx.session.signupState[userId];
    if (ctx.message.pinned_message) {
       return;
    }
@@ -2111,12 +2132,7 @@ bot.on("message", async (ctx) => {
       await bot.api
          .sendMessage(
             reasonState.client,
-            `${ordrDclngMssgFnc(
-               userId.toString(),
-               false,
-               reason,
-               true
-            )}`,
+            `${ordrDclngMssgFnc(userId.toString(), false, reason, true)}`,
             {
                parse_mode: "HTML",
                reply_to_message_id: reasonState.clntMssgId,
@@ -2463,6 +2479,50 @@ bot.on("message", async (ctx) => {
             console.error("---chatState copyMessage hatası---", e);
          }
       }
+   } else if (signupState) {
+      const message = ctx.message.text;
+      if (!message) {
+         delete ctx.session.signupState[userId];
+         await ctx.api.editMessageText(userId, signupState.message_id, `Error`);
+         return;
+      }
+      const parts = message.split("\n");
+      if (parts.length < 2 || parts.length > 2) {
+         delete ctx.session.signupState[userId];
+         await ctx.api.editMessageText(
+            userId,
+            signupState.message_id,
+            `Format yalnys`
+         );
+         return;
+      }
+      const hashedPassword = await bcrypt.hash(parts[1], 12);
+      const data = await prisma.admin.update({
+         where: {
+            tgId: userId.toString(),
+         },
+         data: {
+            nick: parts[0],
+            hashedPassword: hashedPassword,
+         },
+      });
+      if (!data) {
+         delete ctx.session.signupState[userId];
+         await ctx.api.editMessageText(
+            userId,
+            signupState.message_id,
+            `DB error`
+         );
+         return;
+      }
+
+      await ctx.api.editMessageText(
+         userId,
+         signupState.message_id,
+         `Nickname: ${parts[0]} \n Parol: ${parts[1]}`
+      );
+
+      return delete ctx.session.signupState[userId];
    } else if (broadcastState) {
       const users = await prisma.user.findMany().catch((e) => {
          console.error("---broadcastState prisma yalnyslygy---", e);

@@ -14,10 +14,12 @@
    "description": "",
    "dependencies": {
       "@grammyjs/storage-file": "^2.5.1",
+      "bcrypt": "^6.0.0",
       "grammy": "^1.36.1",
       "typescript": "^5.7.3"
    },
    "devDependencies": {
+      "@types/bcrypt": "^6.0.0",
       "@types/node": "^22.13.5"
    }
 }

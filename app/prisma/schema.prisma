@@ -9,150 +9,152 @@ datasource db {
 }
 
 model Admin {
-  tgId        String       @id @unique
-  onlineSatus Boolean      @default(false)
-  order       Order[]
-  summUpdate  SummUpdate[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  tgId           String       @id @unique
+  onlineSatus    Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  hashedPassword String?
+  nick           String?      @unique
+  order          Order[]
+  summUpdate     SummUpdate[]
 }
 
 model Order {
   id              Int             @id @default(autoincrement())
-  user            User            @relation(fields: [userId], references: [id])
-  product         Product         @relation(fields: [productId], references: [id])
   payment         PaymentMethod
   receiver        String
-  quantity        Int?            @default(0)
-  total           Float?          @default(0)
-  admin           Admin?          @relation(fields: [courierid], references: [tgId])
   status          OrderStatus
-  tonTransaction  TonTransaction?
   userId          String
   productId       Int
   courierid       String?
   mssgIds         Int[]
-  clntMssgId      Int?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   productAmountId Int?
+  quantity        Int?            @default(0)
+  total           Float?          @default(0)
+  clntMssgId      Int?
+  admin           Admin?          @relation(fields: [courierid], references: [tgId])
+  product         Product         @relation(fields: [productId], references: [id])
+  user            User            @relation(fields: [userId], references: [id])
+  tonTransaction  TonTransaction?
 }
 
 model Product {
   id             Int           @id @default(autoincrement())
   name           ProductType
-  title          String?
   amount         Int?
   duration       String?
-  picture        String?
-  requirementsId Int?
   priceBuy       Float
   priceTMT       Float
   priceUSDT      Float
-  chatRequired   Boolean       @default(false)
-  details        Details[]
-  min            Int           @default(0)
-  max            Int           @default(0)
-  pricingTiers   Json          @default("[]")
-  requirements   Requirements? @relation(fields: [requirementsId], references: [id])
+  picture        String?
   pictures       String[]
   description    String?
-  order          Order[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  chatRequired   Boolean       @default(false)
+  title          String?
+  requirementsId Int?
+  max            Int           @default(0)
+  min            Int           @default(0)
+  pricingTiers   Json          @default("[]")
+  order          Order[]
+  requirements   Requirements? @relation(fields: [requirementsId], references: [id])
+  details        Details[]     @relation("DetailsToProduct")
 }
 
 model Requirements {
   id        Int       @id @default(autoincrement())
   asking    String
   expecting String
-  product   Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  product   Product[]
 }
 
 model Details {
   id              Int          @id @default(autoincrement())
-  titleId         Int?
-  detail          Detail[]
-  title           DetailTitle? @relation(fields: [titleId], references: [id])
-  product         Product[]
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  titleId         Int?
   productAmountId Int?
+  title           DetailTitle? @relation(fields: [titleId], references: [id])
+  detail          Detail[]     @relation("DetailToDetails")
+  product         Product[]    @relation("DetailsToProduct")
 }
 
 model Detail {
   id        Int       @id @default(autoincrement())
   text      String
   image     String
-  belongs   Details[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  belongs   Details[] @relation("DetailToDetails")
 }
 
 model DetailTitle {
   id        Int       @id @default(autoincrement())
   text      String
   image     String?
-  belongs   Details[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  belongs   Details[]
 }
 
 model SummUpdate {
   id        Int           @id @default(autoincrement())
   sum       Float
   currency  PaymentMethod
-  admin     Admin         @relation(fields: [cashierid], references: [tgId])
-  user      User          @relation(fields: [clientid], references: [id])
   cashierid String
   clientid  String
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  admin     Admin         @relation(fields: [cashierid], references: [tgId])
+  user      User          @relation(fields: [clientid], references: [id])
 }
 
 model Transfer {
   id         Int           @id @default(autoincrement())
   amount     Float
   currency   PaymentMethod
-  sender     User          @relation("SentTransfers", fields: [senderid], references: [id])
-  reciever   User          @relation("ReceivedTransfers", fields: [recieverid], references: [id])
   senderid   String
   recieverid String
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
+  reciever   User          @relation("ReceivedTransfers", fields: [recieverid], references: [id])
+  sender     User          @relation("SentTransfers", fields: [senderid], references: [id])
 }
 
 model TonTransaction {
   id        String   @id @default(cuid())
   price     Float
-  order     Order    @relation(fields: [orderId], references: [id])
   orderId   Int      @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  order     Order    @relation(fields: [orderId], references: [id])
 }
 
 model ReferralCampaign {
   id             Int        @id @default(autoincrement())
   name           String     @unique
-  commissionRate Float      @default(0) // Yüzde kaç komisyon verileceği (örneğin, 0.05 = %5)
+  commissionRate Float      @default(0)
   isActive       Boolean    @default(true)
-  referrals      Referral[]
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
+  referrals      Referral[]
 }
 
 model Referral {
   id         Int               @id @default(autoincrement())
-  referrer   User              @relation("ReferralsMade", fields: [referrerId], references: [id])
-  referred   User              @relation("ReferralsReceived", fields: [referredId], references: [id])
   referrerId String
   referredId String            @unique
-  campaign   ReferralCampaign? @relation(fields: [campaignId], references: [id])
   campaignId Int?
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
+  campaign   ReferralCampaign? @relation(fields: [campaignId], references: [id])
+  referred   User              @relation("ReferralsReceived", fields: [referredId], references: [id])
+  referrer   User              @relation("ReferralsMade", fields: [referrerId], references: [id])
 }
 
 model User {
@@ -160,15 +162,15 @@ model User {
   walNum            String       @unique
   sumTmt            Float        @default(0)
   sumUsdt           Float        @default(0)
-  referralsMade     Referral[]   @relation("ReferralsMade")
-  referralsReceived Referral?    @relation("ReferralsReceived")
-  order             Order[]
-  summUpdate        SummUpdate[]
-  transfers         Transfer[]   @relation("SentTransfers")
-  deposits          Transfer[]   @relation("ReceivedTransfers")
   role              UserRole     @default(client)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
+  order             Order[]
+  referralsReceived Referral?    @relation("ReferralsReceived")
+  referralsMade     Referral[]   @relation("ReferralsMade")
+  summUpdate        SummUpdate[]
+  deposits          Transfer[]   @relation("ReceivedTransfers")
+  transfers         Transfer[]   @relation("SentTransfers")
 }
 
 enum OrderStatus {

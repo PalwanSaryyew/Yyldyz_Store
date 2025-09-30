@@ -21,6 +21,11 @@ interface ReasonState {
    mssgIds: number[];
    clntMssgId: number;
 }
+interface SignupState {
+   nick: string | undefined;
+   pass: string | undefined;
+   message_id: number
+}
 
 // *** YENİ BotSessionData YAPISI ***
 // Artık Record<number, ...> kullanmıyoruz, çünkü bunlar zaten tek bir objenin içindeki
@@ -41,6 +46,8 @@ export interface BotSessionData {
    // Şimdi tek bir global obje olarak tutulacak.
    // Burada key'ler genellikle chat/user ID'leri olacak.
    reasonStates: Record<string, ReasonState>; // Eğer key'ler string ve değerler herhangi bir tipteyse
+
+   signupState: Record<number, SignupState>; // Eğer key'ler string ve değerler herhangi bir tipteyse
 
    // sumAddStates'in eski Map yapısı: Map<number, SumAddState> idi.
    // Şimdi tek bir global obje olarak tutulacak.
@@ -110,6 +117,7 @@ bot.use(
          chatStates: {},
          broadcastStates: {},
          checkStates: {},
+         signupState:{}
       }),
       // ÖNEMLİ: Her zaman aynı session key'ini döndürerek tüm verileri tek bir oturum altında topluyoruz.
       // Bu, ctx.session'ın her zaman aynı global durumu temsil etmesini sağlar.
