@@ -118,7 +118,7 @@ export const productTitle = (name: ProductType) => {
       case "clash":
          return "Clash of Clans";
       case "gpt":
-         return "ChatGPT abunasy";
+         return "Emeli Aň modelleri";
       case "lis":
          return "LIS-SKINS USD balans";
       case "gplay":
