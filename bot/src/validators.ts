@@ -124,8 +124,8 @@ export async function validator(
       },
       data,
       include: {
-         product: true,
-         user: true,
+         Product: true,
+         User: true,
       },
    });
    // updateOrdare db error

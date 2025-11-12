@@ -8,8 +8,8 @@ import { Detail, Details, DetailTitle, Requirements } from "@prisma/client";
 import ProductPriceCalculator from "./amount/ProductPriceCalculator";
 
 interface ItemBoxProps {
-   item: Product & { requirements: Requirements | null } & {
-      details: (Details & { detail: Detail[]; title: DetailTitle | null })[];
+   item: Product & { Requirements: Requirements | null } & {
+      Details: (Details & { Detail: Detail[]; DetailTitle: DetailTitle | null })[];
    };
    tonPrice: number;
 }
@@ -36,7 +36,7 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
       >
          <ItemModalOpener
             id={item.id}
-            style="w-full cursor-pointer flex p-2 items-center justify-between mx-auto"
+            style="w-full cursor-pointer flex p-2 items-center justify-between mx-auto gap-2"
          >
             {/* left */}
             <div className="flex items-center gap-3">

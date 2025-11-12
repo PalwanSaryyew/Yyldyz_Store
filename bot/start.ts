@@ -367,7 +367,7 @@ bot.command("on", async (ctx) => {
             onlineSatus: true,
          },
       })
-      .catch((e) => {
+      .catch((e: any) => {
          console.error("---on komandasynda prisma yalnyslygy---", e);
       });
    if (status) {
@@ -402,7 +402,7 @@ bot.command("of", async (ctx) => {
             onlineSatus: false,
          },
       })
-      .catch((e) => {
+      .catch((e: Error) => {
          console.error("---of komandasynda prisma yalnyslygy---", e);
       });
    if (status) {
@@ -840,12 +840,12 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
 
    if (order.quantity) {
       const { tmtPrice, usdtPrice, amount } = pricingTiersFunc({
-         product: order.product,
+         product: order.Product,
          quantity: order.quantity,
       });
-      order.product.priceTMT = tmtPrice;
-      order.product.priceUSDT = usdtPrice;
-      order.product.amount = amount;
+      order.Product.priceTMT = tmtPrice;
+      order.Product.priceUSDT = usdtPrice;
+      order.Product.amount = amount;
    }
 
    // order belongs to this user ?
@@ -904,7 +904,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          {
             parse_mode: "HTML",
             reply_markup:
-               (order.product.chatRequired === false && !adminOnlineStatus) ||
+               (order.Product.chatRequired === false && !adminOnlineStatus) ||
                adminOnlineStatus
                   ? undefined
                   : new InlineKeyboard().text(
@@ -1002,18 +1002,18 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
       order.payment === "TMT"
          ? {
               sumTmt:
-                 order.user.sumTmt +
-                 (order.total ? order.total : order.product.priceTMT),
+                 order.User.sumTmt +
+                 (order.total ? order.total : order.Product.priceTMT),
            }
          : {
               sumUsdt:
-                 order.user.sumUsdt +
-                 (order.total ? order.total : order.product.priceUSDT),
+                 order.User.sumUsdt +
+                 (order.total ? order.total : order.Product.priceUSDT),
            };
    const userData = await prisma.user
       .update({
          where: {
-            id: order.user.id,
+            id: order.User.id,
          },
          data,
       })
@@ -1265,18 +1265,18 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
       order.payment === "TMT"
          ? {
               sumTmt:
-                 order.user.sumTmt +
-                 (order.total ? order.total : order.product.priceTMT),
+                 order.User.sumTmt +
+                 (order.total ? order.total : order.Product.priceTMT),
            }
          : {
               sumUsdt:
-                 order.user.sumUsdt +
-                 (order.total ? order.total : order.product.priceUSDT),
+                 order.User.sumUsdt +
+                 (order.total ? order.total : order.Product.priceUSDT),
            };
    const userData = await prisma.user
       .update({
          where: {
-            id: order.user.id,
+            id: order.User.id,
          },
          data,
       })

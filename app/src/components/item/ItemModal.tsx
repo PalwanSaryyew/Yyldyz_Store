@@ -22,8 +22,8 @@ const ItemModal = ({
    quantity,
    onQuantity,
 }: {
-   item: Product & { requirements: Requirements | null } & {
-      details: (Details & { detail: Detail[]; title: DetailTitle | null })[];
+   item: Product & { Requirements: Requirements | null } & {
+      Details: (Details & { Detail: Detail[]; DetailTitle: DetailTitle | null })[];
    };
    tonPrice: number;
    quantity?: string;
@@ -58,8 +58,8 @@ const ItemModal = ({
       <div
          className={`${boxDisplay} w-[95%] rounded-b-lg p-2 items-center mx-auto`}
       >
-         {item.details.length > 0 &&
-            item.details.map((detail, index) => (
+         {item.Details.length > 0 &&
+            item.Details.map((detail, index) => (
                <PrimeItemsBox key={index} detail={detail} textLight={item.name === 'pubg' ? true : false}/>
             ))}
          {/* input box */}
@@ -86,7 +86,7 @@ const ItemModal = ({
                         ? "PUBG ID"
                         : item.name === "exit"
                         ? "Elektron poçtaňyz"
-                        : item.requirements?.asking
+                        : item.Requirements?.asking
                   }
                   value={receiver}
                   onChange={(e) => setReceiver(e.target.value)}
@@ -103,8 +103,8 @@ const ItemModal = ({
                      amount: onQuantity ? Number(amount) : item.amount,
                      duration: item.duration,
                      receiver: [
-                        item.requirements?.expecting
-                           ? item.requirements?.expecting
+                        item.Requirements?.expecting
+                           ? item.Requirements?.expecting
                            : "Kime",
                         item.name === "tgprem" || item.name === "star"
                            ? "@" + receiver

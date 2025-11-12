@@ -33,11 +33,11 @@ export default async function ProductPage({
          { priceTMT: "asc" }, // Sort by priceTMT ascending
       ],
       include: {
-         requirements: true,
-         details: {
+         Requirements: true,
+         Details: {
             include: {
-               detail: true,
-               title: true,
+               Detail: true,
+               DetailTitle: true,
             },
          },
       },

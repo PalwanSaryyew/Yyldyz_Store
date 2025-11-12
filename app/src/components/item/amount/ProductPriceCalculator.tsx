@@ -1,19 +1,16 @@
 "use client";
 
 import { useCurrency, useQuantity } from "@/utils/UniStore";
-import {
-   Detail,
-   Details,
-   DetailTitle,
-   Product,
-   Requirements,
-} from "@prisma/client";
 import React, { useEffect } from "react";
 import ItemAmount from "./ItemAmount";
+import { Detail, Details, DetailTitle, Product, Requirements } from "@prisma/client";
 
 interface Props {
-   item: Product & { requirements: Requirements | null } & {
-      details: (Details & { detail: Detail[]; title: DetailTitle | null })[];
+   item: Product & { Requirements: Requirements | null } & {
+      Details: (Details & {
+         Detail: Detail[];
+         DetailTitle: DetailTitle | null;
+      })[];
    };
 }
 

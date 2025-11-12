@@ -15,8 +15,37 @@ model Admin {
   updatedAt      DateTime     @updatedAt
   hashedPassword String?
   nick           String?      @unique
-  order          Order[]
-  summUpdate     SummUpdate[]
+  Order          Order[]
+  SummUpdate     SummUpdate[]
+}
+
+model Detail {
+  id        Int       @id @default(autoincrement())
+  text      String
+  image     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Details   Details[] @relation("DetailToDetails")
+}
+
+model DetailTitle {
+  id        Int       @id @default(autoincrement())
+  text      String
+  image     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Details   Details[]
+}
+
+model Details {
+  id              Int          @id @default(autoincrement())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  titleId         Int?
+  productAmountId Int?
+  DetailTitle     DetailTitle? @relation(fields: [titleId], references: [id])
+  Detail          Detail[]     @relation("DetailToDetails")
+  Product         Product[]    @relation("DetailsToProduct")
 }
 
 model Order {
@@ -34,10 +63,10 @@ model Order {
   quantity        Int?            @default(0)
   total           Float?          @default(0)
   clntMssgId      Int?
-  admin           Admin?          @relation(fields: [courierid], references: [tgId])
-  product         Product         @relation(fields: [productId], references: [id])
-  user            User            @relation(fields: [userId], references: [id])
-  tonTransaction  TonTransaction?
+  Admin           Admin?          @relation(fields: [courierid], references: [tgId])
+  Product         Product         @relation(fields: [productId], references: [id])
+  User            User            @relation(fields: [userId], references: [id])
+  TonTransaction  TonTransaction?
 }
 
 model Product {
@@ -59,9 +88,31 @@ model Product {
   max            Int           @default(0)
   min            Int           @default(0)
   pricingTiers   Json          @default("[]")
-  order          Order[]
-  requirements   Requirements? @relation(fields: [requirementsId], references: [id])
-  details        Details[]     @relation("DetailsToProduct")
+  Order          Order[]
+  Requirements   Requirements? @relation(fields: [requirementsId], references: [id])
+  Details        Details[]     @relation("DetailsToProduct")
+}
+
+model Referral {
+  id                             Int               @id @default(autoincrement())
+  referrerId                     String
+  referredId                     String            @unique
+  campaignId                     Int?
+  createdAt                      DateTime          @default(now())
+  updatedAt                      DateTime          @updatedAt
+  ReferralCampaign               ReferralCampaign? @relation(fields: [campaignId], references: [id])
+  User_Referral_referredIdToUser User              @relation("Referral_referredIdToUser", fields: [referredId], references: [id])
+  User_Referral_referrerIdToUser User              @relation("Referral_referrerIdToUser", fields: [referrerId], references: [id])
+}
+
+model ReferralCampaign {
+  id             Int        @id @default(autoincrement())
+  name           String     @unique
+  commissionRate Float      @default(0)
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  Referral       Referral[]
 }
 
 model Requirements {
@@ -70,36 +121,7 @@ model Requirements {
   expecting String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  product   Product[]
-}
-
-model Details {
-  id              Int          @id @default(autoincrement())
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  titleId         Int?
-  productAmountId Int?
-  title           DetailTitle? @relation(fields: [titleId], references: [id])
-  detail          Detail[]     @relation("DetailToDetails")
-  product         Product[]    @relation("DetailsToProduct")
-}
-
-model Detail {
-  id        Int       @id @default(autoincrement())
-  text      String
-  image     String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  belongs   Details[] @relation("DetailToDetails")
-}
-
-model DetailTitle {
-  id        Int       @id @default(autoincrement())
-  text      String
-  image     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  belongs   Details[]
+  Product   Product[]
 }
 
 model SummUpdate {
@@ -110,20 +132,8 @@ model SummUpdate {
   clientid  String
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  admin     Admin         @relation(fields: [cashierid], references: [tgId])
-  user      User          @relation(fields: [clientid], references: [id])
-}
-
-model Transfer {
-  id         Int           @id @default(autoincrement())
-  amount     Float
-  currency   PaymentMethod
-  senderid   String
-  recieverid String
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  reciever   User          @relation("ReceivedTransfers", fields: [recieverid], references: [id])
-  sender     User          @relation("SentTransfers", fields: [senderid], references: [id])
+  Admin     Admin         @relation(fields: [cashierid], references: [tgId])
+  User      User          @relation(fields: [clientid], references: [id])
 }
 
 model TonTransaction {
@@ -132,45 +142,35 @@ model TonTransaction {
   orderId   Int      @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  order     Order    @relation(fields: [orderId], references: [id])
+  Order     Order    @relation(fields: [orderId], references: [id])
 }
 
-model ReferralCampaign {
-  id             Int        @id @default(autoincrement())
-  name           String     @unique
-  commissionRate Float      @default(0)
-  isActive       Boolean    @default(true)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  referrals      Referral[]
-}
-
-model Referral {
-  id         Int               @id @default(autoincrement())
-  referrerId String
-  referredId String            @unique
-  campaignId Int?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  campaign   ReferralCampaign? @relation(fields: [campaignId], references: [id])
-  referred   User              @relation("ReferralsReceived", fields: [referredId], references: [id])
-  referrer   User              @relation("ReferralsMade", fields: [referrerId], references: [id])
+model Transfer {
+  id                             Int           @id @default(autoincrement())
+  amount                         Float
+  currency                       PaymentMethod
+  senderid                       String
+  recieverid                     String
+  createdAt                      DateTime      @default(now())
+  updatedAt                      DateTime      @updatedAt
+  User_Transfer_recieveridToUser User          @relation("Transfer_recieveridToUser", fields: [recieverid], references: [id])
+  User_Transfer_senderidToUser   User          @relation("Transfer_senderidToUser", fields: [senderid], references: [id])
 }
 
 model User {
-  id                String       @id
-  walNum            String       @unique
-  sumTmt            Float        @default(0)
-  sumUsdt           Float        @default(0)
-  role              UserRole     @default(client)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  order             Order[]
-  referralsReceived Referral?    @relation("ReferralsReceived")
-  referralsMade     Referral[]   @relation("ReferralsMade")
-  summUpdate        SummUpdate[]
-  deposits          Transfer[]   @relation("ReceivedTransfers")
-  transfers         Transfer[]   @relation("SentTransfers")
+  id                                 String       @id
+  walNum                             String       @unique
+  sumTmt                             Float        @default(0)
+  sumUsdt                            Float        @default(0)
+  role                               UserRole     @default(client)
+  createdAt                          DateTime     @default(now())
+  updatedAt                          DateTime     @updatedAt
+  Order                              Order[]
+  Referral_Referral_referredIdToUser Referral?    @relation("Referral_referredIdToUser")
+  Referral_Referral_referrerIdToUser Referral[]   @relation("Referral_referrerIdToUser")
+  SummUpdate                         SummUpdate[]
+  Transfer_Transfer_recieveridToUser Transfer[]   @relation("Transfer_recieveridToUser")
+  Transfer_Transfer_senderidToUser   Transfer[]   @relation("Transfer_senderidToUser")
 }
 
 enum OrderStatus {

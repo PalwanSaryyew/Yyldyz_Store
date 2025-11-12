@@ -235,7 +235,7 @@ export async function GET(request: Request) {
    const botRes = await orderScript({
       order: {
          ...transaction.orderData,
-         product: productData,
+         Product: productData,
       },
    });
    

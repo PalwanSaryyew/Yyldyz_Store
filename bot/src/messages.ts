@@ -36,21 +36,21 @@ export function prdctDtlMssg({
    order,
    forWhom,
 }: {
-   order: Order & { product: Product };
+   order: Order & { Product: Product };
    forWhom: "admin" | "client";
 }) {
-   return ` ${productTitle(order.product.name)}\n${prdcAmnt({
+   return ` ${productTitle(order.Product.name)}\n${prdcAmnt({
       quantity: order.quantity,
-      title: order.product.title,
-      amount: order.product.amount,
-      duration: order.product.duration,
+      title: order.Product.title,
+      amount: order.Product.amount,
+      duration: order.Product.duration,
    })}${
       forWhom === "client"
          ? ""
          : `Kimden: ${userLink({ id: Number(order.userId) })}\n`
    }${toWhere()}: ${order.receiver}\nJemi töleg: ${orderTotal({
       currency: order.payment,
-      product: order.product,
+      product: order.Product,
       total: order.total,
    })}`;
 }
@@ -132,11 +132,11 @@ export function afterOrderConfirmedMess({
    order,
    adminOnlineStatus,
 }: {
-   order: Order & { product: Product };
+   order: Order & { Product: Product };
    adminOnlineStatus: boolean;
 }): string {
    return `${statusIcons.care[1]} ${
-      order.product.chatRequired
+      order.Product.chatRequired
          ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
               adminOnlineStatus
                  ? "admin size ýazar haýyş garaşyň"

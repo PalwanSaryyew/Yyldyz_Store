@@ -5,6 +5,6 @@ export type errMess = {
    mssg: string;
 };
 export interface ValidatorOrder extends Order {
-   product: Product;
-   user: User;
+   Product: Product;
+   User: User;
 }

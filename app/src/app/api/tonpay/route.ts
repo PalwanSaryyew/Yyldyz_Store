@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
          id: orderId,
       },
       include: {
-         tonTransaction: true, // Include associated tonTransaction data
+         TonTransaction: true, // Include associated tonTransaction data
       },
    });
 
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
    }
 
    // 2. Get the transactionID that should match
-   const paymentIdToMatch = order.tonTransaction?.id;
+   const paymentIdToMatch = order.TonTransaction?.id;
    if (!paymentIdToMatch) {
       console.error(`Payment comment/ID not found for Order ID: ${orderId}`);
       return NextResponse.json(
@@ -176,8 +176,8 @@ export async function GET(request: NextRequest) {
             where: { id: orderId },
             data: { status: "paid" },
             include: {
-               tonTransaction: true,
-               product: true,
+               TonTransaction: true,
+               Product: true,
             },
          });
          console.log("before notice");

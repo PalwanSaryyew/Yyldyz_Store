@@ -6,14 +6,14 @@ import { InlineKeyboard } from "grammy";
 import { bot } from "./botConf";
 
 interface OrderDetails extends Order {
-   tonTransaction: TonTransaction | null;
-   product: Product;
+   TonTransaction: TonTransaction | null;
+   Product: Product;
 }
 // after order created
 export async function orderScript({
    order,
 }: {
-   order: Order & { product: Product };
+   order: Order & { Product: Product };
 
 }) {
    try {
@@ -68,7 +68,7 @@ export async function noticeAdmins(order: OrderDetails) {
    }
 
    let adminOnlineStatus = false;
-   if (order.product.chatRequired) {
+   if (order.Product.chatRequired) {
       const admins = await prisma.admin.findFirst({
          where: {
             onlineSatus: true,
@@ -78,7 +78,7 @@ export async function noticeAdmins(order: OrderDetails) {
    }
 
    const clntmssg = `${statusIcons.care[1]} ${
-      order.product.chatRequired
+      order.Product.chatRequired
          ? `Sargydyňyz alyndy, bu sargydy tabşyrmak üçin käbir maglumatlar gerek, ${
               adminOnlineStatus
                  ? "admin size ýazar haýyş garaşyň"

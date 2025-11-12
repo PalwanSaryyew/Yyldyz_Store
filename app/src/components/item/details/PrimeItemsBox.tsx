@@ -3,7 +3,7 @@ import PrimeItem from "./PrimeItem";
 import { cn } from "@/utils/tailwindMerge";
 
 interface PrimeItemsBoxProps {
-   detail: (Details & { detail: Detail[]; title: DetailTitle | null }) | null;
+   detail: (Details & { Detail: Detail[]; DetailTitle: DetailTitle | null }) | null;
    textLight: boolean;
 }
 
@@ -19,10 +19,10 @@ const PrimeItemsBox = ({ detail, textLight }: PrimeItemsBoxProps) => {
                "text-sm font-semibold pb-[0.2rem]"
             )}
          >
-            {detail.title?.text}
+            {detail.DetailTitle?.text}
          </div>
          <div className="flex gap-4 flex-wrap">
-            {detail.detail.map((item, index) => (
+            {detail.Detail.map((item, index) => (
                <PrimeItem key={index} text={item.text} image={item.image}  lightText={textLight}/>
             ))}
          </div>
