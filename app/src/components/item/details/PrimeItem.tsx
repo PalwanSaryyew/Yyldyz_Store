@@ -16,14 +16,16 @@ const PrimeItem = ({ text, image, lightText }: PrimeItemProps) => {
          )}
       >
          <div className="min-w-5 min-h-5 relative self-start">
-            <Image
-               src={image}
-               alt={image}
-               fill
-               rel="preload"
-               priority
-               style={{ objectFit: "contain" }}
-            />
+            {image && (
+               <Image
+                  src={image}
+                  alt={image}
+                  fill
+                  rel="preload"
+                  priority
+                  style={{ objectFit: "contain" }}
+               />
+            )}
          </div>
          {text}
       </div>
