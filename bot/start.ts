@@ -1435,7 +1435,7 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
       await bot.api
          .sendMessage(
             order.userId,
-            `${statusIcons.wait[0]} Sargadyňyz Tabşyryldy`,
+            `${statusIcons.wait[0]} Sargydyňyz tabşyryldy`,
             {
                parse_mode: "HTML",
                reply_to_message_id: clntMssgId,
