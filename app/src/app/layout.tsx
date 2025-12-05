@@ -5,6 +5,7 @@ import TonProvider from "@/components/ton/TonProvidor";
 import Header from "@/components/mains/Header";
 import Footer from "@/components/mains/Footer";
 import ModalProvider from "@/components/modals/modalDinam/ModalProvider";
+import SnowfallClient from "@/components/mains/SnowfallClient";
 
 const geistSans = localFont({
    /*  src: "@/app/fonts/GeistVF.woff", */
@@ -33,6 +34,7 @@ export default async function RootLayout({
          <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
          >
+            <SnowfallClient />
             <TonProvider>
                <ModalProvider />
                <Header />

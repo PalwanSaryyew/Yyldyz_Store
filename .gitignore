@@ -3,6 +3,7 @@
 # dependencies
 app/node_modules
 bot/node_modules
+/node_modules
 app/.pnp
 app/.pnp.js
 app/.yarn/install-state.gz
