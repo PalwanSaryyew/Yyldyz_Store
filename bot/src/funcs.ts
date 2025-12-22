@@ -9,6 +9,76 @@ interface OrderDetails extends Order {
    TonTransaction: TonTransaction | null;
    Product: Product;
 }
+
+export async function getUniqueBuyersCount() {
+   const result = await prisma.order.groupBy({
+      by: ["userId"],
+      where: {
+         status: "completed", // Sadece başarılı siparişleri baz alıyoruz
+      },
+   });
+
+   return result.length; // Gruplanmış kullanıcıların sayısı
+}
+
+/* export async function getTopSpenders(limit: number) {
+   const stats = await prisma.order.groupBy({
+      by: ["userId", "payment"],
+      where: {
+         status: "completed",
+         total: { gt: 0 },
+      },
+      _sum: {
+         total: true,
+      },
+   });
+
+   const userTotals: Record<string, number> = {};
+
+   stats.forEach((stat) => {
+      const userId = stat.userId;
+      const amount = stat._sum.total || 0;
+      const amountInTmt = stat.payment === "USDT" ? amount * 20 : amount;
+
+      if (!userTotals[userId]) userTotals[userId] = 0;
+      userTotals[userId] += amountInTmt;
+   });
+
+   return Object.entries(userTotals)
+      .map(([userId, total]) => ({ userId, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, limit);
+} */
+
+export async function getTopSpenders(limit: number) {
+   const stats = await prisma.order.groupBy({
+      by: ["userId", "payment"],
+      where: {
+         status: "completed",
+         total: { gt: 0 },
+      },
+      _sum: {
+         total: true,
+      },
+   });
+
+   const userTotals: Record<string, number> = {};
+
+   stats.forEach((stat) => {
+      const userId = stat.userId;
+      const amount = stat._sum.total || 0;
+      const amountInTmt = stat.payment === "USDT" ? amount * 20 : amount;
+
+      if (!userTotals[userId]) userTotals[userId] = 0;
+      userTotals[userId] += amountInTmt;
+   });
+
+   return Object.entries(userTotals)
+      .map(([userId, total]) => ({ userId, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, limit);
+}
+      
 // after order created
 export async function orderScript({
    order,

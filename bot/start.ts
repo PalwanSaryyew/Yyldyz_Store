@@ -31,6 +31,7 @@ import {
 } from "./src/messages";
 import { cnclAddSumBtnn, dlvrOrdrKybrd, mainKEybiard } from "./src/keyboards";
 import bcrypt from "bcrypt";
+import {  getTopSpenders, getUniqueBuyersCount } from "./src/funcs";
 
 // for updating persistent buttons
 /* bot.command("update", async (ctx) => {
@@ -142,6 +143,139 @@ import bcrypt from "bcrypt";
    });
 });
 */
+
+
+bot.command("buyers", async (ctx) => {
+   try {
+      const buyersCount = await getUniqueBuyersCount();
+
+      let message = "📊 *Kullanıcı İstatistikleri*\n\n";
+      message += `✅ En az bir kez başarılı sipariş vermiş toplam kullanıcı sayısı: *${buyersCount}*`;
+
+      await ctx.reply(message, { parse_mode: "Markdown" });
+   } catch (error) {
+      console.error("Buyers sayısını alırken hata oluştu:", error);
+      await ctx.reply("Veri alınırken bir hata oluştu.");
+   }
+});
+
+/* bot.command(["top10", "top100"], async (ctx) => {
+   try {
+      const limit = ctx.message?.text?.includes("100") ? 100 : 10;
+      const loadingMsg = await ctx.reply(
+         `⌛ <b>En çok harcama yapan ${limit} kullanıcı hesaplanıyor...</b>`,
+         { parse_mode: "HTML" }
+      );
+
+      const topSpenders = await getTopSpenders(limit);
+
+      if (topSpenders.length === 0) {
+         return ctx.reply("Henüz harcama kaydı bulunamadı.");
+      }
+
+      let message = `<b>🏆 En Çok Harcama Yapan ${limit} Kullanıcı (TMT)</b>\n\n`;
+      const chunks: string[] = [];
+
+      topSpenders.forEach((user, index) => {
+         const rank = index + 1;
+         const medal =
+            rank === 1
+               ? "🥇"
+               : rank === 2
+               ? "🥈"
+               : rank === 3
+               ? "🥉"
+               : `<b>${rank}.</b>`;
+
+         // <code> etiketi metni kopyalanabilir yapar
+         const copyableId = `<code>${user.userId}</code>`;
+
+         let line = `${medal} ID: ${copyableId} — <b>${user.total.toLocaleString(
+            "tr-TR"
+         )} TMT</b>\n`;
+
+         if ((message + line).length > 4000) {
+            chunks.push(message);
+            message = "";
+         }
+         message += line;
+      });
+
+      chunks.push(message);
+
+      // İlk mesajı (Yükleniyor...) silip sonuçları gönderelim
+      await ctx.api
+         .deleteMessage(ctx.chat.id, loadingMsg.message_id)
+         .catch(() => {});
+
+      for (const chunk of chunks) {
+         if (chunk.trim().length > 0) {
+            await ctx.reply(chunk, { parse_mode: "HTML" });
+         }
+      }
+   } catch (error) {
+      console.error("Top listesi hatası:", error);
+      await ctx.reply("Sıralama listesi oluşturulurken bir hata oluştu.");
+   }
+}); */
+
+bot.command(["top10", "top100"], async (ctx) => {
+   try {
+      const limit = ctx.message?.text?.includes("100") ? 100 : 10;
+      await ctx.reply(
+         `📊 En çok harcama yapan ${limit} kullanıcı hesaplanıyor...`
+      );
+
+      const topSpenders = await getTopSpenders(limit);
+
+      if (topSpenders.length === 0) {
+         return ctx.reply("Henüz harcama kaydı bulunamadı.");
+      }
+
+      // Başlık HTML formatında
+      let message = `<b>🏆 En Çok Harcama Yapan ${limit} Kullanıcı (TMT)</b>\n\n`;
+      const chunks: string[] = [];
+
+      topSpenders.forEach((user, index) => {
+         const rank = index + 1;
+         const medal =
+            rank === 1
+               ? "🥇"
+               : rank === 2
+               ? "🥈"
+               : rank === 3
+               ? "🥉"
+               : `<b>${rank}.</b>`;
+
+         // HTML Link yapısı: <a href="URL">Metin</a>
+         // Not: user.userId'nin sayısal Telegram ID olması gerekir.
+         const userLink = `<a href="tg://user?id=${user.userId}">${user.userId}</a>`;
+
+         let line = `${medal} ${userLink} — <b>${user.total.toLocaleString(
+            "tr-TR"
+         )} TMT</b>\n`;
+
+         // 4000 karakter sınırı kontrolü
+         if ((message + line).length > 4000) {
+            chunks.push(message);
+            message = "";
+         }
+         message += line;
+      });
+
+      chunks.push(message);
+
+      for (const chunk of chunks) {
+         if (chunk.trim().length > 0) {
+            await ctx.reply(chunk, { parse_mode: "HTML" });
+         }
+      }
+   } catch (error) {
+      console.error("Top listesi hatası:", error);
+      await ctx.reply("Sıralama listesi oluşturulurken bir hata oluştu.");
+   }
+});
+
 // bot start command
 bot.command("start", async (ctx) => {
    const userID = ctx.from?.id;
