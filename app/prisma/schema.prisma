@@ -165,6 +165,7 @@ model User {
   role                               UserRole     @default(client)
   createdAt                          DateTime     @default(now())
   updatedAt                          DateTime     @updatedAt
+  Chest                              Chest?
   Order                              Order[]
   Referral_Referral_referredIdToUser Referral?    @relation("Referral_referredIdToUser")
   Referral_Referral_referrerIdToUser Referral[]   @relation("Referral_referrerIdToUser")
@@ -218,7 +219,23 @@ enum ProductType {
   stand
 }
 
+model Chest {
+  id        Int       @id // 1'den 100'e kadar numara
+  type      ChestType
+  fullname  String?
+  reward    String?
+  userId    String?   @unique // Bir kullanıcı sadece bir sandık alabilir
+  User      User?     @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 enum UserRole {
   client
   admin
+}
+
+enum ChestType {
+  PREMIUM
+  NORMAL
 }

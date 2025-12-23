@@ -31,7 +31,7 @@ import {
 } from "./src/messages";
 import { cnclAddSumBtnn, dlvrOrdrKybrd, mainKEybiard } from "./src/keyboards";
 import bcrypt from "bcrypt";
-import {  getTopSpenders, getUniqueBuyersCount } from "./src/funcs";
+import { getTopSpenders, getUniqueBuyersCount, getUserRank } from "./src/funcs";
 
 // for updating persistent buttons
 /* bot.command("update", async (ctx) => {
@@ -143,7 +143,6 @@ import {  getTopSpenders, getUniqueBuyersCount } from "./src/funcs";
    });
 });
 */
-
 
 bot.command("buyers", async (ctx) => {
    try {
@@ -2245,6 +2244,121 @@ bot.callbackQuery("declineCheck", async (ctx) => {
             e
          )
       );
+});
+
+// /sandik Komutu: Sandıkları Listeler
+bot.command("sandyk", async (ctx) => {
+   const chests = await prisma.chest.findMany({
+      orderBy: { id: "asc" },
+      include: { User: true },
+   });
+
+   let message = "<b>🎄 Täze ýyl sandyklary:</b>\n";
+   message += "🎀 <i>1-10: Premium (Diňe Top 10)</i>\n";
+   message += "🎁 <i>11-100: Adaty (Top 11-100)</i>\n\n";
+
+   chests.forEach((c) => {
+      const icon = c.type === "PREMIUM" ? "🎀" : "🎁";
+      const status = c.userId
+         ? `[<a href="tg://user?id=${c.userId}">${c.fullname}</a>]`
+         : "<i>Elýeter</i>";
+      message += `${icon} <b>${c.id}:</b> ${status}\n`;
+
+      // Mesaj çok uzun olursa bölmek gerekebilir (opsiyonel)
+   });
+
+   const keyboard = new InlineKeyboard().text(
+      "🎁 Sandyk Saýla",
+      "chest_choosing"
+   );
+
+   await ctx.reply(message, { parse_mode: "HTML", reply_markup: keyboard });
+});
+
+// Buton İşlemi
+bot.callbackQuery("chest_choosing", async (ctx) => {
+   const userId = ctx.from.id.toString();
+   const rank = await getUserRank(userId);
+
+   if (!rank) {
+      return ctx.answerCallbackQuery({
+         text: "Gynansakda siz Top 100-de däl!",
+         show_alert: true,
+      });
+   }
+
+   // Kullanıcının zaten sandığı var mı?
+   const existingChest = await prisma.chest.findUnique({ where: { userId } });
+   if (existingChest) {
+      return ctx.answerCallbackQuery({
+         text: `Siz ${existingChest.id} belgili sadygy saýlapsyňyz!`,
+         show_alert: true,
+      });
+   }
+
+   const rangeText = rank <= 10 ? "1-10" : "11-100";
+   await ctx.reply(
+      `Siziň reýtingiňiz: <b>${rank}</b>. Saýlamak isleýän sandygyň belgisini giriziň. (${rangeText}):`,
+      {
+         parse_mode: "HTML",
+         reply_markup: { force_reply: true }, // Kullanıcının direkt cevap vermesini sağlar
+      }
+   );
+   // return await ctx.answerCallbackQuery();
+});
+
+bot.on("message:text", async (ctx) => {
+   if (!ctx.message.reply_to_message?.text?.includes("sandık numarasını yazın"))
+      return;
+
+   const userId = ctx.from.id.toString();
+   const chestId = parseInt(ctx.message.text);
+
+   if (isNaN(chestId) || chestId < 1 || chestId > 100) {
+      return ctx.reply("Geçersiz numara! Lütfen 1-100 arası bir sayı girin.");
+   }
+
+   const rank = await getUserRank(userId);
+   if (!rank) return ctx.reply("Top 100 listesinde değilsiniz.");
+
+   // Kural Kontrolü: Top 10 vs Diğerleri
+   if (rank <= 10 && chestId > 10) {
+      return ctx.reply(
+         "Siz Top 10'dasınız, sadece 1-10 arası Premium sandıkları seçebilirsiniz!"
+      );
+   }
+   if (rank > 10 && chestId <= 10) {
+      return ctx.reply(
+         "1-10 arası sandıklar sadece Top 10 kullanıcılara özeldir!"
+      );
+   }
+
+   try {
+      const targetChest = await prisma.chest.findUnique({
+         where: { id: chestId },
+      });
+
+      if (targetChest?.userId) {
+         return ctx.reply(
+            `Bu sandık zaten <a href="tg://user?id=${targetChest.userId}">${targetChest.userId}</a> tarafından alınmış!`,
+            { parse_mode: "HTML" }
+         );
+      }
+
+      // Sandığı ata
+      await prisma.chest.update({
+         where: { id: chestId },
+         data: { userId: userId },
+      });
+
+      await ctx.reply(
+         `🎉 Tebrikler! <b>${chestId}</b> numaralı sandık başarıyla size ayrıldı.`,
+         { parse_mode: "HTML" }
+      );
+   } catch (error) {
+      console.error(error);
+      await ctx.reply("Bir hata oluştu, lütfen daha sonra tekrar deneyin.");
+   }
 });
 
 const messageMappings = new Map();

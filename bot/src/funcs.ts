@@ -10,6 +10,13 @@ interface OrderDetails extends Order {
    Product: Product;
 }
 
+// Yardımcı Fonksiyon: Kullanıcının Top 100'deki sırasını bulur
+export async function getUserRank(userId: string) {
+  const topSpenders = await getTopSpenders(100); // Önceki yazdığımız fonksiyon
+  const index = topSpenders.findIndex(u => u.userId === userId);
+  return index === -1 ? null : index + 1; // 1-100 arası rank döner
+}
+
 export async function getUniqueBuyersCount() {
    const result = await prisma.order.groupBy({
       by: ["userId"],

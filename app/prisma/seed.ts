@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 
-
 const prisma = new PrismaClient();
 async function main() {
    /* try {
@@ -28,6 +27,23 @@ async function main() {
    } catch (error) {
       console.log(error);
    } */
+
+   async function seedChests() {
+      const count = await prisma.chest.count();
+      if (count === 0) {
+         const chests = [];
+         for (let i = 1; i <= 100; i++) {
+            chests.push({
+               id: i,
+               type: i <= 10 ? ("PREMIUM" as const) : ("NORMAL" as const),
+            });
+         }
+         await prisma.chest.createMany({ data: chests });
+         console.log("100 Sandık oluşturuldu.");
+      }
+   }
+
+   await seedChests();
 }
 
 main()
@@ -38,4 +54,3 @@ main()
    .finally(async () => {
       await prisma.$disconnect();
    });
-
