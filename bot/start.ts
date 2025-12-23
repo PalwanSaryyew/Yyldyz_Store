@@ -2253,7 +2253,7 @@ bot.command("sandyk", async (ctx) => {
       include: { User: true },
    });
 
-   let message = "<b>🎄 Täze ýyl sandyklary:</b>\n";
+   let message = "<b>🎄 Täze ýyl sandyklary:</b>\n\n";
    message += "🎀 <i>1-10: Premium (Diňe Top 10)</i>\n";
    message += "🎁 <i>11-100: Adaty (Top 11-100)</i>\n\n";
 
@@ -2304,60 +2304,77 @@ bot.callbackQuery("chest_choosing", async (ctx) => {
          reply_markup: { force_reply: true }, // Kullanıcının direkt cevap vermesini sağlar
       }
    );
-   // return await ctx.answerCallbackQuery();
+   await ctx.answerCallbackQuery();
 });
 
 bot.on("message:text", async (ctx) => {
-   if (!ctx.message.reply_to_message?.text?.includes("sandık numarasını yazın"))
+   // HATA 1 DÜZELTME: Doğru Türkmence istemi kontrol et.
+   if (
+      !ctx.message.reply_to_message?.text?.includes(
+         "Saýlamak isleýän sandygyň belgisini giriziň"
+      )
+   )
       return;
 
    const userId = ctx.from.id.toString();
    const chestId = parseInt(ctx.message.text);
 
    if (isNaN(chestId) || chestId < 1 || chestId > 100) {
-      return ctx.reply("Geçersiz numara! Lütfen 1-100 arası bir sayı girin.");
+      return ctx.reply("Ýalňyş san! 1 bilen 100 aralygynda san giriziň.");
+   }
+
+   // Ek Sağlamlık: Kullanıcının zaten bir sandığı var mı?
+   const existingChest = await prisma.chest.findUnique({ where: { userId } });
+   if (existingChest) {
+      return ctx.reply(
+         `Siz ${existingChest.id} belgili sadygy eýýäm saýlapsyňyz!`
+      );
    }
 
    const rank = await getUserRank(userId);
-   if (!rank) return ctx.reply("Top 100 listesinde değilsiniz.");
+   if (!rank) return ctx.reply("Sen Top 100 sanawynda ýok.");
 
    // Kural Kontrolü: Top 10 vs Diğerleri
    if (rank <= 10 && chestId > 10) {
       return ctx.reply(
-         "Siz Top 10'dasınız, sadece 1-10 arası Premium sandıkları seçebilirsiniz!"
+         "Siz Top 10 sanawynda, diňe 1-10 belgili Premium sandyklary saýlap bilersiňiz!"
       );
    }
    if (rank > 10 && chestId <= 10) {
-      return ctx.reply(
-         "1-10 arası sandıklar sadece Top 10 kullanıcılara özeldir!"
-      );
+      return ctx.reply("1-10 belgili Premium sandyklary diňe Top 10 müşderilere niýetlenen!");
    }
 
+   // HATA 2 DÜZELTME: Yarış koşullarını önlemek için atomik bir işlem kullan.
    try {
-      const targetChest = await prisma.chest.findUnique({
-         where: { id: chestId },
-      });
-
-      if (targetChest?.userId) {
-         return ctx.reply(
-            `Bu sandık zaten <a href="tg://user?id=${targetChest.userId}">${targetChest.userId}</a> tarafından alınmış!`,
-            { parse_mode: "HTML" }
-         );
-      }
-
-      // Sandığı ata
-      await prisma.chest.update({
-         where: { id: chestId },
-         data: { userId: userId },
+      const updatedChest = await prisma.chest.update({
+         where: {
+            id: chestId,
+            userId: undefined, // Sadece sandık hala alınmamışsa güncelle
+         },
+         data: {
+            userId: userId,
+            fullname: `${ctx.from.first_name} ${ctx.from.last_name ? ctx.from.last_name : ""}`, // Liste için kullanıcının adını kaydet
+         },
       });
 
       await ctx.reply(
-         `🎉 Tebrikler! <b>${chestId}</b> numaralı sandık başarıyla size ayrıldı.`,
+         `🎉 Gutlaýan! <b>${updatedChest.id}</b> belgili sandyk indi siziňki.`,
          { parse_mode: "HTML" }
       );
-   } catch (error) {
-      console.error(error);
-      await ctx.reply("Bir hata oluştu, lütfen daha sonra tekrar deneyin.");
+   } catch (error: any) {
+      // Prisma'nın P2025 hata kodu, güncellenecek kaydın bulunamadığını gösterir.
+      // Bizim durumumuzda, `where` koşulunun (id: chestId, userId: null) başarısız olduğu,
+      // yani başka bir kullanıcının sandığı talep ettiği anlamına gelir.
+      if (error.code === "P2025") {
+         await ctx.reply(
+            `Gynansak-da, bu sandyk başga biri tarapyndan eýýäm saýlandy! Täzeden synanyşyň.`
+         );
+      } else {
+         console.error("Error claiming chest:", error);
+         await ctx.reply(
+            "Sandyk alynýarka garaşylmadyk ýalňyşlyk ýüze çykdy. Soňra gaýtadan synanyşmagyňyzy haýyş edýäris."
+         );
+      }
    }
 });
 
