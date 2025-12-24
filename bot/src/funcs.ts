@@ -56,13 +56,23 @@ export async function getUniqueBuyersCount() {
       .sort((a, b) => b.total - a.total)
       .slice(0, limit);
 } */
-
 export async function getTopSpenders(limit: number) {
+   const excludedUserIds = [
+      "5959371462",
+      "5065229463",
+      "1743801082",
+      "6860526719",
+      "6443467910",
+   ];
+
    const stats = await prisma.order.groupBy({
       by: ["userId", "payment"],
       where: {
          status: "completed",
          total: { gt: 0 },
+         userId: {
+            notIn: excludedUserIds,
+         },
       },
       _sum: {
          total: true,
