@@ -2291,14 +2291,14 @@ bot.callbackQuery("chest_choosing", async (ctx) => {
    const existingChest = await prisma.chest.findUnique({ where: { userId } });
    if (existingChest) {
       return ctx.answerCallbackQuery({
-         text: `Siz ${existingChest.id} belgili sadygy saýlapsyňyz!`,
+         text: `Siz ${existingChest.id} belgili sandygy saýlapsyňyz!`,
          show_alert: true,
       });
    }
 
    const rangeText = rank <= 10 ? "1-10" : "11-100";
    await ctx.reply(
-      `Siziň reýtingiňiz: <b>${rank}</b>. Saýlamak isleýän sandygyň belgisini giriziň. (${rangeText}):`,
+      `Gutlaýan siziň Top 100 sanawyndaky reýtingiňiz: <b>${rank}</b>. Indi bolsa saýlamak isleýän sandygyňyzyň belgisini giriziň. (${rangeText}):`,
       {
          parse_mode: "HTML",
          reply_markup: { force_reply: true }, // Kullanıcının direkt cevap vermesini sağlar
@@ -2320,59 +2320,105 @@ bot.on("message:text", async (ctx) => {
    const chestId = parseInt(ctx.message.text);
 
    if (isNaN(chestId) || chestId < 1 || chestId > 100) {
-      return ctx.reply("Ýalňyş san! 1 bilen 100 aralygynda san giriziň.");
+      return ctx.reply("Ýalňyş san! 1 bilen 100 aralygynda san giriziň.", {
+         reply_markup: { remove_keyboard: true },
+      });
    }
 
    // Ek Sağlamlık: Kullanıcının zaten bir sandığı var mı?
    const existingChest = await prisma.chest.findUnique({ where: { userId } });
    if (existingChest) {
       return ctx.reply(
-         `Siz ${existingChest.id} belgili sadygy eýýäm saýlapsyňyz!`
+         `Siz ${existingChest.id} belgili sandygy eýýäm saýlapsyňyz!`,
+         { reply_markup: { remove_keyboard: true } }
       );
    }
 
    const rank = await getUserRank(userId);
-   if (!rank) return ctx.reply("Sen Top 100 sanawynda ýok.");
+   if (!rank)
+      return ctx.reply("Sen Top 100 sanawynda ýok.", {
+         reply_markup: { remove_keyboard: true },
+      });
 
    // Kural Kontrolü: Top 10 vs Diğerleri
    if (rank <= 10 && chestId > 10) {
       return ctx.reply(
-         "Siz Top 10 sanawynda, diňe 1-10 belgili Premium sandyklary saýlap bilersiňiz!"
+         "Siz Top 10 sanawynda, diňe 1-10 belgili Premium sandyklary saýlap bilersiňiz!",
+         { reply_markup: { remove_keyboard: true } }
       );
    }
    if (rank > 10 && chestId <= 10) {
-      return ctx.reply("1-10 belgili Premium sandyklary diňe Top 10 müşderilere niýetlenen!");
+      return ctx.reply(
+         "1-10 belgili Premium sandyklary diňe Top 10 müşderilere niýetlenen!",
+         { reply_markup: { remove_keyboard: true } }
+      );
    }
 
    // HATA 2 DÜZELTME: Yarış koşullarını önlemek için atomik bir işlem kullan.
    try {
-      const updatedChest = await prisma.chest.update({
-         where: {
-            id: chestId,
-            userId: undefined, // Sadece sandık hala alınmamışsa güncelle
-         },
-         data: {
-            userId: userId,
-            fullname: `${ctx.from.first_name} ${ctx.from.last_name ? ctx.from.last_name : ""}`, // Liste için kullanıcının adını kaydet
-         },
+      const updatedChest = await prisma.$transaction(async (prisma) => {
+         const chest = await prisma.chest.findUnique({
+            where: { id: chestId },
+         });
+
+         if (!chest) {
+            throw new Error("CHEST_NOT_FOUND");
+         }
+         if (chest.userId) {
+            throw new Error("ALREADY_TAKEN");
+         }
+         if (rank <= 10 && chest.type !== "PREMIUM") {
+            throw new Error("INVALID_CHEST_TYPE_PREMIUM");
+         }
+         if (rank > 10 && chest.type !== "NORMAL") {
+            throw new Error("INVALID_CHEST_TYPE_NORMAL");
+         }
+
+         const updated = await prisma.chest.update({
+            where: { id: chestId },
+            data: {
+               userId: userId,
+               fullname: `${ctx.from.first_name} ${
+                  ctx.from.last_name ? ctx.from.last_name : ""
+               }`,
+            },
+         });
+         return updated;
       });
 
       await ctx.reply(
          `🎉 Gutlaýan! <b>${updatedChest.id}</b> belgili sandyk indi siziňki.`,
-         { parse_mode: "HTML" }
+         { parse_mode: "HTML", reply_markup: { remove_keyboard: true } }
       );
    } catch (error: any) {
-      // Prisma'nın P2025 hata kodu, güncellenecek kaydın bulunamadığını gösterir.
-      // Bizim durumumuzda, `where` koşulunun (id: chestId, userId: null) başarısız olduğu,
-      // yani başka bir kullanıcının sandığı talep ettiği anlamına gelir.
-      if (error.code === "P2025") {
+      if (error.message === "ALREADY_TAKEN" || error.code === "P2025") {
          await ctx.reply(
-            `Gynansak-da, bu sandyk başga biri tarapyndan eýýäm saýlandy! Täzeden synanyşyň.`
+            `Gynansak-da, bu sandyk başga biri tarapyndan eýýäm saýlandy! Täzeden synanyşyň.`,
+            { reply_markup: { remove_keyboard: true } }
+         );
+      } else if (error.message === "CHEST_NOT_FOUND") {
+         await ctx.reply("Gynansak-da, bu sandyk tapylmady! Täzeden synanyşyň.", {
+            reply_markup: { remove_keyboard: true },
+         });
+      } else if (error.message === "INVALID_CHEST_TYPE_PREMIUM") {
+         await ctx.reply(
+            "Siz Top 10 sanawynda, diňe PREMIUM sandyklary saýlap bilersiňiz!",
+            {
+               reply_markup: { remove_keyboard: true },
+            }
+         );
+      } else if (error.message === "INVALID_CHEST_TYPE_NORMAL") {
+         await ctx.reply(
+            "PREMIUM sandyklary diňe Top 10 müşderilere niýetlenen!",
+            {
+               reply_markup: { remove_keyboard: true },
+            }
          );
       } else {
          console.error("Error claiming chest:", error);
          await ctx.reply(
-            "Sandyk alynýarka garaşylmadyk ýalňyşlyk ýüze çykdy. Soňra gaýtadan synanyşmagyňyzy haýyş edýäris."
+            "Sandyk alynýarka garaşylmadyk ýalňyşlyk ýüze çykdy. Soňra gaýtadan synanyşmagyňyzy haýyş edýäris.",
+            { reply_markup: { remove_keyboard: true } }
          );
       }
    }
