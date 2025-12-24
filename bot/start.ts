@@ -2689,7 +2689,7 @@ bot.on("message", async (ctx) => {
          .editMessageText(
             userId,
             checkState.messageId,
-            `ID: <a href="tg://user?id=${user.id}">${user.id}</a> \n Hasap nomer: code>${user.walNum}</code> \n TMT: ${user.sumTmt} \n USDT: ${user.sumUsdt}`,
+            `ID: <a href="tg://user?id=${user.id}">${user.id}</a> \n Hasap nomer: <code>${user.walNum}</code> \n TMT: ${user.sumTmt} \n USDT: ${user.sumUsdt}`,
             {
                parse_mode: "HTML",
             }
