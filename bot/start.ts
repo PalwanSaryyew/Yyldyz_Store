@@ -2307,125 +2307,126 @@ bot.callbackQuery("chest_choosing", async (ctx) => {
    await ctx.answerCallbackQuery();
 });
 
-bot.on("message:text", async (ctx) => {
-   // HATA 1 DÜZELTME: Doğru Türkmence istemi kontrol et.
+const messageMappings = new Map();
+bot.on("message", async (ctx) => {
+   // Chest selection reply logic is now at the top of the generic handler
    if (
-      !ctx.message.reply_to_message?.text?.includes(
-         "Saýlamak isleýän sandygyň belgisini giriziň"
+      ctx.message.text &&
+      ctx.message.reply_to_message?.text?.includes(
+         "Indi bolsa saýlamak isleýän sandygyňyzyň belgisini giriziň"
       )
-   )
-      return;
+   ) {
+      const userId = ctx.from.id.toString();
+      const chestId = parseInt(ctx.message.text);
 
-   const userId = ctx.from.id.toString();
-   const chestId = parseInt(ctx.message.text);
-
-   if (isNaN(chestId) || chestId < 1 || chestId > 100) {
-      return ctx.reply("Ýalňyş san! 1 bilen 100 aralygynda san giriziň.", {
-         reply_markup: { remove_keyboard: true },
-      });
-   }
-
-   // Ek Sağlamlık: Kullanıcının zaten bir sandığı var mı?
-   const existingChest = await prisma.chest.findUnique({ where: { userId } });
-   if (existingChest) {
-      return ctx.reply(
-         `Siz ${existingChest.id} belgili sandygy eýýäm saýlapsyňyz!`,
-         { reply_markup: { remove_keyboard: true } }
-      );
-   }
-
-   const rank = await getUserRank(userId);
-   if (!rank)
-      return ctx.reply("Sen Top 100 sanawynda ýok.", {
-         reply_markup: { remove_keyboard: true },
-      });
-
-   // Kural Kontrolü: Top 10 vs Diğerleri
-   if (rank <= 10 && chestId > 10) {
-      return ctx.reply(
-         "Siz Top 10 sanawynda, diňe 1-10 belgili Premium sandyklary saýlap bilersiňiz!",
-         { reply_markup: { remove_keyboard: true } }
-      );
-   }
-   if (rank > 10 && chestId <= 10) {
-      return ctx.reply(
-         "1-10 belgili Premium sandyklary diňe Top 10 müşderilere niýetlenen!",
-         { reply_markup: { remove_keyboard: true } }
-      );
-   }
-
-   // HATA 2 DÜZELTME: Yarış koşullarını önlemek için atomik bir işlem kullan.
-   try {
-      const updatedChest = await prisma.$transaction(async (prisma) => {
-         const chest = await prisma.chest.findUnique({
-            where: { id: chestId },
-         });
-
-         if (!chest) {
-            throw new Error("CHEST_NOT_FOUND");
-         }
-         if (chest.userId) {
-            throw new Error("ALREADY_TAKEN");
-         }
-         if (rank <= 10 && chest.type !== "PREMIUM") {
-            throw new Error("INVALID_CHEST_TYPE_PREMIUM");
-         }
-         if (rank > 10 && chest.type !== "NORMAL") {
-            throw new Error("INVALID_CHEST_TYPE_NORMAL");
-         }
-
-         const updated = await prisma.chest.update({
-            where: { id: chestId },
-            data: {
-               userId: userId,
-               fullname: `${ctx.from.first_name} ${
-                  ctx.from.last_name ? ctx.from.last_name : ""
-               }`,
-            },
-         });
-         return updated;
-      });
-
-      await ctx.reply(
-         `🎉 Gutlaýan! <b>${updatedChest.id}</b> belgili sandyk indi siziňki.`,
-         { parse_mode: "HTML", reply_markup: { remove_keyboard: true } }
-      );
-   } catch (error: any) {
-      if (error.message === "ALREADY_TAKEN" || error.code === "P2025") {
-         await ctx.reply(
-            `Gynansak-da, bu sandyk başga biri tarapyndan eýýäm saýlandy! Täzeden synanyşyň.`,
-            { reply_markup: { remove_keyboard: true } }
-         );
-      } else if (error.message === "CHEST_NOT_FOUND") {
-         await ctx.reply("Gynansak-da, bu sandyk tapylmady! Täzeden synanyşyň.", {
+      if (isNaN(chestId) || chestId < 1 || chestId > 100) {
+         return ctx.reply("Ýalňyş san! 1 bilen 100 aralygynda san giriziň.", {
             reply_markup: { remove_keyboard: true },
          });
-      } else if (error.message === "INVALID_CHEST_TYPE_PREMIUM") {
-         await ctx.reply(
-            "Siz Top 10 sanawynda, diňe PREMIUM sandyklary saýlap bilersiňiz!",
-            {
-               reply_markup: { remove_keyboard: true },
-            }
-         );
-      } else if (error.message === "INVALID_CHEST_TYPE_NORMAL") {
-         await ctx.reply(
-            "PREMIUM sandyklary diňe Top 10 müşderilere niýetlenen!",
-            {
-               reply_markup: { remove_keyboard: true },
-            }
-         );
-      } else {
-         console.error("Error claiming chest:", error);
-         await ctx.reply(
-            "Sandyk alynýarka garaşylmadyk ýalňyşlyk ýüze çykdy. Soňra gaýtadan synanyşmagyňyzy haýyş edýäris.",
+      }
+
+      const existingChest = await prisma.chest.findUnique({
+         where: { userId },
+      });
+      if (existingChest) {
+         return ctx.reply(
+            `Siz ${existingChest.id} belgili sandygy eýýäm saýlapsyňyz!`,
             { reply_markup: { remove_keyboard: true } }
          );
       }
-   }
-});
 
-const messageMappings = new Map();
-bot.on("message", async (ctx) => {
+      const rank = await getUserRank(userId);
+      if (!rank)
+         return ctx.reply("Sen Top 100 sanawynda ýok.", {
+            reply_markup: { remove_keyboard: true },
+         });
+
+      if (rank <= 10 && chestId > 10) {
+         return ctx.reply(
+            "Siz Top 10 sanawynda, diňe 1-10 belgili Premium sandyklary saýlap bilersiňiz!",
+            { reply_markup: { remove_keyboard: true } }
+         );
+      }
+      if (rank > 10 && chestId <= 10) {
+         return ctx.reply(
+            "1-10 belgili Premium sandyklary diňe Top 10 müşderilere niýetlenen!",
+            { reply_markup: { remove_keyboard: true } }
+         );
+      }
+
+      try {
+         const updatedChest = await prisma.$transaction(async (prisma) => {
+            const chest = await prisma.chest.findUnique({
+               where: { id: chestId },
+            });
+
+            if (!chest) {
+               throw new Error("CHEST_NOT_FOUND");
+            }
+            if (chest.userId) {
+               throw new Error("ALREADY_TAKEN");
+            }
+            if (rank <= 10 && chest.type !== "PREMIUM") {
+               throw new Error("INVALID_CHEST_TYPE_PREMIUM");
+            }
+            if (rank > 10 && chest.type !== "NORMAL") {
+               throw new Error("INVALID_CHEST_TYPE_NORMAL");
+            }
+
+            const updated = await prisma.chest.update({
+               where: { id: chestId },
+               data: {
+                  userId: userId,
+                  fullname: `${ctx.from.first_name} ${
+                     ctx.from.last_name ? ctx.from.last_name : ""
+                  }`,
+               },
+            });
+            return updated;
+         });
+
+         await ctx.reply(
+            `🎉 Gutlaýan! <b>${updatedChest.id}</b> belgili sandyk indi siziňki.`,
+            { parse_mode: "HTML", reply_markup: { remove_keyboard: true } }
+         );
+      } catch (error: any) {
+         if (error.message === "ALREADY_TAKEN" || error.code === "P2025") {
+            await ctx.reply(
+               `Gynansak-da, bu sandyk başga biri tarapyndan eýýäm saýlandy! Täzeden synanyşyň.`,
+               { reply_markup: { remove_keyboard: true } }
+            );
+         } else if (error.message === "CHEST_NOT_FOUND") {
+            await ctx.reply(
+               "Gynansak-da, bu sandyk tapylmady! Täzeden synanyşyň.",
+               {
+                  reply_markup: { remove_keyboard: true },
+               }
+            );
+         } else if (error.message === "INVALID_CHEST_TYPE_PREMIUM") {
+            await ctx.reply(
+               "Siz Top 10 sanawynda, diňe PREMIUM sandyklary saýlap bilersiňiz!",
+               {
+                  reply_markup: { remove_keyboard: true },
+               }
+            );
+         } else if (error.message === "INVALID_CHEST_TYPE_NORMAL") {
+            await ctx.reply(
+               "PREMIUM sandyklary diňe Top 10 müşderilere niýetlenen!",
+               {
+                  reply_markup: { remove_keyboard: true },
+               }
+            );
+         } else {
+            console.error("Error claiming chest:", error);
+            await ctx.reply(
+               "Sandyk alynýarka garaşylmadyk ýalňyşlyk ýüze çykdy. Soňra gaýtadan synanyşmagyňyzy haýyş edýäris.",
+               { reply_markup: { remove_keyboard: true } }
+            );
+         }
+      }
+      return; 
+   }
+
    const userId = ctx.chat.id;
    const reasonState = ctx.session.reasonStates[userId];
    const sumAddState = ctx.session.sumAddStates[userId];
@@ -2688,7 +2689,7 @@ bot.on("message", async (ctx) => {
          .editMessageText(
             userId,
             checkState.messageId,
-            `ID: <a href="tg://user?id=${user.id}">${user.id}</a> \n Hasap nomer: <code>${user.walNum}</code> \n TMT: ${user.sumTmt} \n USDT: ${user.sumUsdt}`,
+            `ID: <a href="tg://user?id=${user.id}">${user.id}</a> \n Hasap nomer: code>${user.walNum}</code> \n TMT: ${user.sumTmt} \n USDT: ${user.sumUsdt}`,
             {
                parse_mode: "HTML",
             }
@@ -2752,33 +2753,21 @@ bot.on("message", async (ctx) => {
          }
 
          try {
-            // --- YENİ EKLENEN KISIM BAŞLANGICI ---
 
-            // 2. Karşı tarafa "yazıyor..." aksiyonunu gönder.
-            // Bu sayede kullanıcı, operatörün bir mesaj gönderdiğini anlar.
             await ctx.api.sendChatAction(
-               chatState.userId, // Hedef chat ID'si
-               "typing" // Gönderilecek aksiyon: 'typing'
+               chatState.userId, 
+               "typing" 
             );
 
-            // (İsteğe Bağlı) Daha gerçekçi bir his için kısa bir bekleme ekleyelim.
-            // Bu, "yazıyor..." göründükten hemen sonra mesajın pat diye gelmesini engeller.
-            // const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-            // await sleep(1500); // 1.5 saniye bekle
-
-            // --- YENİ EKLENEN KISIM SONU ---
-
-            // 3. Mesajı karşı tarafa kopyala.
             const copiedMessage = await ctx.api.copyMessage(
-               chatState.userId, // Mesajın gönderileceği sohbet ID'si (hedef)
-               ctx.chat.id, // Mesajın geldiği sohbet ID'si (kaynak)
-               ctx.message.message_id, // Kopyalanacak mesajın ID'si
+               chatState.userId, 
+               ctx.chat.id, 
+               ctx.message.message_id, 
                {
                   reply_to_message_id: replyToMessageId,
                }
             );
 
-            // 4. İlerideki yanıtlarda kullanmak üzere bu iki mesajın ID'sini birbiriyle eşleştir.
             const sourceKey = `${ctx.chat.id}:${ctx.message.message_id}`;
             const destinationKey = `${chatState.userId}:${copiedMessage.message_id}`;
 
@@ -2852,32 +2841,32 @@ bot.on("message", async (ctx) => {
       for (const user of users) {
          try {
             if (user.id === userId.toString()) {
-               // Özüne habar ugratma
+               
                continue;
             }
             await ctx.api.copyMessage(
-               user.id, // Chat ID for the message to be sent
-               userId, // Chat ID from which the message came
+               user.id, 
+               userId, 
                ctx.message.message_id,
                {
                   reply_markup: mainKEybiard,
-               } // ID of the message to be copied
+               } 
             );
             console.log(`Habar ugradyldy: ${user.id}`);
             sentCount++;
-            // Hız limiti için küçük bir bekleme ekleyebilirsiniz (örneğin 50-100 ms)
+            
             await new Promise((resolve) => setTimeout(resolve, 100));
          } catch (error: any) {
             console.error(`Habar ugratma ýalňyşlygy ${user.id}:`, error);
             failedCount++;
-            // Kullanıcı botu engellediyse veya başka bir hata varsa
+            
             if (
                error.description &&
                error.description.includes("bot was blocked by the user")
             ) {
                console.log(`Ulanyjy boty petikläpdir, ${user.id}`);
             }
-            // Diğer hatalar için farklı işlemler yapabilirsiniz.
+            
          }
       }
       ctx.deleteMessage();
