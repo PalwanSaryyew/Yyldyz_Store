@@ -12,9 +12,9 @@ interface OrderDetails extends Order {
 
 // Yardımcı Fonksiyon: Kullanıcının Top 100'deki sırasını bulur
 export async function getUserRank(userId: string) {
-  const topSpenders = await getTopSpenders(100); // Önceki yazdığımız fonksiyon
-  const index = topSpenders.findIndex(u => u.userId === userId);
-  return index === -1 ? null : index + 1; // 1-100 arası rank döner
+   const topSpenders = await getTopSpenders(100); // Önceki yazdığımız fonksiyon
+   const index = topSpenders.findIndex((u) => u.userId === userId);
+   return index === -1 ? null : index + 1; // 1-100 arası rank döner
 }
 
 export async function getUniqueBuyersCount() {
@@ -73,6 +73,9 @@ export async function getTopSpenders(limit: number) {
          userId: {
             notIn: excludedUserIds,
          },
+         id: {
+            lte: 5239,
+         },
       },
       _sum: {
          total: true,
@@ -95,13 +98,12 @@ export async function getTopSpenders(limit: number) {
       .sort((a, b) => b.total - a.total)
       .slice(0, limit);
 }
-      
+
 // after order created
 export async function orderScript({
    order,
 }: {
    order: Order & { Product: Product };
-
 }) {
    try {
       if (order.payment === "TON") {
@@ -139,12 +141,11 @@ export async function noticeAdmins(order: OrderDetails) {
             forWhom: "admin",
          })}`,
          {
-            reply_markup: new InlineKeyboard()
-               .text(
-                  "Kabul Et " + statusIcons.yes[3],
-                  "deliverOrder_" + order.id
-               ),
-               /* .row()
+            reply_markup: new InlineKeyboard().text(
+               "Kabul Et " + statusIcons.yes[3],
+               "deliverOrder_" + order.id
+            ),
+            /* .row()
                .text("Ýatyr " + statusIcons.no[3], "declineOrder_" + order.id)
                .row()
                .copyText(order.receiver, order.receiver), */
@@ -189,7 +190,7 @@ export async function noticeAdmins(order: OrderDetails) {
       },
       data: {
          mssgIds: mssgIds,
-         clntMssgId: clntMssg.message_id
+         clntMssgId: clntMssg.message_id,
       },
    });
 }
