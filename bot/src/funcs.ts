@@ -63,6 +63,7 @@ export async function getTopSpenders(limit: number) {
       "1743801082",
       "6860526719",
       "6443467910",
+      "7823959868",
    ];
 
    const stats = await prisma.order.groupBy({
@@ -93,8 +94,25 @@ export async function getTopSpenders(limit: number) {
       userTotals[userId] += amountInTmt;
    });
 
+   const userIds = Object.keys(userTotals);
+   const users = await prisma.user.findMany({
+      where: {
+         id: { in: userIds },
+      },
+      select: {
+         id: true,
+         walNum: true,
+      },
+   });
+
+   const walNumMap = new Map(users.map((u) => [u.id, u.walNum]));
+
    return Object.entries(userTotals)
-      .map(([userId, total]) => ({ userId, total }))
+      .map(([userId, total]) => ({
+         userId,
+         total,
+         walNum: walNumMap.get(userId) || "",
+      }))
       .sort((a, b) => b.total - a.total)
       .slice(0, limit);
 }

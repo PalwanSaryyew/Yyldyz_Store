@@ -158,6 +158,36 @@ bot.command("buyers", async (ctx) => {
    }
 });
 
+bot.command("topdamy", async (ctx) => {
+   const userId = ctx.from?.id?.toString();
+   if (!userId) {
+      return ctx.reply("ID alynmady.");
+   }
+
+   try {
+      await ctx.reply("Reýtingiňiz hasaplanylýar....");
+      const rank = await getUserRank(userId);
+
+      if (rank !== null) {
+         const chestNum = await prisma.chest.findUnique({
+            where:{
+               userId: userId
+            }
+         })
+         await ctx.reply(
+            `🏆 Siz Top 100 sanawynda ${rank}. orunynda durýarsyňyz! ${
+               chestNum?.id ? "Sandyk belgiňiz: "+chestNum.id : "Derrew sandyk saýlaň 👉 /sandyk 👈 "
+            }`
+         );
+      } else {
+         await ctx.reply("😔 Bagyşlaň, siz Top 100 sanawyna girmediňiz.");
+      }
+   } catch (error) {
+      console.error("Sıralama hatası:", error);
+      await ctx.reply("Tertipleme netijelerini almakda ýalňyşlyk ýüze çykdy.");
+   }
+});
+
 /* bot.command(["top10", "top100"], async (ctx) => {
    try {
       const limit = ctx.message?.text?.includes("100") ? 100 : 10;
@@ -218,7 +248,7 @@ bot.command("buyers", async (ctx) => {
    }
 }); */
 
-bot.command(["top10", "top100"], async (ctx) => {
+bot.command(["top10id", "top100id"], async (ctx) => {
    try {
       const limit = ctx.message?.text?.includes("100") ? 100 : 10;
       await ctx.reply(
@@ -272,6 +302,58 @@ bot.command(["top10", "top100"], async (ctx) => {
    } catch (error) {
       console.error("Top listesi hatası:", error);
       await ctx.reply("Sıralama listesi oluşturulurken bir hata oluştu.");
+   }
+});
+bot.command(["top10", "top100"], async (ctx) => {
+   try {
+      const limit = ctx.message?.text?.includes("100") ? 100 : 10;
+      await ctx.reply(`📊 Iň işjeň ${limit} ulanyjy hasaplanyar...`);
+
+      const topSpenders = await getTopSpenders(limit);
+
+      if (topSpenders.length === 0) {
+         return ctx.reply("Tapylmady.");
+      }
+
+      // Başlık HTML formatında
+      let message = `<b>🏆 Iň işjeň ${limit} Ulanyjy</b>\n\n`;
+      const chunks: string[] = [];
+
+      topSpenders.forEach((user, index) => {
+         const rank = index + 1;
+         const medal =
+            rank === 1
+               ? "🥇"
+               : rank === 2
+               ? "🥈"
+               : rank === 3
+               ? "🥉"
+               : `<b>${rank})</b>`;
+
+         // HTML Link yapısı: <a href="URL">Metin</a>
+         // Not: user.userId'nin sayısal Telegram ID olması gerekir.
+         const userLink = `<a href="tg://user?id=${user.userId}">${user.walNum}</a>`;
+
+         let line = `${medal} ${userLink}\n`;
+
+         // 4000 karakter sınırı kontrolü
+         if ((message + line).length > 4000) {
+            chunks.push(message);
+            message = "";
+         }
+         message += line;
+      });
+
+      chunks.push(message);
+
+      for (const chunk of chunks) {
+         if (chunk.trim().length > 0) {
+            await ctx.reply(chunk, { parse_mode: "HTML" });
+         }
+      }
+   } catch (error) {
+      console.error("Top listesi hatası:", error);
+      await ctx.reply("Yalnyslyk yuze cykdy.");
    }
 });
 
@@ -2262,7 +2344,7 @@ bot.command("sandyk", async (ctx) => {
       const status = c.userId
          ? `[<a href="tg://user?id=${c.userId}">${c.fullname}</a>]`
          : "<i>Elýeter</i>";
-      message += `${icon} <b>${c.id}:</b> ${status}\n`;
+      message += `<b>${icon} ${c.id}: ${status}</b> \n`;
 
       // Mesaj çok uzun olursa bölmek gerekebilir (opsiyonel)
    });
