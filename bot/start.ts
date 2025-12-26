@@ -2351,16 +2351,16 @@ bot.command("sandyk", async (ctx) => {
 
    chests.forEach((c) => {
       const icon = c.type === "PREMIUM" ? "🎀" : "🎁";
-      const owner = `<a href="tg://user?id=${c.userId}">${c.fullname}</a>`
-      const reward = `${c.reward ? c.reward : ''}`
+      const owner = `<a href="tg://user?id=${c.userId}">${c.fullname}</a>`;
+      const reward = `${c.reward ? c.reward : ""}`;
 
       message += `Sandyk ${c.id} \n${owner} \n${icon} ${reward} \n\n`;
 
       // Mesaj çok uzun olursa bölmek gerekebilir (opsiyonel)
    });
 
-   message += "🎁 Sandyk Saýlama Çäresi Gutardy!",
-   await ctx.reply(message, { parse_mode: "HTML" });
+   (message += "🎁 Sandyk Saýlama Çäresi Gutardy!"),
+      await ctx.reply(message, { parse_mode: "HTML" });
 });
 
 // Buton İşlemi
@@ -2394,6 +2394,95 @@ bot.command("sandyk", async (ctx) => {
    );
    await ctx.answerCallbackQuery();
 }); */
+
+type ChestType = "NORMAL" | "PREMIUM";
+
+bot.command("payla", async (ctx) => {
+   const chestType = "NORMAL" as ChestType;
+   if (!ctx.from?.id) {
+      return;
+   }
+   const admin = adminValid(ctx.from?.id);
+   if (admin.error) {
+      return ctx.reply(admin.mssg);
+   }
+
+   const chests = await prisma.chest.findMany({
+      where: {
+         userId: {
+            not: null,
+         },
+         type: chestType,
+      },
+   });
+
+   if (chests.length === 0) {
+      return ctx.reply("No chests found");
+   }
+
+   ctx.session.paylaState[ctx.from.id] = {
+      chestType,
+      count: chests.length,
+   };
+
+   return ctx.reply(`${
+      chestType === "NORMAL" ? "Adaty" : "Premium"
+   } sandyklar tapyldy: ${chests.length}. Indi baýraklary şu formatda iberiň:
+5x baýragyň ady
+1x baýragyň ady
+12x baýragyň ady`);
+});
+
+bot.command("paylaprem", async (ctx) => {
+   const chestType = "PREMIUM" as ChestType;
+   if (!ctx.from?.id) {
+      return;
+   }
+   const admin = adminValid(ctx.from?.id);
+   if (admin.error) {
+      return ctx.reply(admin.mssg);
+   }
+
+   const chests = await prisma.chest.findMany({
+      where: {
+         userId: {
+            not: null,
+         },
+         type: chestType,
+      },
+   });
+
+   if (chests.length === 0) {
+      return ctx.reply("No chests found");
+   }
+
+   ctx.session.paylaState[ctx.from.id] = {
+      chestType,
+      count: chests.length,
+   };
+
+   return ctx.reply(`${
+      chestType === "NORMAL" ? "Adaty" : "Premium"
+   } sandyklar tapyldy: ${chests.length}. Indi baýraklary şu formatda iberiň:
+5x baýragyň ady
+1x baýragyň ady
+12x baýragyň ady`);
+});
+
+bot.command("arassala", async (ctx) => {
+   const admin = adminValid(ctx.from?.id);
+   if (admin.error) {
+      return ctx.reply(admin.mssg);
+   }
+
+   await prisma.chest.updateMany({
+      data: {
+         reward: null,
+      },
+   });
+
+   return ctx.reply(" ähli baýraklar üstünlikli arassalandy.");
+});
 
 const messageMappings = new Map();
 bot.on("message", async (ctx) => {
@@ -2523,8 +2612,71 @@ bot.on("message", async (ctx) => {
    const broadcastState = ctx.session.broadcastStates[userId];
    const checkState = ctx.session.checkStates[userId];
    const signupState = ctx.session.signupState[userId];
+   const paylaState = ctx.session.paylaState[ctx.from.id];
    if (ctx.message.pinned_message) {
       return;
+   }
+   if (paylaState) {
+      const admin = adminValid(ctx.from?.id);
+      if (admin.error) {
+         return ctx.reply(admin.mssg);
+      }
+
+      if (!ctx.message?.text) {
+         return ctx.reply("Hat iberin.");
+      }
+
+      const rewards: string[] = [];
+      const lines = ctx.message.text.split("\n");
+
+      for (const line of lines) {
+         const match = line.match(/(\d+)x (.+)/);
+         if (match) {
+            const count = parseInt(match[1]);
+            const name = match[2];
+            for (let i = 0; i < count; i++) {
+               rewards.push(name);
+            }
+         }
+      }
+
+      if (rewards.length === 0) {
+         return ctx.reply("Baýraklar tapylmady. Dogry formatda iberiň.");
+      }
+
+      const chests = await prisma.chest.findMany({
+         where: {
+            userId: {
+               not: null,
+            },
+            type: paylaState.chestType,
+         },
+      });
+
+      if (chests.length === 0) {
+         return ctx.reply("No chests found");
+      }
+
+      // Shuffle rewards
+      for (let i = rewards.length - 1; i > 0; i--) {
+         const j = Math.floor(Math.random() * (i + 1));
+         [rewards[i], rewards[j]] = [rewards[j], rewards[i]];
+      }
+
+      for (let i = 0; i < chests.length; i++) {
+         await prisma.chest.update({
+            where: {
+               id: chests[i].id,
+            },
+            data: {
+               reward: rewards[i] || "Empty",
+            },
+         });
+      }
+
+      delete ctx.session.paylaState[ctx.from.id];
+
+      return ctx.reply("Baýraklar üstünlikli paýlandy.");
    }
    if (reasonState) {
       const reason = ctx.message.text;

@@ -88,6 +88,14 @@ export interface BotSessionData {
       }
    >;
 
+   paylaState: Record<
+      number,
+      {
+         chestType: "NORMAL" | "PREMIUM";
+         count: number;
+      }
+   >;
+
    // Tek bir global bot durumunu takip etmek için (opsiyonel)
    // currentBotState?: 'idle' | 'broadcasting' | 'checking';
 }
@@ -95,7 +103,7 @@ export interface BotSessionData {
 // Oturum verilerini içeren özel bir Context tipi oluşturuyoruz
 // DİKKAT: BotSessionData artık tek bir global oturumu temsil ettiği için,
 // bu Context'i her zaman aynı "sanal" oturum anahtarıyla kullanmalıyız.
-export type MyContext = Context & SessionFlavor<BotSessionData>;
+export type MyContext = Context & SessionFlavor<BotSessionData & { paylaState: Record<number, { chestType: "NORMAL" | "PREMIUM"; count: number; }> }>;
 
 export const bot = new Bot<MyContext>(
    process.env.BOT_TOKEN || "YOUR_FALLBACK_TOKEN"
@@ -117,7 +125,8 @@ bot.use(
          chatStates: {},
          broadcastStates: {},
          checkStates: {},
-         signupState:{}
+         signupState:{},
+         paylaState: {}
       }),
       // ÖNEMLİ: Her zaman aynı session key'ini döndürerek tüm verileri tek bir oturum altında topluyoruz.
       // Bu, ctx.session'ın her zaman aynı global durumu temsil etmesini sağlar.
