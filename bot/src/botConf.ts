@@ -103,7 +103,7 @@ export interface BotSessionData {
 // Oturum verilerini içeren özel bir Context tipi oluşturuyoruz
 // DİKKAT: BotSessionData artık tek bir global oturumu temsil ettiği için,
 // bu Context'i her zaman aynı "sanal" oturum anahtarıyla kullanmalıyız.
-export type MyContext = Context & SessionFlavor<BotSessionData & { paylaState: Record<number, { chestType: "NORMAL" | "PREMIUM"; count: number; }> }>;
+export type MyContext = Context & SessionFlavor<BotSessionData>;
 
 export const bot = new Bot<MyContext>(
    process.env.BOT_TOKEN || "YOUR_FALLBACK_TOKEN"
