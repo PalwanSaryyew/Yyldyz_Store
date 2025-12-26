@@ -24,7 +24,7 @@ interface ReasonState {
 interface SignupState {
    nick: string | undefined;
    pass: string | undefined;
-   message_id: number
+   message_id: number;
 }
 
 // *** YENİ BotSessionData YAPISI ***
@@ -87,14 +87,7 @@ export interface BotSessionData {
          messageId: number;
       }
    >;
-
-   paylaState: Record<
-      number,
-      {
-         chestType: "NORMAL" | "PREMIUM";
-         count: number;
-      }
-   >;
+   paylaState: Record<number, any>; // payla ile ilgili durumları tutmak için
 
    // Tek bir global bot durumunu takip etmek için (opsiyonel)
    // currentBotState?: 'idle' | 'broadcasting' | 'checking';
@@ -125,8 +118,8 @@ bot.use(
          chatStates: {},
          broadcastStates: {},
          checkStates: {},
-         signupState:{},
-         paylaState: {}
+         signupState: {},
+         paylaState: {},
       }),
       // ÖNEMLİ: Her zaman aynı session key'ini döndürerek tüm verileri tek bir oturum altında topluyoruz.
       // Bu, ctx.session'ın her zaman aynı global durumu temsil etmesini sağlar.
