@@ -170,13 +170,15 @@ bot.command("topdamy", async (ctx) => {
 
       if (rank !== null) {
          const chestNum = await prisma.chest.findUnique({
-            where:{
-               userId: userId
-            }
-         })
+            where: {
+               userId: userId,
+            },
+         });
          await ctx.reply(
             `🏆 Siz Top 100 sanawynda ${rank}. orunynda durýarsyňyz! ${
-               chestNum?.id ? "Sandyk belgiňiz: "+chestNum.id : "Derrew sandyk saýlaň 👉 /sandyk 👈 "
+               chestNum?.id
+                  ? "Sandyk belgiňiz: " + chestNum.id
+                  : "Derrew sandyk saýlaň 👉 /sandyk 👈 "
             }`
          );
       } else {
@@ -2331,34 +2333,38 @@ bot.callbackQuery("declineCheck", async (ctx) => {
 // /sandik Komutu: Sandıkları Listeler
 bot.command("sandyk", async (ctx) => {
    const chests = await prisma.chest.findMany({
+      where: {
+         userId: {
+            not: null,
+         },
+      },
       orderBy: { id: "asc" },
       include: { User: true },
    });
 
+   const premiumCount = chests.filter((c) => c.type === "PREMIUM").length;
+   const normalCount = chests.filter((c) => c.type === "NORMAL").length;
+
    let message = "<b>🎄 Täze ýyl sandyklary:</b>\n\n";
-   message += "🎀 <i>1-10: Premium (Diňe Top 10)</i>\n";
-   message += "🎁 <i>11-100: Adaty (Top 11-100)</i>\n\n";
+   message += `🎀 <i>Saýlanan Premium Sandyklar: ${premiumCount}</i>\n`;
+   message += `🎁 <i>Saýlanan Adaty Sandyklar: ${normalCount}</i>\n\n`;
 
    chests.forEach((c) => {
       const icon = c.type === "PREMIUM" ? "🎀" : "🎁";
-      const status = c.userId
-         ? `[<a href="tg://user?id=${c.userId}">${c.fullname}</a>]`
-         : "<i>Elýeter</i>";
-      message += `<b>${icon} ${c.id}: ${status}</b> \n`;
+      const owner = `<a href="tg://user?id=${c.userId}">${c.fullname}</a>`
+      const reward = `${c.reward ? c.reward : ''}`
+
+      message += `Sandyk ${c.id} \n${owner} \n${icon} ${reward} \n\n`;
 
       // Mesaj çok uzun olursa bölmek gerekebilir (opsiyonel)
    });
 
-   const keyboard = new InlineKeyboard().text(
-      "🎁 Sandyk Saýla",
-      "chest_choosing"
-   );
-
-   await ctx.reply(message, { parse_mode: "HTML", reply_markup: keyboard });
+   message += "🎁 Sandyk Saýlama Çäresi Gutardy!",
+   await ctx.reply(message, { parse_mode: "HTML" });
 });
 
 // Buton İşlemi
-bot.callbackQuery("chest_choosing", async (ctx) => {
+/* bot.callbackQuery("chest_choosing", async (ctx) => {
    const userId = ctx.from.id.toString();
    const rank = await getUserRank(userId);
 
@@ -2387,12 +2393,12 @@ bot.callbackQuery("chest_choosing", async (ctx) => {
       }
    );
    await ctx.answerCallbackQuery();
-});
+}); */
 
 const messageMappings = new Map();
 bot.on("message", async (ctx) => {
    // Chest selection reply logic is now at the top of the generic handler
-   if (
+   /* if (
       ctx.message.text &&
       ctx.message.reply_to_message?.text?.includes(
          "Indi bolsa saýlamak isleýän sandygyňyzyň belgisini giriziň"
@@ -2506,8 +2512,8 @@ bot.on("message", async (ctx) => {
             );
          }
       }
-      return; 
-   }
+      return;
+   } */
 
    const userId = ctx.chat.id;
    const reasonState = ctx.session.reasonStates[userId];
@@ -2835,16 +2841,12 @@ bot.on("message", async (ctx) => {
          }
 
          try {
-
-            await ctx.api.sendChatAction(
-               chatState.userId, 
-               "typing" 
-            );
+            await ctx.api.sendChatAction(chatState.userId, "typing");
 
             const copiedMessage = await ctx.api.copyMessage(
-               chatState.userId, 
-               ctx.chat.id, 
-               ctx.message.message_id, 
+               chatState.userId,
+               ctx.chat.id,
+               ctx.message.message_id,
                {
                   reply_to_message_id: replyToMessageId,
                }
@@ -2923,32 +2925,25 @@ bot.on("message", async (ctx) => {
       for (const user of users) {
          try {
             if (user.id === userId.toString()) {
-               
                continue;
             }
-            await ctx.api.copyMessage(
-               user.id, 
-               userId, 
-               ctx.message.message_id,
-               {
-                  reply_markup: mainKEybiard,
-               } 
-            );
+            await ctx.api.copyMessage(user.id, userId, ctx.message.message_id, {
+               reply_markup: mainKEybiard,
+            });
             console.log(`Habar ugradyldy: ${user.id}`);
             sentCount++;
-            
+
             await new Promise((resolve) => setTimeout(resolve, 100));
          } catch (error: any) {
             console.error(`Habar ugratma ýalňyşlygy ${user.id}:`, error);
             failedCount++;
-            
+
             if (
                error.description &&
                error.description.includes("bot was blocked by the user")
             ) {
                console.log(`Ulanyjy boty petikläpdir, ${user.id}`);
             }
-            
          }
       }
       ctx.deleteMessage();
