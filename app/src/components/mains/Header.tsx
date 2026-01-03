@@ -8,7 +8,7 @@ const Header = () => {
       <header className="z-10 bg-blue-400 flex justify-between items-center px-4 py-1 rounded-b-3xl sticky top-0">
          {/* left */}
          <h1 className="flex items-center gap-1">
-            <Image className="" alt="logo" src={'/logo/new-year.png'} width={40} height={40} />
+            <Image className="" alt="logo" src={'/logo/logo-corp-tiny.png'} width={40} height={40} />
             <span className="text-white font-bold"></span>
          </h1>
          {/* <h1 className="font-semibold cursor-pointer rounded-full p-[2px] bg-gradient-to-r from-orange-500 via-green-500 to-blue-500">
