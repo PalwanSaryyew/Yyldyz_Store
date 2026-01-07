@@ -150,28 +150,10 @@ export async function GET(request: Request) {
    // preparing data for user balance update
    const data = newUserBalanceData(userSum, productSum, currency);
 
-   // reduce user balance
-   const sumUpdate = await prisma.user.update({
-      where: {
-         id: userData.id,
-      },
-      data,
-   });
-   
-   if (!sumUpdate) {
-      console.error("User db update error");
-      return Response.json(
-         {
-            success: false,
-            message: "User db update error",
-         },
-         { status: 500 }
-      );
-   }
-
-   // ton priçe çheçker
+   // ton price checker
    const tonPrice =
       currency === "TON" ? await tonPriceCalculator(productData.priceUSDT) : 1;
+   //! bu yerini sonra duzetmeli sebabi tonprice api error berip biler
    if (!tonPrice) {
       console.error("Crypto price api error");
       return Response.json(
@@ -183,103 +165,102 @@ export async function GET(request: Request) {
       );
    }
 
-   // order and transaction creator
-   const transaction = await prisma.$transaction(async (prisma) => {
-      // creating an order
-      const newOrder = await prisma.order.create({
-         data: {
-            userId: userData.id,
-            productId: productData.id,
-            status: "pending",
-            payment: currency,
-            receiver: receiver,
-            quantity: productData.amount,
-            total:
-               currency === "TMT"
-                  ? productData.priceTMT
-                  : currency === "USDT"
-                  ? productData.priceUSDT
-                  : tonPrice,
-         },
-      });
-      const tonCommentData = async () => {
-         if (newOrder.payment !== "TON") {
-            return null;
-         }
+   try {
+      const transaction = await prisma.$transaction(async (prisma) => {
+         // reduce user balance
+         await prisma.user.update({
+            where: {
+               id: userData.id,
+            },
+            data,
+         });
 
-         const transactionData = await prisma.tonTransaction.create({
+         // creating an order
+         const newOrder = await prisma.order.create({
             data: {
-               price: tonPrice,
-               orderId: newOrder.id,
+               userId: userData.id,
+               productId: productData.id,
+               status: "pending",
+               payment: currency,
+               receiver: receiver,
+               quantity: productData.amount,
+               total:
+                  currency === "TMT"
+                     ? productData.priceTMT
+                     : currency === "USDT"
+                     ? productData.priceUSDT
+                     : tonPrice,
             },
          });
-         return transactionData;
-      };
 
-      return { orderData: newOrder, tonTransaction: await tonCommentData() };
-   });
-   
-   if (!transaction.orderData) {
-      console.error("order db error");
-      return Response.json(
-         {
-            success: false,
-            message:
-               "Bagyşläň ýalňyşlyk döredi. Eger balansyňyzdan pul alynan bolsa admin bilen habarlaşyň.",
-         },
-         { status: 500 }
-      );
-   }
+         let tonTransaction = null;
+         if (newOrder.payment === "TON") {
+            tonTransaction = await prisma.tonTransaction.create({
+               data: {
+                  price: tonPrice,
+                  orderId: newOrder.id,
+               },
+            });
+         }
 
-   // sending message to user from bot
-   const botRes = await orderScript({
-      order: {
-         ...transaction.orderData,
-         Product: productData,
-      },
-   });
-   
-   if (!botRes) {
-      console.error("Bot message failed");
-      return Response.json(
-         {
-            success: false,
-            message:
-               "Bagyşläň ýalňyşlyk döredi. Eger balansyňyzdan pul alynan bolsa admin bilen habarlaşyň.",
-         },
-         { status: 500 }
-      );
-   }
-
-   // if order payment method is TON, we return the ton transaction data
-   if (transaction.orderData.payment === "TON") {
-      if (transaction.tonTransaction) {
-         return Response.json({
-            orderId: transaction.orderData.id,
-            success: true,
-            tonComment: `${productData.amount} ${productTitle(
-               productData.name
-            )} for ${transaction.tonTransaction.price} TON\n\n${
-               transaction.tonTransaction.id
-            }`,
-            price: transaction.tonTransaction.price,
+         // sending message to user from bot
+         const botRes = await orderScript({
+            order: {
+               ...newOrder,
+               Product: productData,
+            },
          });
+
+         if (!botRes) {
+            throw new Error("Bot message failed, rolling back transaction.");
+         }
+
+         return { orderData: newOrder, tonTransaction };
+      });
+
+      // if order payment method is TON, we return the ton transaction data
+      if (transaction.orderData.payment === "TON") {
+         if (transaction.tonTransaction) {
+            return Response.json({
+               orderId: transaction.orderData.id,
+               success: true,
+               tonComment: `${productData.amount} ${productTitle(
+                  productData.name
+               )} for ${transaction.tonTransaction.price} TON\n\n${
+                  transaction.tonTransaction.id
+               }`,
+               price: transaction.tonTransaction.price,
+            });
+         }
+         // if order payment method is TON, but transaction data is not created
+         // This should technically be unreachable if the logic is sound.
+         console.error(
+            "TON order created but tonTransaction data is missing."
+         );
+         return Response.json(
+            {
+               success: false,
+               message: "Transaction db error",
+            },
+            { status: 500 }
+         );
       }
-      // if order payment method is TON, but transaction data is not created
-      console.error("Transaction db error");
+      // if order payment method isn't TON, we return just success
+      return Response.json(
+         {
+            success: true,
+         },
+         { status: 200 }
+      );
+   } catch (error) {
+      console.error("Transaction failed: ", error);
       return Response.json(
          {
             success: false,
-            message: "Transaction db error",
+            message:
+               "Bagyşläň ýalňyşlyk döredi. Eger balansyňyzdan pul alynan bolsa admin bilen habarlaşyň.",
          },
          { status: 500 }
       );
    }
-   // if order payment method isn't TON, we return just success
-   return Response.json(
-      {
-         success: true,
-      },
-      { status: 200 }
-   );
 }

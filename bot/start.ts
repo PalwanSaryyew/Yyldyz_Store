@@ -2114,39 +2114,6 @@ bot.callbackQuery("declineCheck", async (ctx) => {
       );
 });
 
-// /sandik Komutu: Sandıkları Listeler
-bot.command("sandyk", async (ctx) => {
-   const chests = await prisma.chest.findMany({
-      where: {
-         userId: {
-            not: null,
-         },
-      },
-      orderBy: { id: "asc" },
-      include: { User: true },
-   });
-
-   const premiumCount = chests.filter((c) => c.type === "PREMIUM").length;
-   const normalCount = chests.filter((c) => c.type === "NORMAL").length;
-
-   let message = "<b>🎄 Täze ýyl sandyklary:</b>\n\n";
-   message += `🎀 <i>Saýlanan Premium Sandyklar: ${premiumCount}</i>\n`;
-   message += `🎁 <i>Saýlanan Adaty Sandyklar: ${normalCount}</i>\n\n`;
-
-   chests.forEach((c) => {
-      const icon = c.type === "PREMIUM" ? "🎀" : "🎁";
-      const owner = `<a href="tg://user?id=${c.userId}">${c.fullname}</a>`;
-      const reward = `${c.reward ? c.reward : ""}`;
-
-      message += `Sandyk ${c.id} \n${owner} \n${icon} ${reward} \n\n`;
-
-      // Mesaj çok uzun olursa bölmek gerekebilir (opsiyonel)
-   });
-
-   (message += "🎁 Sandyk Saýlama Çäresi Gutardy!"),
-      await ctx.reply(message, { parse_mode: "HTML" });
-});
-
 const messageMappings = new Map();
 bot.on("message", async (ctx) => {
    
