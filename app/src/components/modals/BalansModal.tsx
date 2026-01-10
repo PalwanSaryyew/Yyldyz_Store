@@ -7,7 +7,6 @@ const BalansModal = () => {
          <div className="text-white text-sm">Balans doldurmagyň usullary</div>
          <div className="text-white text-sm mt-2 flex flex-col divide-y ">
             <TopupType fee={13}>TMCELL</TopupType>
-            <TopupType fee={1.5}>Bank</TopupType>
             <TopupType fee={0}>Bankomat (kartdan karta)</TopupType>
             <TopupType fee={0}>USDT</TopupType>
             <TopupType fee={0}>Nagt</TopupType>
