@@ -172,6 +172,7 @@ model User {
   SummUpdate                         SummUpdate[]
   Transfer_Transfer_recieveridToUser Transfer[]   @relation("Transfer_recieveridToUser")
   Transfer_Transfer_senderidToUser   Transfer[]   @relation("Transfer_senderidToUser")
+  blocked                            Boolean      @default(false)
 }
 
 enum OrderStatus {

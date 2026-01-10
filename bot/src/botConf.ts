@@ -88,6 +88,12 @@ export interface BotSessionData {
       }
    >;
    paylaState: Record<number, any>; // payla ile ilgili durumları tutmak için
+   redeemCodeState: Record<
+      number,
+      {
+         message_id: number;
+      }
+   >;
 
    // Tek bir global bot durumunu takip etmek için (opsiyonel)
    // currentBotState?: 'idle' | 'broadcasting' | 'checking';
@@ -120,6 +126,7 @@ bot.use(
          checkStates: {},
          signupState: {},
          paylaState: {},
+         redeemCodeState: {},
       }),
       // ÖNEMLİ: Her zaman aynı session key'ini döndürerek tüm verileri tek bir oturum altında topluyoruz.
       // Bu, ctx.session'ın her zaman aynı global durumu temsil etmesini sağlar.

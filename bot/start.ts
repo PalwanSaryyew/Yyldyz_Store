@@ -213,6 +213,23 @@ bot.command("broadcast", async (ctx) => {
       }
    }
 });
+bot.command("redeem", async (ctx) => {
+   const isAdmin = adminValid(ctx.from?.id);
+   if (isAdmin.error) {
+      return ctx.deleteMessage();
+   }
+
+   if (ctx.from?.id !== undefined) {
+      try {
+         const message = await ctx.reply("Redeem kodlaryny ugradyn");
+         ctx.session.redeemCodeState[ctx.from.id] = {
+            message_id: message.message_id,
+         };
+      } catch (error) {
+         console.error("---redeem komandada reply yalnyslygy---", error);
+      }
+   }
+});
 bot.command("cagyr", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID) {
@@ -416,6 +433,106 @@ bot.command("of", async (ctx) => {
       });
    }
 });
+
+bot.command("block", async (ctx) => {
+   // 1. Check if the user is an admin
+   const adminId = ctx.from?.id;
+   const isAdmin = adminValid(adminId);
+   if (isAdmin.error) {
+      return ctx.reply("Bu komandy diňe adminler ulanyp bilýär!");
+   }
+
+   // 2. Get the user ID to block from the command arguments
+   const targetUserId = ctx.match;
+   if (!targetUserId) {
+      return ctx.reply(
+         "Bloklamak üçin ulanyjy ID-sini ýazyň. Meselem: /block 123456"
+      );
+   }
+
+   // 3. Find the user in the database
+   const userToBlock = await prisma.user.findUnique({
+      where: { id: targetUserId },
+   });
+
+   if (!userToBlock) {
+      return ctx.reply("Ulanyjy tapylmady.");
+   }
+
+   // 4. Check if we are trying to block an admin
+   const isTargetAdmin = adminValid(parseInt(targetUserId, 10));
+   if (!isTargetAdmin.error) {
+      return ctx.reply("Admini bloklap bolmaýar.");
+   }
+
+   // 5. Update the user's `blocked` status
+   await prisma.user.update({
+      where: { id: targetUserId },
+      data: { blocked: true },
+   });
+
+   // 6. Notify the admin
+   await ctx.reply(`Ulanyjy ${targetUserId} bloklandy.`);
+
+   // 7. Notify the user (optional, but good practice)
+   try {
+      await ctx.api.sendMessage(
+         targetUserId,
+         "Siz admin tarapyndan bloklandyňyz."
+      );
+   } catch (error) {
+      console.error("Could not notify user about block:", error);
+      await ctx.reply(
+         "Ulanyja bildiriş ugradyp bolmady (belki, boty bloklan bolmagy mümkin)."
+      );
+   }
+});
+
+bot.command("unblock", async (ctx) => {
+   // 1. Check if the user is an admin
+   const adminId = ctx.from?.id;
+   const isAdmin = adminValid(adminId);
+   if (isAdmin.error) {
+      return ctx.reply("Bu komandy diňe adminler ulanyp bilýär!");
+   }
+
+   // 2. Get the user ID to unblock from the command arguments
+   const targetUserId = ctx.match;
+   if (!targetUserId) {
+      return ctx.reply(
+         "Blokdan çykarmak üçin ulanyjy ID-sini ýazyň. Meselem: /unblock 123456"
+      );
+   }
+
+   // 3. Find the user in the database
+   const userToUnblock = await prisma.user.findUnique({
+      where: { id: targetUserId },
+   });
+
+   if (!userToUnblock) {
+      return ctx.reply("Ulanyjy tapylmady.");
+   }
+
+   // 4. Update the user's `blocked` status
+   await prisma.user.update({
+      where: { id: targetUserId },
+      data: { blocked: false },
+   });
+
+   // 5. Notify the admin
+   await ctx.reply(`Ulanyjy ${targetUserId} blokdan çykaryldy.`);
+
+   // 6. Notify the user
+   try {
+      await ctx.api.sendMessage(
+         targetUserId,
+         "Siz admin tarapyndan blokdan çykaryldyňyz."
+      );
+   } catch (error) {
+      console.error("Could not notify user about unblock:", error);
+   }
+});
+
 /* start command */
 bot.command("test", async (ctx) => {
    ctx.reply(`${statusIcons.yes} \n ${statusIcons.no} \n ${statusIcons.care}`, {
@@ -636,6 +753,16 @@ bot.hears("Admini çagyr", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID) {
       return;
+   }
+   const user = await userValid(userID);
+   if ("error" in user) {
+      return ctx.reply(user.mssg);
+   }
+
+   if ((user as any).blocked) {
+      return ctx.reply(
+         "Siz admin tarapyndan bloklanan, 'Admini çagyr' funksiýasyny ulanyp bilmersiňiz."
+      );
    }
    if (isAdminId(userID).error === false) {
       return await ctx.reply("Admin admini çagyryp bilmeýär!").catch((e) => {
@@ -2116,7 +2243,6 @@ bot.callbackQuery("declineCheck", async (ctx) => {
 
 const messageMappings = new Map();
 bot.on("message", async (ctx) => {
-   
    const userId = ctx.chat.id;
    const reasonState = ctx.session.reasonStates[userId];
    const sumAddState = ctx.session.sumAddStates[userId];
@@ -2125,10 +2251,10 @@ bot.on("message", async (ctx) => {
    const broadcastState = ctx.session.broadcastStates[userId];
    const checkState = ctx.session.checkStates[userId];
    const signupState = ctx.session.signupState[userId];
+   const redeemCodeState = ctx.session.redeemCodeState[userId];
    if (ctx.message.pinned_message) {
       return;
    }
-   
    if (reasonState) {
       const reason = ctx.message.text;
       const ordIdmess = ordrIdMssgFnc(reasonState.orderId);
@@ -2510,6 +2636,27 @@ bot.on("message", async (ctx) => {
       );
 
       return delete ctx.session.signupState[userId];
+   } else if (redeemCodeState) {
+      const message = ctx.message.text;
+      if (!message) {
+         delete ctx.session.redeemCodeState[userId];
+         await ctx.api.editMessageText(
+            userId,
+            redeemCodeState.message_id,
+            `Error`
+         );
+         return;
+      }
+
+      const codes = message.split(/[\s,-]+/).filter(Boolean);
+
+      for (const code of codes) {
+         await ctx.reply(code);
+      }
+
+      delete ctx.session.redeemCodeState[userId];
+      await ctx.deleteMessage();
+      await ctx.api.deleteMessage(userId, redeemCodeState.message_id);
    } else if (broadcastState) {
       const users = await prisma.user.findMany().catch((e) => {
          console.error("---broadcastState prisma yalnyslygy---", e);
