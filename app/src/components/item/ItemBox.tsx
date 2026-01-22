@@ -4,12 +4,13 @@ import ItemPrice from "./ItemPrice";
 import ItemIcon from "./ItemIcon";
 import ItemAmount from "./amount/ItemAmount";
 import { Product } from "../../../prisma/prismaSett";
-import { Detail, Details, DetailTitle, Requirements } from "@prisma/client";
+import { Requirements } from "@prisma/client";
 import ProductPriceCalculator from "./amount/ProductPriceCalculator";
+import { ProductDetails } from "@/lib/types";
 
 interface ItemBoxProps {
    item: Product & { Requirements: Requirements | null } & {
-      Details: (Details & { Detail: Detail[]; DetailTitle: DetailTitle | null })[];
+      Details: ProductDetails[];
    };
    tonPrice: number;
 }

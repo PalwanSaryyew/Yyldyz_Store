@@ -13,9 +13,10 @@ import { cn } from "@/utils/tailwindMerge";
 import { getUser } from "@/lib/fetchs";
 import { webApp } from "@/lib/webApp";
 import { Product } from "../../../prisma/prismaSett";
-import { Detail, Details, DetailTitle, Requirements } from "@prisma/client";
+import { Requirements } from "@prisma/client";
 import PrimeItemsBox from "./details/PrimeItemsBox";
 import { tonFee } from "bot/src/settings";
+import { ProductDetails } from "@/lib/types";
 const ItemModal = ({
    item,
    tonPrice,
@@ -23,7 +24,7 @@ const ItemModal = ({
    onQuantity,
 }: {
    item: Product & { Requirements: Requirements | null } & {
-      Details: (Details & { Detail: Detail[]; DetailTitle: DetailTitle | null })[];
+      Details: ProductDetails[];
    };
    tonPrice: number;
    quantity?: string;

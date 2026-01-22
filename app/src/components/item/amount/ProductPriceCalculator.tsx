@@ -3,14 +3,12 @@
 import { useCurrency, useQuantity } from "@/utils/UniStore";
 import React, { useEffect } from "react";
 import ItemAmount from "./ItemAmount";
-import { Detail, Details, DetailTitle, Product, Requirements } from "@prisma/client";
+import {  Product, Requirements } from "@prisma/client";
+import { ProductDetails } from "@/lib/types";
 
 interface Props {
    item: Product & { Requirements: Requirements | null } & {
-      Details: (Details & {
-         Detail: Detail[];
-         DetailTitle: DetailTitle | null;
-      })[];
+      Details: ProductDetails[];
    };
 }
 

@@ -4,13 +4,16 @@ import { prisma, ProductType } from "../../../prisma/prismaSett";
 import UseTrackLastVisitedPage from "@/lib/UseTrackLastVisitedPage";
 import { toncoinId } from "bot/src/settings";
 import { notFound } from "next/navigation";
+import { ProductDetails } from "@/lib/types";
 
 export default async function ProductPage({
    params,
 }: {
    params: { prdct: string };
 }) {
-   const isProductType = Object.values(ProductType).includes(params.prdct as ProductType);
+   const isProductType = Object.values(ProductType).includes(
+      params.prdct as ProductType,
+   );
    if (!isProductType) {
       notFound();
    }
@@ -34,12 +37,6 @@ export default async function ProductPage({
       ],
       include: {
          Requirements: true,
-         Details: {
-            include: {
-               Detail: true,
-               DetailTitle: true,
-            },
-         },
       },
    });
 
@@ -51,7 +48,7 @@ export default async function ProductPage({
             {/* recording path */}
             <UseTrackLastVisitedPage />
             {data.map((item) => (
-               <ItemBox item={item} key={item.id} tonPrice={tonPrice} />
+               <ItemBox item={{...item, Details: item.Details as ProductDetails[]}} key={item.id} tonPrice={tonPrice} />
             ))}
          </div>
       </>

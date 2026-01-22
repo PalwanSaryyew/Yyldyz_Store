@@ -19,34 +19,7 @@ model Admin {
   SummUpdate     SummUpdate[]
 }
 
-model Detail {
-  id        Int       @id @default(autoincrement())
-  text      String
-  image     String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Details   Details[] @relation("DetailToDetails")
-}
 
-model DetailTitle {
-  id        Int       @id @default(autoincrement())
-  text      String
-  image     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Details   Details[]
-}
-
-model Details {
-  id              Int          @id @default(autoincrement())
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  titleId         Int?
-  productAmountId Int?
-  DetailTitle     DetailTitle? @relation(fields: [titleId], references: [id])
-  Detail          Detail[]     @relation("DetailToDetails")
-  Product         Product[]    @relation("DetailsToProduct")
-}
 
 model Order {
   id              Int             @id @default(autoincrement())
@@ -90,7 +63,7 @@ model Product {
   pricingTiers   Json          @default("[]")
   Order          Order[]
   Requirements   Requirements? @relation(fields: [requirementsId], references: [id])
-  Details        Details[]     @relation("DetailsToProduct")
+  Details        Json          @default("[]")
 }
 
 model Referral {

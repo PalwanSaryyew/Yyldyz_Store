@@ -1,9 +1,9 @@
-import { Detail, Details, DetailTitle } from "@prisma/client";
+import { ProductDetails } from "@/lib/types";
 import PrimeItem from "./PrimeItem";
 import { cn } from "@/utils/tailwindMerge";
 
 interface PrimeItemsBoxProps {
-   detail: (Details & { Detail: Detail[]; DetailTitle: DetailTitle | null }) | null;
+   detail: ProductDetails;
    textLight: boolean;
 }
 
@@ -19,10 +19,10 @@ const PrimeItemsBox = ({ detail, textLight }: PrimeItemsBoxProps) => {
                "text-sm font-semibold pb-[0.2rem]"
             )}
          >
-            {detail.DetailTitle?.text}
+            {detail.title}
          </div>
          <div className="flex gap-4 flex-wrap">
-            {detail.Detail.map((item, index) => (
+            {detail.items.map((item, index) => (
                <PrimeItem key={index} text={item.text} image={item.image}  lightText={textLight}/>
             ))}
          </div>
