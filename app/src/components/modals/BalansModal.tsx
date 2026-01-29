@@ -6,7 +6,7 @@ const BalansModal = () => {
       <div className="bg-stone-900/50 backdrop-blur-sm w-10/12 max-h-screen p-4 border border-mainColor rounded-lg overflow-auto">
          <div className="text-white text-sm">Balans doldurmagyň usullary</div>
          <div className="text-white text-sm mt-2 flex flex-col divide-y ">
-            <TopupType fee={13}>TMCELL</TopupType>
+            <TopupType fee={10}>TMCELL</TopupType>
             <TopupType fee={0}>Bankomat (kartdan karta)</TopupType>
             <TopupType fee={0}>USDT</TopupType>
             <TopupType fee={0}>Nagt</TopupType>
