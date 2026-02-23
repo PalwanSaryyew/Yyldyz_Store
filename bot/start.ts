@@ -938,22 +938,20 @@ bot.callbackQuery(/cancelBroad_(.+)/, async (ctx) => {
 // Bu kodu bot.callbackQuery bloklarının dışında, ana bot dosyanın uygun bir yerine ekle
 bot.on("pre_checkout_query", async (ctx) => {
    try {
-      // Burada istersen ctx.preCheckoutQuery.invoice_payload ile sipariş ID'sini alıp
-      // veritabanından siparişin hala geçerli olup olmadığını kontrol edebilirsin.
-
-      // Şimdilik her şeyi onaylıyoruz (true):
       await ctx.answerPreCheckoutQuery(true);
    } catch (error) {
       console.error("pre_checkout_query hatası:", error);
-      // Eğer bir sorun varsa false ve hata mesajı döndürebilirsin:
-      // await ctx.answerPreCheckoutQuery(false, { error_message: "Stokta kalmadı veya bir hata oluştu." });
    }
 });
+
 bot.on("message:successful_payment", async (ctx) => {
    const paymentInfo = ctx.message.successful_payment;
 
-   // Fatura oluştururken 3. parametrede verdiğimiz order.StarTransaction.id değeri:
-   const orderId = Number(paymentInfo.invoice_payload);
+   // Payload'dan Sipariş ID'si ve Mesaj ID'sini ayırıyoruz (Örn: "145_5932")
+   const payloadParts = paymentInfo.invoice_payload.split("_");
+   const orderId = parseInt(payloadParts[0], 10);
+   const originalMsgId = parseInt(payloadParts[1], 10);
+
    const totalAmount = paymentInfo.total_amount;
    const currency = paymentInfo.currency; // XTR
 
@@ -961,67 +959,63 @@ bot.on("message:successful_payment", async (ctx) => {
       `Ödeme başarılı! Sipariş ID: ${orderId}, Tutar: ${totalAmount} ${currency}`,
    );
 
-   // 1. Kullanıcıya ödemenin alındığına dair bilgi ver
-   await ctx.reply(`🎉 Töleg üstünlikli geçdi! Sargyt ID: ${orderId}`);
-
-   // 2. Siparişin durumunu veritabanında "Ödendi" (Paid) olarak güncelle
-   const order = await validator(orderId, ["accepted"], "paid");
-   if ("error" in order) {
-      return await ctx
-         .answerCallbackQuery({
-            text: order.mssg,
-            show_alert: true,
-         })
-         .catch((e) => {
-            console.error(
-               "---message:successful_payment prosesinda answerCallbackQuery yalnyslygy---",
-               e,
-            );
-         });
+   if (isNaN(orderId)) {
+      console.error("Geçersiz sipariş ID'si döndü!");
+      return await ctx.reply("Sargyt ID tapylmady. Adminler bilen habarlaşyň.");
    }
 
-   // 3. ADMINLERE MESAJ GÖNDERME İŞLEMİ
-   // preparing messages
+   const order = await validator(orderId, ["accepted", "pending"], "paid");
+   if ("error" in order) {
+      console.error(
+         "Ödeme başarılı ama sipariş güncellenirken hata oluştu:",
+         order.mssg,
+      );
+      return await ctx.reply(
+         "Töleg üstünlikli geçdi, emma sargyt ulgamynda säwlik döredi. Adminler bilen habarlaşyň.",
+      );
+   }
+
+   // 1. ADMINLERE MESAJ GÖNDERME İŞLEMİ
    const ordIdMssg = ordrIdMssgFnc(order.id);
-   try {
-      // sending messages to admins and collecting messages ids orderly
-      const mssgIds: number[] = [];
-      for (const adminid of adminidS) {
-         try {
-            const data = await ctx.api.sendMessage(
-               adminid,
-               `${ordIdMssg} ${prdctDtlMssg({
-                  order: order,
-                  forWhom: "admin",
-               })}`,
-               {
-                  reply_markup: dlvrOrdrKybrd(order),
-                  parse_mode: "HTML",
-               },
-            );
-            mssgIds.push(data.message_id);
-         } catch (e) {
-            console.error(
-               "---acceptOrder duwmesinde for-sendMessage yalnyslygy---",
-               e,
-            );
-         }
+   const mssgIds: number[] = [];
+
+   for (const adminid of adminidS) {
+      try {
+         const data = await ctx.api.sendMessage(
+            adminid,
+            `${ordIdMssg} ${prdctDtlMssg({ order: order, forWhom: "admin" })}`,
+            { reply_markup: dlvrOrdrKybrd(order), parse_mode: "HTML" },
+         );
+         mssgIds.push(data.message_id);
+      } catch (e) {
+         console.error("---successful_payment admin sendMessage hatası---", e);
       }
+   }
 
-      let adminOnlineStatus = true;
+   // 2. KULLANICI MESAJINI GÜNCELLEME İŞLEMİ
+   let adminOnlineStatus = true; // Sisteminize göre ayarlayın
+   const clntmssg = afterOrderConfirmedMess({
+      order: order,
+      adminOnlineStatus,
+   });
 
-      const clntmssg = afterOrderConfirmedMess({
+   // Tıpkı normal ödemelerdeki gibi metni hazırlıyoruz
+   const finalMessageText = `${ordIdMssg} <blockquote expandable>${prdctDtlMssg(
+      {
          order: order,
-         adminOnlineStatus,
-      });
+         forWhom: "client",
+      },
+   )}</blockquote> \n ${clntmssg}\n\n🎉 <i>Töleg üstünlikli geçdi! (${totalAmount} ⭐️)</i>`;
 
-      const sentMessageToClient = await ctx.editMessageText(
-         `${ordIdMssg} <blockquote expandable>${prdctDtlMssg({
-            order: order,
-            forWhom: "client",
-         })}</blockquote> \n ${clntmssg}`,
+   try {
+      // Yeni mesaj yollamak yerine, faturayı oluşturduğumuz o eski mesajı düzenliyoruz:
+      await ctx.api.editMessageText(
+         ctx.chat.id,
+         originalMsgId,
+         finalMessageText,
          {
             parse_mode: "HTML",
+            // "Öde" butonunu kaldırıp, gerekirse "İptal" butonunu bırakıyoruz
             reply_markup:
                (order.Product.chatRequired === false && !adminOnlineStatus) ||
                adminOnlineStatus
@@ -1032,40 +1026,17 @@ bot.on("message:successful_payment", async (ctx) => {
                     ),
          },
       );
-      if (sentMessageToClient !== true) {
-         ctx.session.ordrMsgEdtStts[orderId] = {
-            mssgIds: mssgIds,
-            clntMssgId: sentMessageToClient.message_id,
-         };
-      } else {
-         console.error(
-            "Ulanyjy sargydy kabul edende yalnyslyk doredi. Ulanjy: ",
-            order.userId,
-            ", Sargyt ID: ",
-            orderId,
-         );
-      }
-
-      /* .catch((e) =>
-               console.error(
-               "---acceptOrder duwmesinde editMessageText yalnyslygy---",
-               e
-            )
-         ); */
    } catch (error) {
-      console.error("SMS ERROR::", error);
-      await ctx
-         .answerCallbackQuery({
-            text: "Sargyt kabul edilyarka yalnyslyk doredi.",
-            show_alert: true,
-         })
-         .catch((e) =>
-            console.error(
-               "---acceptOrder duwmesinde answerCallbackQuery yalnyslygy---",
-               e,
-            ),
-         );
+      console.error("Eski müşteri mesajı güncellenirken hata oluştu:", error);
+      // Eğer bir nedenden ötürü mesaj düzenlenemezse (örn. mesaj çok eskiyse), yedek olarak yeni mesaj at:
+      await ctx.reply(finalMessageText, { parse_mode: "HTML" });
    }
+
+   // Session kayıt işlemleri
+   ctx.session.ordrMsgEdtStts[orderId] = {
+      mssgIds: mssgIds,
+      clntMssgId: originalMsgId,
+   };
 });
 
 // if order accept by the client
@@ -1073,35 +1044,20 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
    const orderId = parseInt(ctx.match[1]);
    const clntID = ctx.from.id;
 
-   //caht id comes ?
    const chatId = chatIdV(clntID);
    if (chatId.error) {
-      return await ctx
-         .answerCallbackQuery({
-            text: chatId.mssg,
-            show_alert: true,
-         })
-         .catch((e) => {
-            console.error(
-               "---acceptOrder duwmesinde answerCallbackQuery yalnyslygy---",
-               e,
-            );
-         });
+      return await ctx.answerCallbackQuery({
+         text: chatId.mssg,
+         show_alert: true,
+      });
    }
-   // validates and turnes order details
+
    const order = await validator(orderId, ["pending"], "accepted");
    if ("error" in order) {
-      return await ctx
-         .answerCallbackQuery({
-            text: order.mssg,
-            show_alert: true,
-         })
-         .catch((e) => {
-            console.error(
-               "---acceptOrder duwmesinde answerCallbackQuery yalnyslygy---",
-               e,
-            );
-         });
+      return await ctx.answerCallbackQuery({
+         text: order.mssg,
+         show_alert: true,
+      });
    }
 
    if (order.quantity) {
@@ -1114,37 +1070,31 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       order.Product.amount = amount;
    }
 
-   // order belongs to this user ?
    if (order.userId !== clntID.toString()) {
-      return await ctx
-         .answerCallbackQuery({
-            text: "Sargydyň eyesi siz däl",
-            show_alert: true,
-         })
-         .catch((e) => {
-            console.error(
-               "---acceptOrder duwmesinde answerCallbackQuery yalnyslygy---",
-               e,
-            );
-         });
+      return await ctx.answerCallbackQuery({
+         text: "Sargydyň eyesi siz däl",
+         show_alert: true,
+      });
    }
 
+   // YILDIZ ÖDEMESİ MANTIĞI: Linki oluştur ve BURADA DUR (Return).
    if (order.payment === "STAR" && order.StarTransaction) {
       try {
-         // 1. Fatura mesajı göndermek yerine bir Fatura Linki oluşturuyoruz
+         // Fatura payload'ına hem Sipariş ID'sini hem de şu anki Mesaj ID'sini ekliyoruz:
+         const payloadData = `${order.id}_${ctx.msg?.message_id}`;
+
          const invoiceLink = await ctx.api.createInvoiceLink(
             productTitle(order.Product.name),
             order.Product.title ||
                order.Product.duration ||
                order.Product.amount?.toString() ||
                "Sargyt",
-            order.StarTransaction.id.toString(),
-            "", // Stars için provider token boş olmalı
+            payloadData, // <-- DEĞİŞİKLİK BURADA: SiparişID_MesajID gönderiyoruz
+            "",
             "XTR",
             [{ label: "Bahasy", amount: Number(order.StarTransaction.price) }],
          );
 
-         // 2. Mevcut mesajın altındaki klavyeyi güncelleyip "Ödeme Yap" URL butonunu ekliyoruz
          const payKeyboard = new InlineKeyboard()
             .url("⭐️ Töleg et", invoiceLink)
             .row()
@@ -1155,7 +1105,6 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
             text: "Töleg penjiresine geçip bilersiňiz.",
          });
 
-         // Ödemenin tamamlanmasını bekleyeceğimiz için akışı burada durduruyoruz
          return;
       } catch (error) {
          console.error("Fatura linki oluşturulurken hata:", error);
@@ -1165,35 +1114,27 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          });
       }
    }
-   // preparing messages
+
+   // --- EĞER ÖDEME YILDIZ (STAR) DEĞİLSE ---
+   // (Örneğin nakit veya havale ise, direkt adminlere haber ver ve işlemi bitir)
+
    const ordIdMssg = ordrIdMssgFnc(order.id);
    try {
-      // sending messages to admins and collecting messages ids orderly
       const mssgIds: number[] = [];
       for (const adminid of adminidS) {
          try {
             const data = await ctx.api.sendMessage(
                adminid,
-               `${ordIdMssg} ${prdctDtlMssg({
-                  order: order,
-                  forWhom: "admin",
-               })}`,
-               {
-                  reply_markup: dlvrOrdrKybrd(order),
-                  parse_mode: "HTML",
-               },
+               `${ordIdMssg} ${prdctDtlMssg({ order: order, forWhom: "admin" })}`,
+               { reply_markup: dlvrOrdrKybrd(order), parse_mode: "HTML" },
             );
             mssgIds.push(data.message_id);
          } catch (e) {
-            console.error(
-               "---acceptOrder duwmesinde for-sendMessage yalnyslygy---",
-               e,
-            );
+            console.error("---acceptOrder admin mesaj hatası---", e);
          }
       }
 
       let adminOnlineStatus = true;
-
       const clntmssg = afterOrderConfirmedMess({
          order: order,
          adminOnlineStatus,
@@ -1216,41 +1157,22 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
                     ),
          },
       );
+
       if (sentMessageToClient !== true) {
          ctx.session.ordrMsgEdtStts[orderId] = {
             mssgIds: mssgIds,
             clntMssgId: sentMessageToClient.message_id,
          };
-      } else {
-         console.error(
-            "Ulanyjy sargydy kabul edende yalnyslyk doredi. Ulanjy: ",
-            clntID,
-            ", Sargyt ID: ",
-            orderId,
-         );
       }
-
-      /* .catch((e) =>
-               console.error(
-               "---acceptOrder duwmesinde editMessageText yalnyslygy---",
-               e
-            )
-         ); */
    } catch (error) {
       console.error("SMS ERROR::", error);
-      await ctx
-         .answerCallbackQuery({
-            text: "Sargyt kabul edilyarka yalnyslyk doredi.",
-            show_alert: true,
-         })
-         .catch((e) =>
-            console.error(
-               "---acceptOrder duwmesinde answerCallbackQuery yalnyslygy---",
-               e,
-            ),
-         );
+      await ctx.answerCallbackQuery({
+         text: "Sargyt kabul edilyarka yalnyslyk doredi.",
+         show_alert: true,
+      });
    }
-});
+}
+);
 // if order çançelled by client
 bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
    const orderId = parseInt(ctx.match[1]);
