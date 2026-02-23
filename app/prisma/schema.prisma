@@ -19,10 +19,8 @@ model Admin {
   SummUpdate     SummUpdate[]
 }
 
-
-
 model Order {
-  id              Int             @id @default(autoincrement())
+  id              Int              @id @default(autoincrement())
   payment         PaymentMethod
   receiver        String
   status          OrderStatus
@@ -30,15 +28,15 @@ model Order {
   productId       Int
   courierid       String?
   mssgIds         Int[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   productAmountId Int?
-  quantity        Int?            @default(0)
-  total           Float?          @default(0)
+  quantity        Int?             @default(0)
+  total           Float?           @default(0)
   clntMssgId      Int?
-  Admin           Admin?          @relation(fields: [courierid], references: [tgId])
-  Product         Product         @relation(fields: [productId], references: [id])
-  User            User            @relation(fields: [userId], references: [id])
+  Admin           Admin?           @relation(fields: [courierid], references: [tgId])
+  Product         Product          @relation(fields: [productId], references: [id])
+  User            User             @relation(fields: [userId], references: [id])
   TonTransaction  TonTransaction?
   StarTransaction StarTransaction?
 }
@@ -118,8 +116,10 @@ model TonTransaction {
   updatedAt DateTime @updatedAt
   Order     Order    @relation(fields: [orderId], references: [id])
 }
+
 model StarTransaction {
   id        String   @id @default(cuid())
+  chargeId  String?   @unique
   price     Int
   orderId   Int      @unique
   createdAt DateTime @default(now())

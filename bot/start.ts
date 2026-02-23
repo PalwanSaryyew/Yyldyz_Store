@@ -974,6 +974,15 @@ bot.on("message:successful_payment", async (ctx) => {
       );
    }
 
+   // İşte bu ID iade işlemi için hayati önem taşıyor:
+   const chargeId = paymentInfo.telegram_payment_charge_id;
+   await prisma.starTransaction.update({
+      where: {orderId: order.id},
+      data: {chargeId: chargeId},
+   }).catch((e) => {
+      console.error("StarTransaction güncellenirken hata:", e);
+   })
+
    // 1. ADMINLERE MESAJ GÖNDERME İŞLEMİ
    const ordIdMssg = ordrIdMssgFnc(order.id);
    const mssgIds: number[] = [];
@@ -1170,8 +1179,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          show_alert: true,
       });
    }
-}
-);
+});
 // if order çançelled by client
 bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
    const orderId = parseInt(ctx.match[1]);
@@ -1229,11 +1237,13 @@ bot.callbackQuery(/cancelOrder_(.+)/, async (ctx) => {
                  order.User.sumTmt +
                  (order.total ? order.total : order.Product.priceTMT),
            }
-         : {
-              sumUsdt:
-                 order.User.sumUsdt +
-                 (order.total ? order.total : order.Product.priceUSDT),
-           };
+         : order.payment === "USDT"
+           ? {
+                sumUsdt:
+                   order.User.sumUsdt +
+                   (order.total ? order.total : order.Product.priceUSDT),
+             }
+           : {};
    const userData = await prisma.user
       .update({
          where: {
@@ -1484,42 +1494,74 @@ bot.callbackQuery(/declineOrder_(.+)/, async (ctx) => {
          );
    }
 
-   // user sum update
-   const data =
-      order.payment === "TMT"
-         ? {
-              sumTmt:
-                 order.User.sumTmt +
-                 (order.total ? order.total : order.Product.priceTMT),
-           }
-         : {
-              sumUsdt:
-                 order.User.sumUsdt +
-                 (order.total ? order.total : order.Product.priceUSDT),
-           };
-   const userData = await prisma.user
-      .update({
-         where: {
-            id: order.User.id,
-         },
-         data,
-      })
-      .catch((e) =>
-         console.error("---declineOrder duwmesinde prisma yalnyslygy---", e),
-      );
-   if (!userData) {
-      console.log(err_6.d);
-      return await ctx
-         .answerCallbackQuery({
-            text: err_6.m,
+   // --- USER SUM UPDATE & REFUND MANTIĞI ---
+   if (order.payment === "STAR") {
+      // 1. EĞER ÖDEME YILDIZ İLE YAPILDIYSA TELEGRAM ÜZERİNDEN İADE ET
+      try {
+         // Veritabanında (Prisma) kaydettiğin charge id'yi buraya çekmelisin.
+         if (order.StarTransaction?.chargeId) {
+            await ctx.api.refundStarPayment(
+               Number(order.userId), // Kullanıcının Telegram ID'si (Sayı olmalı)
+               order.StarTransaction?.chargeId, // Başarılı ödemede aldığımız işlem ID'si
+            );
+            console.log(
+               `Sipariş ${order.id} için Yıldız iadesi başarıyla yapıldı.`,
+            );
+         } else {
+            console.error(
+               "Ýyldyzy gaýtaryp bermedi: telegramChargeId tapylmady!",
+            );
+            // İstersen burada admine "İade yapılamadı" diye bir alert gösterebilirsin
+            return await ctx.answerCallbackQuery({
+               text: "Ýyldyzy gaýtaryp bermedi: telegramChargeId tapylmady!",
+               show_alert: true,
+            });
+         }
+      } catch (refundError) {
+         console.error(
+            "Yıldız iadesi sırasında Telegram API hatası:",
+            refundError,
+         );
+         return await ctx.answerCallbackQuery({
+            text: "Ýyldyz gaýtarmak prosesinde Telegram API ýalňyşlygy!",
             show_alert: true,
+         });
+      }
+   } else {
+      // 2. EĞER NORMAL (TMT/USDT) ÖDEME İSE KULLANICI BAKİYESİNE GERİ YÜKLE
+      const data =
+         order.payment === "TMT"
+            ? {
+                 sumTmt:
+                    order.User.sumTmt +
+                    (order.total ? order.total : order.Product.priceTMT),
+              }
+            : {
+                 sumUsdt:
+                    order.User.sumUsdt +
+                    (order.total ? order.total : order.Product.priceUSDT),
+              };
+
+      const userData = await prisma.user
+         .update({
+            where: { id: order.User.id },
+            data,
          })
          .catch((e) =>
-            console.error(
-               "---declineOrder duwmesinde answerCallbackQuery yalnyslygy---",
-               e,
-            ),
+            console.error("---declineOrder duwmesinde prisma yalnyslygy---", e),
          );
+
+      if (!userData) {
+         console.log(err_6.d);
+         return await ctx
+            .answerCallbackQuery({ text: err_6.m, show_alert: true })
+            .catch((e) =>
+               console.error(
+                  "---declineOrder duwmesinde answerCallbackQuery yalnyslygy---",
+                  e,
+               ),
+            );
+      }
    }
 
    // preparing messages

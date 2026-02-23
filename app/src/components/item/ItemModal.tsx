@@ -15,7 +15,7 @@ import { webApp } from "@/lib/webApp";
 import { Product } from "../../../prisma/prismaSett";
 import { Requirements } from "@prisma/client";
 import PrimeItemsBox from "./details/PrimeItemsBox";
-import { starPriceCalculator, tonFee } from "bot/src/settings";
+import { starPriceCalculator, tonPriceCalculator } from "bot/src/settings";
 import { ProductDetails } from "@/lib/types";
 const ItemModal = ({
    item,
@@ -41,7 +41,7 @@ const ItemModal = ({
          ? item.priceTMT.toFixed(2)
          : currency === "USDT"
          ? item.priceUSDT.toFixed(2)
-         : Number(item.priceUSDT / (currency === "TON" ? (tonPrice + tonFee) : starPriceCalculator(item.priceUSDT)));
+         : Number(currency === "TON" ? tonPriceCalculator(item.priceUSDT, tonPrice) : starPriceCalculator(item.priceUSDT));
    const currentColor = cn(
       item.name === "pubg"
          ? "bg-white"

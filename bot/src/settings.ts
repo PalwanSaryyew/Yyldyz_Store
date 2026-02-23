@@ -189,8 +189,13 @@ export async function cmcApi(id: string) {
    }
 }
 
-export async function tonPriceCalculator(USDTPrice: number): Promise<number> {
-   const tonprice = await cmcApi(toncoinId);
+export async function tonPriceCalculator(
+   USDTPrice: number,
+   tonprice?: number | undefined | null,
+): Promise<number> {
+   if (!tonprice) {
+      tonprice = await cmcApi(toncoinId);
+   }
    if (tonprice === 0) {
       console.error("Crypto price api error");
       return 0; // Hata durumunda 0 döndür
