@@ -946,7 +946,6 @@ bot.on("pre_checkout_query", async (ctx) => {
 
 bot.on("message:successful_payment", async (ctx) => {
    const paymentInfo = ctx.message.successful_payment;
-
    // Payload'dan Sipariş ID'si ve Mesaj ID'sini ayırıyoruz (Örn: "145_5932")
    const payloadParts = paymentInfo.invoice_payload.split("_");
    const orderId = parseInt(payloadParts[0], 10);
@@ -1005,7 +1004,7 @@ bot.on("message:successful_payment", async (ctx) => {
          order: order,
          forWhom: "client",
       },
-   )}</blockquote> \n ${clntmssg}\n\n🎉 <i>Töleg üstünlikli geçdi! (${totalAmount} ⭐️)</i>`;
+   )}</blockquote> \n ${clntmssg}\n`;
 
    try {
       // Yeni mesaj yollamak yerine, faturayı oluşturduğumuz o eski mesajı düzenliyoruz:
@@ -1060,6 +1059,13 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       });
    }
 
+   if (order.userId !== clntID.toString()) {
+      return await ctx.answerCallbackQuery({
+         text: "Sargydyň eyesi siz däl",
+         show_alert: true,
+      });
+   }
+
    if (order.quantity) {
       const { tmtPrice, usdtPrice, amount } = pricingTiersFunc({
          product: order.Product,
@@ -1068,13 +1074,6 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
       order.Product.priceTMT = tmtPrice;
       order.Product.priceUSDT = usdtPrice;
       order.Product.amount = amount;
-   }
-
-   if (order.userId !== clntID.toString()) {
-      return await ctx.answerCallbackQuery({
-         text: "Sargydyň eyesi siz däl",
-         show_alert: true,
-      });
    }
 
    // YILDIZ ÖDEMESİ MANTIĞI: Linki oluştur ve BURADA DUR (Return).
@@ -1102,7 +1101,7 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
 
          await ctx.editMessageReplyMarkup({ reply_markup: payKeyboard });
          await ctx.answerCallbackQuery({
-            text: "Töleg penjiresine geçip bilersiňiz.",
+            text: "Tölegi geçirip bilersiňiz.",
          });
 
          return;

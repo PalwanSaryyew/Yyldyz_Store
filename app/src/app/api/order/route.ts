@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       | "undefined";
 
    // checking params
-   
+
    if (
       productId === "undefined" ||
       userId === "undefined" ||
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
             success: false,
             message: "Wrong request",
          },
-         { status: 400 }
+         { status: 400 },
       );
    }
 
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
    const productData = await prisma.product.findUnique({
       where: { id: Number(productId) },
    });
-   
+
    if (!productData) {
       console.error("Product not found");
       return Response.json(
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
             success: false,
             message: "Product not found.",
          },
-         { status: 404 }
+         { status: 404 },
       );
    }
 
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
                success: false,
                message: "Mukdar san bolmaly!",
             },
-            { status: 400 }
+            { status: 400 },
          );
       }
       if (Number(quantity) < productData.min) {
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
                success: false,
                message: `Mukdar ${productData.min}-dan az bolmaly däl!`,
             },
-            { status: 400 }
+            { status: 400 },
          );
       }
       if (Number(quantity) > productData.max) {
@@ -89,7 +89,7 @@ export async function GET(request: Request) {
                success: false,
                message: `Mukdar ${productData.max}-dan köp bolmaly däl!`,
             },
-            { status: 400 }
+            { status: 400 },
          );
       }
       // price returner base on the quantity
@@ -120,8 +120,6 @@ export async function GET(request: Request) {
             return newUserData;
          }
       });
-      
-
    if (!userData) {
       console.error("User db error");
       return Response.json(
@@ -129,7 +127,7 @@ export async function GET(request: Request) {
             success: false,
             message: "User db error",
          },
-         { status: 500 }
+         { status: 500 },
       );
    }
 
@@ -144,7 +142,7 @@ export async function GET(request: Request) {
             funds: true,
             message: "Balansyňyz ýetenok!",
          },
-         { status: 400 }
+         { status: 400 },
       );
    }
 
@@ -153,7 +151,11 @@ export async function GET(request: Request) {
 
    // ton price checker
    const tonPrice =
-      currency === "TON" ? await tonPriceCalculator(productData.priceUSDT) : currency === "STAR" ? await starPriceCalculator(productData.priceUSDT) : 1;
+      currency === "TON"
+         ? await tonPriceCalculator(productData.priceUSDT)
+         : currency === "STAR"
+           ? starPriceCalculator(productData.priceUSDT)
+           : 1;
    if (!tonPrice) {
       console.error("Crypto price api error");
       return Response.json(
@@ -161,7 +163,7 @@ export async function GET(request: Request) {
             success: false,
             message: "Crypto price error",
          },
-         { status: 500 }
+         { status: 500 },
       );
    }
 
@@ -188,8 +190,8 @@ export async function GET(request: Request) {
                   currency === "TMT"
                      ? productData.priceTMT
                      : currency === "USDT"
-                     ? productData.priceUSDT
-                     : tonPrice,
+                       ? productData.priceUSDT
+                       : tonPrice,
             },
          });
 
@@ -202,9 +204,9 @@ export async function GET(request: Request) {
                },
             });
          }
-         let starTransaction = null;
+
          if (newOrder.payment === "STAR") {
-            starTransaction = await prisma.starTransaction.create({
+            await prisma.starTransaction.create({
                data: {
                   price: tonPrice,
                   orderId: newOrder.id,
@@ -217,7 +219,6 @@ export async function GET(request: Request) {
             order: {
                ...newOrder,
                Product: productData,
-               StarTransaction: starTransaction,
                TonTransaction: tonTransaction,
             },
          });
@@ -236,7 +237,7 @@ export async function GET(request: Request) {
                orderId: transaction.orderData.id,
                success: true,
                tonComment: `${productData.amount} ${productTitle(
-                  productData.name
+                  productData.name,
                )} for ${transaction.tonTransaction.price} TON\n\n${
                   transaction.tonTransaction.id
                }`,
@@ -245,15 +246,13 @@ export async function GET(request: Request) {
          }
          // if order payment method is TON, but transaction data is not created
          // This should technically be unreachable if the logic is sound.
-         console.error(
-            "TON order created but tonTransaction data is missing."
-         );
+         console.error("TON order created but tonTransaction data is missing.");
          return Response.json(
             {
                success: false,
                message: "Transaction db error",
             },
-            { status: 500 }
+            { status: 500 },
          );
       }
       // if order payment method isn't TON, we return just success
@@ -261,7 +260,7 @@ export async function GET(request: Request) {
          {
             success: true,
          },
-         { status: 200 }
+         { status: 200 },
       );
    } catch (error) {
       console.error("Transaction failed: ", error);
@@ -271,7 +270,7 @@ export async function GET(request: Request) {
             message:
                "Bagyşläň ýalňyşlyk döredi. Eger balansyňyzdan pul alynan bolsa admin bilen habarlaşyň.",
          },
-         { status: 500 }
+         { status: 500 },
       );
    }
 }

@@ -8,7 +8,7 @@ import {
 
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.2;
-export const starFee = 0.2;
+export const starFee = 0;
 export const starExRate = 0.013; // 1 STAR = 0.013 USDT (örnek olarak)
 export const domain = "https://www.yyldyz.store";
 
@@ -49,7 +49,7 @@ export function rndmNmrGnrtr(l: number): string {
 }
 // product name returner
 export function prdctDsplyNme(
-   name: ProductType | undefined | Product["title"]
+   name: ProductType | undefined | Product["title"],
 ):
    | "Jeton"
    | "Ýyldyz"
@@ -61,14 +61,14 @@ export function prdctDsplyNme(
    return name === "jtn"
       ? "Jeton"
       : name === "star"
-      ? "Ýyldyz"
-      : name === "tgprem"
-      ? "Tg Premium"
-      : name === "uc"
-      ? "UC"
-      : name === "exit"
-      ? "Exitlag"
-      : name ?? "";
+        ? "Ýyldyz"
+        : name === "tgprem"
+          ? "Tg Premium"
+          : name === "uc"
+            ? "UC"
+            : name === "exit"
+              ? "Exitlag"
+              : (name ?? "");
 }
 
 export const editSummComand = "eylenbeylen";
@@ -178,7 +178,7 @@ export async function cmcApi(id: string) {
       const data = await fetch(
          /* `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`, */
          `https://api.binance.com/api/v3/ticker/price?symbol=${id}`,
-         { cache: "no-store" } // Buraya cache: 'no-store' seçeneğini ekliyoruz
+         { cache: "no-store" }, // Buraya cache: 'no-store' seçeneğini ekliyoruz
       )
          .then((response) => response.json())
          .then((data) => data.price);
@@ -197,9 +197,8 @@ export async function tonPriceCalculator(USDTPrice: number): Promise<number> {
    }
    return Number((USDTPrice / tonprice + tonFee).toFixed(4));
 }
-export async function starPriceCalculator(USDTPrice: number): Promise<number> {
-   const starprice = starExRate
-   return Math.ceil(USDTPrice / starprice + starFee);
+export function starPriceCalculator(USDTPrice: number): number {
+   return Math.ceil(USDTPrice / starExRate + starFee);
 }
 
 export function pricingTiersFunc({
@@ -225,10 +224,10 @@ export function pricingTiersFunc({
    }
    return {
       tmtPrice: (product.priceTMT = Number(
-         (Number(quantity) * finalUnitPriceTMT).toFixed(2)
+         (Number(quantity) * finalUnitPriceTMT).toFixed(2),
       )),
       usdtPrice: (product.priceUSDT = Number(
-         (Number(quantity) * finalUnitPriceUSDT).toFixed(2)
+         (Number(quantity) * finalUnitPriceUSDT).toFixed(2),
       )),
       amount: (product.amount = Number(quantity)),
    };
@@ -254,34 +253,34 @@ export async function generateWalnum(userID: string): Promise<string> {
 
 export function getUserBalance(
    userData: { sumTmt: number; sumUsdt: number },
-   currency: PaymentMethod
+   currency: PaymentMethod,
 ): number {
    return currency === "TMT"
       ? userData.sumTmt
       : currency === "USDT"
-      ? userData.sumUsdt
-      : 1;
+        ? userData.sumUsdt
+        : 1;
 }
 export function getProductPrice(
    productdata: { priceTMT: number; priceUSDT: number },
-   currency: PaymentMethod
+   currency: PaymentMethod,
 ): number {
    return currency === "TMT"
       ? productdata.priceTMT
       : currency === "USDT"
-      ? productdata.priceUSDT
-      : 0;
+        ? productdata.priceUSDT
+        : 0;
 }
 
 export function newUserBalanceData(
    userBalalnce: number,
    productSum: number,
-   currency: PaymentMethod
+   currency: PaymentMethod,
 ): { sumTmt?: number; sumUsdt?: number } {
    const newBalance = userBalalnce - productSum;
    return currency === "TMT"
       ? { sumTmt: Number(newBalance.toFixed(2)) }
       : currency === "USDT"
-      ? { sumUsdt: Number(newBalance.toFixed(2)) }
-      : {};
+        ? { sumUsdt: Number(newBalance.toFixed(2)) }
+        : {};
 }

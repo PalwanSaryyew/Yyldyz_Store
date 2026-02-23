@@ -127,7 +127,7 @@ export async function getTopSpenders(limit: number) {
 export async function orderScript({
    order,
 }: {
-   order: OrderDetails & { StarTransaction: StarTransaction | null };
+   order: OrderDetails ;
 }) {
    try {
       if (order.payment === "TON") {

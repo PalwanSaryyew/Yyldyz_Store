@@ -65,15 +65,15 @@ const ChktMdl = () => {
                      {item?.title
                         ? "Haryt"
                         : item?.duration
-                        ? "Wagty:"
-                        : "Sany:"}
+                          ? "Wagty:"
+                          : "Sany:"}
                   </div>
                   <div>
                      {item?.title
                         ? item?.title
                         : item?.amount
-                        ? item.amount
-                        : item?.duration}
+                          ? item.amount
+                          : item?.duration}
                   </div>
                </div>
 
@@ -82,8 +82,8 @@ const ChktMdl = () => {
                      {item?.name === "jtn"
                         ? "Tel. №"
                         : item?.name === "uc"
-                        ? "PUBG ID"
-                        : item?.receiver[0]}
+                          ? "PUBG ID"
+                          : item?.receiver[0]}
                      {":"}
                   </div>
 

@@ -2,7 +2,7 @@
 import { cn } from "@/utils/tailwindMerge";
 import { useCurrency, useQuantity } from "@/utils/UniStore";
 import { Product } from "@prisma/client";
-import { starExRate, tonFee } from "bot/src/settings";
+import { starPriceCalculator, tonFee } from "bot/src/settings";
 import { useEffect, useState } from "react";
 
 interface ItemPriceProps {
@@ -57,7 +57,7 @@ const ItemPrice = ({
             ? item.priceTMT
             : currency === "USDT"
             ? item.priceUSDT
-            : Number(item.priceUSDT / (currency === "TON" ? (tonPrice + tonFee) : starExRate));
+            : Number(item.priceUSDT / (currency === "TON" ? (tonPrice + tonFee) : starPriceCalculator(item.priceUSDT)));
 
       setPriceOnCurrency(
          currency === "TON" ? basePrice.toFixed(4) : basePrice.toFixed(2)
