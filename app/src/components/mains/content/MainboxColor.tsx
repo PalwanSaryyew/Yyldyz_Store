@@ -11,6 +11,8 @@ const MainboxColor = ({ children }: { children: React.ReactNode }) => {
          ? "border-tmtColor"
          : currency === "TON"
          ? "border-tonColor"
+         : currency === "STAR"
+         ? "border-starColor"
          : "border-usdtColor"
    );
    return (

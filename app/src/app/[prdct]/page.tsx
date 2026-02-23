@@ -2,7 +2,7 @@ import ItemBox from "@/components/item/ItemBox";
 import { cmcApi } from "@/lib/fetchs";
 import { prisma, ProductType } from "../../../prisma/prismaSett";
 import UseTrackLastVisitedPage from "@/lib/UseTrackLastVisitedPage";
-import { toncoinId } from "bot/src/settings";
+import {  toncoinId } from "bot/src/settings";
 import { notFound } from "next/navigation";
 import { ProductDetails } from "@/lib/types";
 

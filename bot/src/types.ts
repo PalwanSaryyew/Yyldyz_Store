@@ -1,4 +1,4 @@
-import { Order, Product, User } from "../prisma/prismaSett";
+import { Order, Product, StarTransaction, User } from "../prisma/prismaSett";
 
 export type errMess = {
    error: boolean;
@@ -7,4 +7,5 @@ export type errMess = {
 export interface ValidatorOrder extends Order {
    Product: Product;
    User: User;
+   StarTransaction: StarTransaction | null;
 }

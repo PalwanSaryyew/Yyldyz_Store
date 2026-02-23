@@ -4,10 +4,11 @@
 // import { usePathname } from "next/navigation";
 import { cn } from "@/utils/tailwindMerge";
 import { useCurrency } from "@/utils/UniStore";
+import { PaymentMethod } from "@prisma/client";
 import { ReactNode } from "react";
 
 interface CrrncyChngrProps {
-   crrncy: "USDT" | "TMT" | "TON";
+   crrncy: PaymentMethod;
    children: ReactNode;
 }
 
@@ -18,6 +19,8 @@ const CrrncyChngr = ({ crrncy, children }: CrrncyChngrProps) => {
          ? " bg-[#4FAC92]"
          : crrncy === "TMT"
          ? " bg-[#BC686A]"
+         : crrncy === "STAR"
+         ? " bg-[#FFD700]"
          : " bg-[#009BED]"
    );
    /* const currentPath = usePathname();

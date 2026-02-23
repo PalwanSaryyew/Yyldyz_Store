@@ -1,19 +1,20 @@
 import {
-    prisma,
-    Admin,
-    Order,
-    Product,
-    SummUpdate,
-    TonTransaction,
-    User,
-    PrismaPromise,
-    OrderStatus,
-    PaymentMethod,
-    ProductType,
-    UserRole,
-    $Enums,
-    Prisma,
- } from "app/prisma/prismaSett";
+   prisma,
+   Admin,
+   Order,
+   Product,
+   SummUpdate,
+   TonTransaction,
+   User,
+   PrismaPromise,
+   OrderStatus,
+   PaymentMethod,
+   ProductType,
+   UserRole,
+   $Enums,
+   Prisma,
+   StarTransaction,
+} from "app/prisma/prismaSett";
  
  export {
     prisma,
@@ -32,5 +33,6 @@ import {
     TonTransaction,
     User,
     PrismaPromise,
+    StarTransaction,
  };
  

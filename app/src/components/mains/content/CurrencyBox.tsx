@@ -12,6 +12,9 @@ const CurrencyBox = () => {
             <CrrncyChngr crrncy="TON">
                <Image className="rounded-full border-[2px] border-white" src={"/crrnc/ton.png"} alt="" width={30} height={30} />
             </CrrncyChngr>
+            <CrrncyChngr crrncy="STAR">
+               <Image className="rounded-full " src={"/jtns/star.png"} alt="" width={30} height={30} />
+            </CrrncyChngr>
          </div>
       </div>
    );

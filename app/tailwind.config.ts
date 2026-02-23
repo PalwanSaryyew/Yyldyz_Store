@@ -14,6 +14,7 @@ const config: Config = {
             tmtColor: "#BC686A",
             usdtColor: "#4FAC92",
             tonColor: "#009BED",
+            starColor: "#FFD700",
             mainColor: "#60A5FA",
             tgColor: "#0084C6",
          },

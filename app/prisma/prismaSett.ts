@@ -13,6 +13,7 @@ import {
    UserRole,
    $Enums,
    Prisma,
+   StarTransaction,
 } from "@prisma/client";
 
 const prismaClientSingleton = () => {
@@ -43,6 +44,7 @@ export type {
    TonTransaction,
    User,
    PrismaPromise,
+   StarTransaction,
 };
 
 if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = prisma;

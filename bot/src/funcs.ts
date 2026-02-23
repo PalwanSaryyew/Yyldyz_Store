@@ -1,7 +1,13 @@
 import { ordrIdMssgFnc, prdctCfrmtn, prdctDtlMssg } from "./messages";
 import { adminidS, statusIcons } from "./settings";
 import { ordrcnfrmtnkybrd } from "./keyboards";
-import { prisma, Order, Product, TonTransaction } from "../prisma/prismaSett";
+import {
+   prisma,
+   Order,
+   Product,
+   TonTransaction,
+   StarTransaction,
+} from "../prisma/prismaSett";
 import { InlineKeyboard } from "grammy";
 import { bot } from "./botConf";
 
@@ -121,14 +127,14 @@ export async function getTopSpenders(limit: number) {
 export async function orderScript({
    order,
 }: {
-   order: Order & { Product: Product };
+   order: OrderDetails & { StarTransaction: StarTransaction | null };
 }) {
    try {
       if (order.payment === "TON") {
          return true;
       } else {
          const clientMessage = `${ordrIdMssgFnc(
-            order.id
+            order.id,
          )} <blockquote>${prdctDtlMssg({
             order: order,
             forWhom: "client",

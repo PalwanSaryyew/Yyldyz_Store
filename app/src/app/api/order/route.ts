@@ -8,6 +8,7 @@ import {
    newUserBalanceData,
    pricingTiersFunc,
    productTitle,
+   starPriceCalculator,
    tonPriceCalculator,
 } from "bot/src/settings";
 
@@ -152,8 +153,7 @@ export async function GET(request: Request) {
 
    // ton price checker
    const tonPrice =
-      currency === "TON" ? await tonPriceCalculator(productData.priceUSDT) : 1;
-   //! bu yerini sonra duzetmeli sebabi tonprice api error berip biler
+      currency === "TON" ? await tonPriceCalculator(productData.priceUSDT) : currency === "STAR" ? await starPriceCalculator(productData.priceUSDT) : 1;
    if (!tonPrice) {
       console.error("Crypto price api error");
       return Response.json(
@@ -202,12 +202,23 @@ export async function GET(request: Request) {
                },
             });
          }
+         let starTransaction = null;
+         if (newOrder.payment === "STAR") {
+            starTransaction = await prisma.starTransaction.create({
+               data: {
+                  price: tonPrice,
+                  orderId: newOrder.id,
+               },
+            });
+         }
 
          // sending message to user from bot
          const botRes = await orderScript({
             order: {
                ...newOrder,
                Product: productData,
+               StarTransaction: starTransaction,
+               TonTransaction: tonTransaction,
             },
          });
 

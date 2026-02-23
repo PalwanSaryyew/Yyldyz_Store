@@ -8,6 +8,8 @@ import {
 
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.2;
+export const starFee = 0.2;
+export const starExRate = 0.013; // 1 STAR = 0.013 USDT (örnek olarak)
 export const domain = "https://www.yyldyz.store";
 
 export const adminidS = [
@@ -194,6 +196,10 @@ export async function tonPriceCalculator(USDTPrice: number): Promise<number> {
       return 0; // Hata durumunda 0 döndür
    }
    return Number((USDTPrice / tonprice + tonFee).toFixed(4));
+}
+export async function starPriceCalculator(USDTPrice: number): Promise<number> {
+   const starprice = starExRate
+   return Math.ceil(USDTPrice / starprice + starFee);
 }
 
 export function pricingTiersFunc({

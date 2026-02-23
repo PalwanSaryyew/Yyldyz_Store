@@ -76,7 +76,7 @@ const ItemMenu = () => {
                         "flex items-center"
                      )}
                   >
-                     <Link href={"/" + path} prefetch className="flex-1">
+                     <Link href={"/" + path}  className="flex-1">
                         <div
                            className={cn(
                               "flex-1 p-1 px-2 flex items-center hover:bg-mainColor transition-colors duration-200 ease-in-out cursor-pointer"
