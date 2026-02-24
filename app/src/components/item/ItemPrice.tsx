@@ -25,49 +25,48 @@ const ItemPrice = ({
    const [priceOnCurrency, setPriceOnCurrency] = useState<string>("");
    useEffect(() => {
       const calculatePrice = async () => {
-      if (onQuantity) {
-         // pricingTiers zaten bir obje/dizi olarak geliyor, doğrudan kullanın.
-         // JSON.parse() adımına gerek yok.
-         const pricingTiers = item.pricingTiers as Array<{
-            threshold: number;
-            discount: number;
-         }>; // Type assertion Prisma.JsonValue'dan dönüştürme için
-         /* const pricingTiers = [
+         if (onQuantity) {
+            // pricingTiers zaten bir obje/dizi olarak geliyor, doğrudan kullanın.
+            // JSON.parse() adımına gerek yok.
+            const pricingTiers = item.pricingTiers as Array<{
+               threshold: number;
+               discount: number;
+            }>; // Type assertion Prisma.JsonValue'dan dönüştürme için
+            /* const pricingTiers = [
             { discount: 0.25, threshold: 140 },
             { discount: 0.4, threshold: 350 },
             { discount: 0.4166666, threshold: 700 },
          ]; // Type assertion Prisma.JsonValue'dan dönüştürme için */
 
-         let finalUnitPriceTMT = orgPriceTMT;
-         let finalUnitPriceUSDT = orgPriceUSDT;
+            let finalUnitPriceTMT = orgPriceTMT;
+            let finalUnitPriceUSDT = orgPriceUSDT;
 
-         for (let i = pricingTiers.length - 1; i >= 0; i--) {
-            const tier = pricingTiers[i];
-            if (Number(quantity) >= tier.threshold) {
-               finalUnitPriceTMT = orgPriceTMT * (1 - tier.discount);
-               finalUnitPriceUSDT = orgPriceUSDT * (1 - tier.discount);
-               break; // İlk bulunan uygun kademeyi kullan ve döngüden çık
+            for (let i = pricingTiers.length - 1; i >= 0; i--) {
+               const tier = pricingTiers[i];
+               if (Number(quantity) >= tier.threshold) {
+                  finalUnitPriceTMT = orgPriceTMT * (1 - tier.discount);
+                  finalUnitPriceUSDT = orgPriceUSDT * (1 - tier.discount);
+                  break; // İlk bulunan uygun kademeyi kullan ve döngüden çık
+               }
             }
+
+            item.priceTMT = finalUnitPriceTMT * Number(quantity);
+            item.priceUSDT = finalUnitPriceUSDT * Number(quantity);
          }
+         const basePrice =
+            currency === "TMT"
+               ? item.priceTMT
+               : currency === "USDT"
+                 ? item.priceUSDT
+                 : Number(
+                      currency === "TON"
+                         ? await tonPriceCalculator(item.priceUSDT, tonPrice)
+                         : starPriceCalculator(item.priceUSDT),
+                   );
 
-         item.priceTMT = finalUnitPriceTMT * Number(quantity);
-         item.priceUSDT = finalUnitPriceUSDT * Number(quantity);
-      }
-      const basePrice =
-         currency === "TMT"
-            ? item.priceTMT
-            : currency === "USDT"
-            ? item.priceUSDT
-            : Number(currency === "TON" ? await tonPriceCalculator(item.priceUSDT, tonPrice) : starPriceCalculator(item.priceUSDT));
-
-      /* setPriceOnCurrency(
-         currency === "TON" ? basePrice.toFixed(4) : basePrice.toFixed(2)
-      ); */
-      console.log(basePrice);
-      
-      setPriceOnCurrency(
-            basePrice.toString()
-      );
+         setPriceOnCurrency(
+            currency === "TON" ? basePrice.toFixed(4) : basePrice.toFixed(2),
+         );
       };
       calculatePrice();
    }, [
@@ -89,9 +88,9 @@ const ItemPrice = ({
                currency === "TMT"
                   ? `text-tmtColor`
                   : currency === "TON"
-                  ? `text-tonColor`
-                  : `text-usdtColor`,
-               ` font-bold text-lg`
+                    ? `text-tonColor`
+                    : `text-usdtColor`,
+               ` font-bold text-lg`,
             )}
          >
             {currency}
