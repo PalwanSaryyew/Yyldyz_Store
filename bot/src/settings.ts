@@ -9,7 +9,7 @@ import {
 export const toncoinId = "TONUSDT";
 export const tonFee = 0.2;
 export const starFee = 0;
-export const starExRate = 0.013; // 1 STAR = 0.013 USDT (örnek olarak)
+export const starExRate = 0.013; // 1 STAR = 0.013 
 export const domain = "https://www.yyldyz.store";
 
 export const adminidS = [
@@ -191,8 +191,10 @@ export async function cmcApi(id: string) {
 
 export async function tonPriceCalculator(
    USDTPrice: number,
-   tonprice?: number | undefined | null,
+   tonprice?: number,
 ): Promise<number> {
+   console.log(USDTPrice, tonprice);
+   
    if (!tonprice) {
       tonprice = await cmcApi(toncoinId);
    }

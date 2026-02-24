@@ -24,6 +24,7 @@ const ItemPrice = ({
    const orgPriceUSDT = useQuantity((state) => state.orgPriceUSDT);
    const [priceOnCurrency, setPriceOnCurrency] = useState<string>("");
    useEffect(() => {
+      const calculatePrice = async () => {
       if (onQuantity) {
          // pricingTiers zaten bir obje/dizi olarak geliyor, doğrudan kullanın.
          // JSON.parse() adımına gerek yok.
@@ -57,11 +58,18 @@ const ItemPrice = ({
             ? item.priceTMT
             : currency === "USDT"
             ? item.priceUSDT
-            : Number(currency === "TON" ? tonPriceCalculator(item.priceUSDT, tonPrice) : starPriceCalculator(item.priceUSDT));
+            : Number(currency === "TON" ? await tonPriceCalculator(item.priceUSDT, tonPrice) : starPriceCalculator(item.priceUSDT));
 
-      setPriceOnCurrency(
+      /* setPriceOnCurrency(
          currency === "TON" ? basePrice.toFixed(4) : basePrice.toFixed(2)
+      ); */
+      console.log(basePrice);
+      
+      setPriceOnCurrency(
+            basePrice.toString()
       );
+      };
+      calculatePrice();
    }, [
       currency,
       item,
