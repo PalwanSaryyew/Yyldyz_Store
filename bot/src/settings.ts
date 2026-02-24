@@ -97,6 +97,11 @@ export const statusIcons = {
    ],
 };
 
+export const EmojiIds = {
+   no: "5462882007451185227",
+   yes: "5463423955014529788",
+};
+
 export const productTitle = (name: ProductType) => {
    switch (name) {
       case "jtn":
