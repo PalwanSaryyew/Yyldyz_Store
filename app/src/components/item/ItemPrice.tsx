@@ -93,7 +93,9 @@ const ItemPrice = ({
                   ? `text-tmtColor`
                   : currency === "TON"
                     ? `text-tonColor`
-                    : `text-usdtColor`,
+                  : currency === "USDT"
+                    ? `text-usdtColor`
+                    : `text-starColor`,
                ` font-bold text-lg`,
             )}
          >

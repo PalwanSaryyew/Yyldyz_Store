@@ -1,6 +1,11 @@
 import { webApp } from "@/lib/webApp";
 import { cn } from "@/utils/tailwindMerge";
-import { CartItemState, useHandleModal, useQuantity, useUser } from "@/utils/UniStore";
+import {
+   CartItemState,
+   useHandleModal,
+   useQuantity,
+   useUser,
+} from "@/utils/UniStore";
 
 const TmtUsdt = ({
    item,
@@ -13,11 +18,15 @@ const TmtUsdt = ({
    const loading = useHandleModal((state) => state.isLoading);
    const tmtClass = cn(
       loading ? `bg-tmtColor/50 cursor-wait` : `bg-tmtColor`,
-      `ring-orange-700`
+      `ring-orange-700`,
    );
    const usdtClass = cn(
       loading ? `bg-usdtColor/50 cursor-wait` : `bg-usdtColor`,
-      `ring-green-700`
+      `ring-green-700`,
+   );
+   const starClass = cn(
+      loading ? `bg-starColor/50 cursor-wait` : `bg-starColor`,
+      `ring-green-700`,
    );
    const user = useUser((state) => state.user);
    const toogleModal = useHandleModal((state) => state.toogleOpen);
@@ -36,9 +45,7 @@ const TmtUsdt = ({
                .then(async (data) => {
                   if (data.success) {
                      app.showAlert("Sargydy tassyklaň", () => {
-                        app.openTelegramLink(
-                           "https://t.me/YyldyzBot"
-                        );
+                        app.openTelegramLink("https://t.me/YyldyzBot");
                         app.close();
                      });
                   } else {
@@ -70,7 +77,11 @@ const TmtUsdt = ({
          onClick={handleClick}
          className={cn(
             "ring-inherit ring-2 w-full py-2 text-white rounded-lg flex items-center justify-center ",
-            currency === "TMT" ? tmtClass : usdtClass
+            currency === "TMT"
+               ? tmtClass
+               : currency === "USDT"
+                 ? usdtClass
+                 : starClass,
          )}
       >
          {loading ? "Garaşyň..." : "Sarga"}

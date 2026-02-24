@@ -49,7 +49,9 @@ const ItemModal = ({
          ? "bg-tmtColor"
          : currency === "TON"
          ? "bg-tonColor"
-         : "bg-usdtColor"
+         : currency === "USDT"
+         ? "bg-usdtColor"
+         : "bg-starColor"
    );
    const [receiver, setReceiver] = useState<string>(/* item.title?.includes('Telekom') ? '+993 ' : item.title?.includes('AŞTU') ? '+993 12 ' :  */'');
    const boxDisplay = cn(isOpen === item.id ? "block" : "hidden");
