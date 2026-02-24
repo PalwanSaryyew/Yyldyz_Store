@@ -65,7 +65,11 @@ const ItemPrice = ({
                    );
 
          setPriceOnCurrency(
-            currency === "TON" ? basePrice.toFixed(4) : basePrice.toFixed(2),
+            currency === "TON"
+               ? basePrice.toFixed(4)
+               : currency === "STAR"
+                 ? basePrice.toString()
+                 : basePrice.toFixed(2),
          );
       };
       calculatePrice();
