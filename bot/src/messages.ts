@@ -14,6 +14,10 @@ Balansyňyzy doldurmak we dükanda bolmadyk önümleri sargyt etmek üçin ýa-d
 
 <b>Täze söwda tejribesine taýyn bolsaňyz, başlalyň!</b> ✨`;
 
+export function getEmoji(emojiId: string, emojiIcon: string){
+   return `<tg-emoji id="${emojiId}">${emojiIcon}</tg-emoji>`
+}
+
 // hasap message
 export function hspMsg(hnum: string, sum1: number, sum2: number) {
    return `Balans ID: <code>${hnum}</code> \n TMT: ${sum1} \n USDT: ${sum2}`;

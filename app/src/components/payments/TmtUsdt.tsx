@@ -18,15 +18,15 @@ const TmtUsdt = ({
    const loading = useHandleModal((state) => state.isLoading);
    const tmtClass = cn(
       loading ? `bg-tmtColor/50 cursor-wait` : `bg-tmtColor`,
-      `ring-orange-700`,
+      `ring-tmtColor/60`,
    );
    const usdtClass = cn(
       loading ? `bg-usdtColor/50 cursor-wait` : `bg-usdtColor`,
-      `ring-green-700`,
+      `ring-usdtColor/60`,
    );
    const starClass = cn(
       loading ? `bg-starColor/50 cursor-wait` : `bg-starColor`,
-      `ring-green-700`,
+      `ring-starColor/60`,
    );
    const user = useUser((state) => state.user);
    const toogleModal = useHandleModal((state) => state.toogleOpen);

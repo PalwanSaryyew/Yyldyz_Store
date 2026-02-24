@@ -11,10 +11,10 @@ const config: Config = {
          colors: {
             background: "var(--background)",
             foreground: "var(--foreground)",
-            tmtColor: "#BC686A",
+            tmtColor: "#2C4968",
             usdtColor: "#4FAC92",
             tonColor: "#009BED",
-            starColor: "#FFD700",
+            starColor: "#FFAD15",
             mainColor: "#60A5FA",
             tgColor: "#0084C6",
          },

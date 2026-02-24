@@ -7,13 +7,31 @@ const CurrencyBox = () => {
          <div className="w-[98%] rounded-t-3xl flex overflow-hidden">
             <CrrncyChngr crrncy="TMT">TMT</CrrncyChngr>
             <CrrncyChngr crrncy="USDT">
-               <Image className="rounded-full border-[2px] border-white" src={"/crrnc/usdt.png"} alt="" width={30} height={30} />
+               <Image
+                  className="rounded-full border-[2px] border-white"
+                  src={"/crrnc/usdt.png"}
+                  alt=""
+                  width={30}
+                  height={30}
+               />
             </CrrncyChngr>
             <CrrncyChngr crrncy="TON">
-               <Image className="rounded-full border-[2px] border-white" src={"/crrnc/ton.png"} alt="" width={30} height={30} />
+               <Image
+                  className="rounded-full border-[2px] border-white"
+                  src={"/crrnc/ton.png"}
+                  alt=""
+                  width={30}
+                  height={30}
+               />
             </CrrncyChngr>
             <CrrncyChngr crrncy="STAR">
-               <Image className="rounded-full " src={"/jtns/star.png"} alt="" width={30} height={30} />
+               <Image
+                  className="rounded-full "
+                  src={"/crrnc/star.png"}
+                  alt=""
+                  width={30}
+                  height={30}
+               />
             </CrrncyChngr>
          </div>
       </div>

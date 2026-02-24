@@ -16,12 +16,12 @@ const CrrncyChngr = ({ crrncy, children }: CrrncyChngrProps) => {
    const changeCurrency = useCurrency((state) => state.change);
    const bg = cn(
       crrncy === "USDT"
-         ? " bg-[#4FAC92]"
+         ? " bg-usdtColor"
          : crrncy === "TMT"
-         ? " bg-[#BC686A]"
+         ? " bg-tmtColor"
          : crrncy === "STAR"
-         ? " bg-[#FFD700]"
-         : " bg-[#009BED]"
+         ? " bg-starColor"
+         : " bg-tonColor"
    );
    /* const currentPath = usePathname();
    if (!tonProducts.includes(currentPath) && crrncy === "TON") {
