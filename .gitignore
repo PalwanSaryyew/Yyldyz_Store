@@ -3,6 +3,8 @@
 # dependencies
 app/node_modules
 bot/node_modules
+app/package-lock.json
+bot/package-lock.json
 /node_modules
 app/.pnp
 app/.pnp.js

@@ -37,6 +37,8 @@ export const mainKEybiard = new Keyboard()
    .style("primary")
    .row()
    .text("Balans")
+   .style("primary")
    .text("Admini çagyr")
+   .style("primary")
    .resized()
    .persistent();
