@@ -1104,9 +1104,10 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
          );
 
          const payKeyboard = new InlineKeyboard()
-            .url("⭐️ Töleg et", invoiceLink)
-            .row()
-            .text("Ýatyr " + statusIcons.no[3], "cancelOrder_" + order.id);
+            .url("Töleg et", invoiceLink)
+            .style('primary')
+            .icon("4983748881977181112")
+            
 
          await ctx.editMessageReplyMarkup({ reply_markup: payKeyboard });
          await ctx.answerCallbackQuery({
