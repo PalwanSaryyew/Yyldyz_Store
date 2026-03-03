@@ -211,8 +211,13 @@ export async function verifyTonPayment(orderId: number): Promise<boolean> {
 
    if (retries >= MAX_RETRIES) {
       console.info(
-         `verifyTonPayment: exhausted max retries (${MAX_RETRIES}) for order ${orderId}, stopping further checks`,
+         `verifyTonPayment: exhausted max retries (${MAX_RETRIES}) for order ${orderId}, marking as expired`,
       );
+      // mark order as expired so it's not rechecked on next server restart
+      await prisma.order.update({
+         where: { id: orderId },
+         data: { status: "expired" },
+      });
    }
 
    console.warn(
@@ -225,19 +230,19 @@ export async function verifyTonPayment(orderId: number): Promise<boolean> {
    return false;
 }
 
-// on startup, restart pending scans only for recent orders
+// on startup, restart pending scans only for recent orders (skip expired)
 let pendingScannerStarted = false;
 async function resumePendingTonVerifications() {
    if (pendingScannerStarted) return;
    pendingScannerStarted = true;
    try {
-      // only check orders created in last 48 hours to avoid rechecking stale orders
+      // only check orders created in last 48 hours and not already expired
       const cutoffTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
       const pending = await prisma.order.findMany({
          where: {
             payment: "TON",
             status: "pending",
-            createdAt: { gte: cutoffTime }, // only recent orders
+            createdAt: { gte: cutoffTime },
          },
       });
       console.log(
