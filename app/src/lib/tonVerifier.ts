@@ -74,7 +74,7 @@ async function checkTransactionOnChain(
          );
          if (response.status === 429) {
             // rate limit - throw so caller can back off more drastically
-            const err: any = new Error("TON_RATE_LIMIT");
+            const err = new Error("TON_RATE_LIMIT") as Error & { rateLimit: boolean };
             err.rateLimit = true;
             throw err;
          }
@@ -162,8 +162,9 @@ export async function verifyTonPayment(orderId: number): Promise<boolean> {
             ourTonAddress,
             paymentIdToMatch,
          );
-      } catch (e: any) {
-         if (e?.rateLimit) {
+      } catch (e: unknown) {
+         const error = e as Error & { rateLimit?: boolean };
+         if (error?.rateLimit) {
             console.warn(
                `verifyTonPayment: hit rate limit for order ${orderId}, backing off`,
             );
