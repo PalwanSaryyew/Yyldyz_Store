@@ -225,15 +225,24 @@ export async function verifyTonPayment(orderId: number): Promise<boolean> {
    return false;
 }
 
-// on startup, restart pending scans
+// on startup, restart pending scans only for recent orders
 let pendingScannerStarted = false;
 async function resumePendingTonVerifications() {
    if (pendingScannerStarted) return;
    pendingScannerStarted = true;
    try {
+      // only check orders created in last 48 hours to avoid rechecking stale orders
+      const cutoffTime = new Date(Date.now() - 48 * 60 * 60 * 1000);
       const pending = await prisma.order.findMany({
-         where: { payment: "TON", status: "pending" },
+         where: {
+            payment: "TON",
+            status: "pending",
+            createdAt: { gte: cutoffTime }, // only recent orders
+         },
       });
+      console.log(
+         `resumePendingTonVerifications: found ${pending.length} recent pending TON orders to check`,
+      );
       for (const o of pending) {
          // process sequentially with small pause to avoid burst
          await verifyTonPayment(o.id).catch((e) =>
@@ -241,6 +250,7 @@ async function resumePendingTonVerifications() {
          );
          await sleep(REQUEST_INTERVAL);
       }
+      console.log("resumePendingTonVerifications: completed scan");
    } catch (e) {
       console.error("Failed to resume pending TON verifications", e);
    }
