@@ -5,10 +5,25 @@ import { ourTonAddress } from "bot/src/settings";
 const apiKey = process.env.TON_API;
 const MAX_RETRIES = 20;
 const RETRY_INTERVAL_MS = 30 * 1000; // 30 seconds
+const RATE_LIMIT_BACKOFF_MS = 60 * 1000; // wait longer when we see 429
+
+// simple throttle state, ensure at most one request every interval
+let lastRequestTime = 0;
+const REQUEST_INTERVAL = 500; // 2 requests/second roughly
 
 // helper that waits
 function sleep(ms: number): Promise<void> {
    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// simple throttler to avoid bursting TonAPI calls
+async function throttle(): Promise<void> {
+   const now = Date.now();
+   const wait = REQUEST_INTERVAL - (now - lastRequestTime);
+   if (wait > 0) {
+      await sleep(wait);
+   }
+   lastRequestTime = Date.now();
 }
 
 // query chain for a transaction containing expected comment/id
@@ -38,6 +53,8 @@ async function checkTransactionOnChain(
    const url = `https://tonapi.io/v2/blockchain/accounts/${address}/transactions?limit=10`;
 
    try {
+      // throttle global requests to avoid rate limit
+      await throttle();
       console.log(
          `Checking transactions for address: ${address}, looking for transactionID: ${trimmedExpectedId}`,
       );
@@ -55,6 +72,12 @@ async function checkTransactionOnChain(
             `TonAPI Error: ${response.status} ${response.statusText}`,
             errorBody,
          );
+         if (response.status === 429) {
+            // rate limit - throw so caller can back off more drastically
+            const err: any = new Error("TON_RATE_LIMIT");
+            err.rateLimit = true;
+            throw err;
+         }
          return false;
       }
 
@@ -131,10 +154,25 @@ export async function verifyTonPayment(orderId: number): Promise<boolean> {
 
    let retries = 0;
    while (retries < MAX_RETRIES) {
-      const txHash = await checkTransactionOnChain(
-         ourTonAddress,
-         paymentIdToMatch,
-      );
+      // add random jitter to scatter concurrent verifications
+      await sleep(Math.random() * 400);
+      let txHash: string | false = false;
+      try {
+         txHash = await checkTransactionOnChain(
+            ourTonAddress,
+            paymentIdToMatch,
+         );
+      } catch (e: any) {
+         if (e?.rateLimit) {
+            console.warn(
+               `verifyTonPayment: hit rate limit for order ${orderId}, backing off`,
+            );
+            await sleep(RATE_LIMIT_BACKOFF_MS);
+            retries++;
+            continue; // retry
+         }
+         console.error("verifyTonPayment: unexpected error", e);
+      }
 
       if (txHash) {
          console.log(
@@ -187,9 +225,11 @@ async function resumePendingTonVerifications() {
          where: { payment: "TON", status: "pending" },
       });
       for (const o of pending) {
-         verifyTonPayment(o.id).catch((e) =>
+         // process sequentially with small pause to avoid burst
+         await verifyTonPayment(o.id).catch((e) =>
             console.error("resume verifyTonPayment error", e),
          );
+         await sleep(REQUEST_INTERVAL);
       }
    } catch (e) {
       console.error("Failed to resume pending TON verifications", e);
