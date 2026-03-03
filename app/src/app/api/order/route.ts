@@ -1,6 +1,7 @@
 import { PaymentMethod, prisma } from "../../../../prisma/prismaSett";
 
 import { orderScript } from "bot/src/funcs";
+import { verifyTonPayment } from "@/lib/tonVerifier";
 import {
    generateWalnum,
    getProductPrice,
@@ -233,6 +234,11 @@ export async function GET(request: Request) {
       // if order payment method is TON, we return the ton transaction data
       if (transaction.orderData.payment === "TON") {
          if (transaction.tonTransaction) {
+            // start backend verification immediately (fire-and-forget)
+            verifyTonPayment(transaction.orderData.id).catch((err) => {
+               console.error("background ton verification failed:", err);
+            });
+
             return Response.json({
                orderId: transaction.orderData.id,
                success: true,

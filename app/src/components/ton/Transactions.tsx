@@ -1,6 +1,11 @@
 "use client";
 import { webApp } from "@/lib/webApp";
-import { useCartItem, useHandleModal, useQuantity, useUser } from "@/utils/UniStore";
+import {
+   useCartItem,
+   useHandleModal,
+   useQuantity,
+   useUser,
+} from "@/utils/UniStore";
 import { beginCell, toNano } from "@ton/ton";
 import {
    SendTransactionRequest,
@@ -24,7 +29,7 @@ const Transactions = () => {
       const app = await webApp();
       try {
          const response = await fetch(
-            `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver[1]}&crrnc=${item?.currency}&qty=${quantity}`
+            `/api/order?pid=${item?.id}&bid=${user?.id}&bsrnm=${user?.username}&rsrnm=${item?.receiver[1]}&crrnc=${item?.currency}&qty=${quantity}`,
          ).then(async (response) => await response.json());
 
          if (response.success && response.tonComment) {
@@ -37,21 +42,25 @@ const Transactions = () => {
                validUntil: Date.now() + 15 * 60 * 1000, // 15min
                messages: [
                   {
-                     address: ourTonAddress, 
+                     address: ourTonAddress,
                      amount: toNano(response.price).toString(),
                      payload: body.toBoc().toString("base64"),
                   },
                ],
             };
             async function sendTran(
-               tonConnectUI: ReturnType<typeof useTonConnectUI>[0]
+               tonConnectUI: ReturnType<typeof useTonConnectUI>[0],
             ) {
                try {
                   await tonConnectUI.sendTransaction(transaction);
-                  fetch(`/api/tonpay?oid=${response.orderId}`);
-                  app.showAlert("Töleg amala aşyryldy! Sargydyňyz mümkin bolan iň gysga wagtda gowşurylar.", () => {
-                     app.openTelegramLink("https://t.me/yyldyzbot");
-                  }); // Success message
+                  // backend now starts verifying the transaction automatically when
+                  // the order is created, so we no longer need to call /api/tonpay
+                  app.showAlert(
+                     "Töleg amala aşyryldy! Sargydyňyz mümkin bolan iň gysga wagtda gowşurylar.",
+                     () => {
+                        app.openTelegramLink("https://t.me/yyldyzbot");
+                     },
+                  ); // Success message
                } catch (transactionError: unknown) {
                   console.log(transactionError);
                   app.showAlert("Tölegde ýalňyşlyk ýüze çykdy");
@@ -63,7 +72,7 @@ const Transactions = () => {
             app.showAlert(
                response.message
                   ? response.message
-                  : "Yalnyslyk doredi tazeden synansyn"
+                  : "Yalnyslyk doredi tazeden synansyn",
             );
          }
       } catch (error) {
@@ -89,11 +98,7 @@ const Transactions = () => {
             isLoading ? "bg-tonColor/50 cursor-wait" : "bg-tonColor"
          } w-full py-2 text-white rounded-lg ring-inherit ring-2 ring-blue-800 flex items-center justify-center`}
       >
-         {!rawAddress
-            ? "TON bagla"
-            : isLoading
-            ? "Loading..."
-            : "TON töle"}
+         {!rawAddress ? "TON bagla" : isLoading ? "Loading..." : "TON töle"}
       </button>
    );
 };

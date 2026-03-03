@@ -112,6 +112,7 @@ model TonTransaction {
   id        String   @id @default(cuid())
   price     Float
   orderId   Int      @unique
+  txHash    String? // stores the hash of the verified transaction on Ton blockchain
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   Order     Order    @relation(fields: [orderId], references: [id])
@@ -119,7 +120,7 @@ model TonTransaction {
 
 model StarTransaction {
   id        String   @id @default(cuid())
-  chargeId  String?   @unique
+  chargeId  String?  @unique
   price     Int
   orderId   Int      @unique
   createdAt DateTime @default(now())

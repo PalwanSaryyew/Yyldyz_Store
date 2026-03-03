@@ -1741,7 +1741,7 @@ bot.callbackQuery(/orderDelivered_(.+)/, async (ctx) => {
    }
 });
 // add sum crrcncy chooser
-bot.callbackQuery(/^choose_(\w+)$/, (ctx) => {
+bot.callbackQuery(/^choose_(\w+)$/, async (ctx) => {
    const adminId = ctx.from?.id;
    const sumAddState = ctx.session.sumAddStates[adminId];
    // if user not admin notify admins
@@ -1772,23 +1772,22 @@ bot.callbackQuery(/^choose_(\w+)$/, (ctx) => {
       sumAddState.crrncy = ctx.match[1] as PaymentMethod;
    }
    // next message
-   return ctx
-      .editMessageText(
-         /* adminId,
-      sumAddState?.mssgId || 0, */
-         `Hasap nomer: ${sumAddState?.walNum} \n Näçe ? ${sumAddState?.crrncy}`,
-         {
-            reply_markup: cnclAddSumBtnn(),
-         },
-      )
-      .catch((e) =>
-         console.error(
-            "---editSummComand komandynda editMessageText yalnyslygy---",
-            e,
-         ),
-      );
+   try {
+      return await ctx
+         .editMessageText(
+            /* adminId,
+         sumAddState?.mssgId || 0, */
+            `Hasap nomer: ${sumAddState?.walNum} \n Näçe ? ${sumAddState?.crrncy}`,
+            {
+               reply_markup: cnclAddSumBtnn(),
+            });
+   } catch (e) {
+      return console.error(
+         "---editSummComand komandynda editMessageText yalnyslygy---",
+         e);
+   }
 });
-bot.callbackQuery(/^select_(\w+)$/, (ctx) => {
+bot.callbackQuery(/^select_(\w+)$/, async (ctx) => {
    const userID = ctx.from?.id;
    const transferState = ctx.session.transferStates[userID];
 
@@ -1797,24 +1796,22 @@ bot.callbackQuery(/^select_(\w+)$/, (ctx) => {
       transferState.currency = ctx.match[1] as PaymentMethod;
    }
    // next message
-   return ctx
-      .editMessageText(
-         /* adminId,
-      sumAddState?.mssgId || 0, */
-         `Balans ID: ${transferState?.recieverWalNum} \n Näçe ? ${transferState?.currency}`,
-         {
-            reply_markup: new InlineKeyboard().text(
-               "Ýatyr " + statusIcons.care[7],
-               "declineTransfer",
-            ),
-         },
-      )
-      .catch((e) =>
-         console.error(
-            "---editSummComand komandynda editMessageText yalnyslygy---",
-            e,
-         ),
-      );
+   try {
+      return await ctx
+         .editMessageText(
+            /* adminId,
+         sumAddState?.mssgId || 0, */
+            `Balans ID: ${transferState?.recieverWalNum} \n Näçe ? ${transferState?.currency}`,
+            {
+               reply_markup: new InlineKeyboard().text(
+                  "Ýatyr " + statusIcons.care[7],
+                  "declineTransfer"),
+            });
+   } catch (e) {
+      return console.error(
+         "---editSummComand komandynda editMessageText yalnyslygy---",
+         e);
+   }
 });
 // complate add sum
 bot.callbackQuery("complateAdd", async (ctx) => {

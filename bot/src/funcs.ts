@@ -11,7 +11,7 @@ import {
 import { InlineKeyboard } from "grammy";
 import { bot } from "./botConf";
 
-interface OrderDetails extends Order {
+export interface OrderDetails extends Order {
    TonTransaction: TonTransaction | null;
    Product: Product;
 }
