@@ -8,7 +8,7 @@ import {
    useUser,
    useWhicIsOpen,
 } from "../../utils/UniStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/utils/tailwindMerge";
 import { getUser } from "@/lib/fetchs";
 import { webApp } from "@/lib/webApp";
@@ -36,12 +36,23 @@ const ItemModal = ({
    const modalOpener = useHandleModal((state) => state.toogleOpen);
    const currency = useCurrency((state) => state.currency);
    const currentUser = useUser((state) => state.user);
-   const priceOnCurrency =
-      currency === "TMT"
-         ? item.priceTMT.toFixed(2)
-         : currency === "USDT"
-         ? item.priceUSDT.toFixed(2)
-         : Number(currency === "TON" ? tonPriceCalculator(item.priceUSDT, tonPrice) : starPriceCalculator(item.priceUSDT));
+   const [priceOnCurrency, setPriceOnCurrency] = useState<string | number>("0");
+
+   useEffect(() => {
+      const calculatePrice = async () => {
+         if (currency === "TMT") {
+            setPriceOnCurrency(item.priceTMT.toFixed(2));
+         } else if (currency === "USDT") {
+            setPriceOnCurrency(item.priceUSDT.toFixed(2));
+         } else if (currency === "TON") {
+            const tonPriceValue = await tonPriceCalculator(item.priceUSDT, tonPrice);
+            setPriceOnCurrency(Number(tonPriceValue));
+         } else {
+            setPriceOnCurrency(starPriceCalculator(item.priceUSDT));
+         }
+      };
+      calculatePrice();
+   }, [currency, item, tonPrice]);
    const currentColor = cn(
       item.name === "pubg"
          ? "bg-white"

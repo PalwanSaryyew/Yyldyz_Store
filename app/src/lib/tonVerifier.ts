@@ -3,13 +3,14 @@ import { noticeAdmins, OrderDetails, sendMessages } from "bot/src/funcs";
 import { ourTonAddress } from "bot/src/settings";
 
 const apiKey = process.env.TON_API;
-const MAX_RETRIES = 20;
-const RETRY_INTERVAL_MS = 30 * 1000; // 30 seconds
+// configurable maximum number of verification loops per order; keep low to save CPU/IO
+const MAX_RETRIES = Number(process.env.MAX_TON_RETRIES || 5);
+const RETRY_INTERVAL_MS = 30 * 1000; // 30 seconds between normal retries
 const RATE_LIMIT_BACKOFF_MS = 60 * 1000; // wait longer when we see 429
 
 // simple throttle state, ensure at most one request every interval
 let lastRequestTime = 0;
-const REQUEST_INTERVAL = 500; // 2 requests/second roughly
+const REQUEST_INTERVAL = 500; // ~2 requests/sec
 
 // helper that waits
 function sleep(ms: number): Promise<void> {
@@ -74,7 +75,9 @@ async function checkTransactionOnChain(
          );
          if (response.status === 429) {
             // rate limit - throw so caller can back off more drastically
-            const err = new Error("TON_RATE_LIMIT") as Error & { rateLimit: boolean };
+            const err = new Error("TON_RATE_LIMIT") as Error & {
+               rateLimit: boolean;
+            };
             err.rateLimit = true;
             throw err;
          }
@@ -204,6 +207,12 @@ export async function verifyTonPayment(orderId: number): Promise<boolean> {
          );
          await sleep(RETRY_INTERVAL_MS);
       }
+   }
+
+   if (retries >= MAX_RETRIES) {
+      console.info(
+         `verifyTonPayment: exhausted max retries (${MAX_RETRIES}) for order ${orderId}, stopping further checks`,
+      );
    }
 
    console.warn(
