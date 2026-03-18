@@ -157,28 +157,28 @@ export const productTitle = (name: ProductType) => {
    }
 };
 export const paths: ProductType[] = [
+   "uc",
+   "pubg",
    "star",
    "tgprem",
-   "uc",
    "jtn",
-   "exit",
-   "pubg",
+   "belet",
+   "wifi",
+   "imo",
+   "music",
+   "apple",
+   "roblox",
+   "gpt",
+   "brawl",
    "psp",
    "steam",
    "royale",
-   "lis",
-   "apple",
-   "belet",
    "alem",
    "clash",
    "bc",
-   "brawl",
-   "gpt",
-   "roblox",
-   "wifi",
-   "music",
    "trgt",
-   "imo"
+   "lis",
+   "exit",
 ];
 
 export async function cmcApi(id: string) {
