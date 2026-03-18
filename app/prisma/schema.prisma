@@ -213,6 +213,7 @@ enum ProductType {
   music
   pes
   stand
+  imo
 }
 
 enum UserRole {

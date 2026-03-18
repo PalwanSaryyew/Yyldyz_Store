@@ -150,6 +150,8 @@ export const productTitle = (name: ProductType) => {
          return "Aýdym-saz abunalary";
       case "trgt":
          return "Instagram";
+      case "imo":
+         return "imo Almaz";
       default:
          return "";
    }
@@ -176,6 +178,7 @@ export const paths: ProductType[] = [
    "wifi",
    "music",
    "trgt",
+   "imo"
 ];
 
 export async function cmcApi(id: string) {
