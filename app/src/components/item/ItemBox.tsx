@@ -20,16 +20,18 @@ const ItemBox = ({ item, tonPrice }: ItemBoxProps) => {
       item.title === "Prime"
          ? "from-[#289692] to-[#058CD0]"
          : item.title === "Prime Plus"
-         ? "from-[#E29539] to-[#E4512E]"
-         : item.title === "Ak Sandyk"
-         ? "from-[#386DDB] to-[#23334C]"
-         : item.title === "Sary Sandyk"
-         ? "from-[#e67541] to-[#344409]"
-         : item.title === "Gyzyl Sandyk"
-         ? "from-[#69020E] to-[#050B0D] "
-         : item.title === "Mythic Emblem"
-         ? "from-[#0D010D] to-[#590111] "
-         : "bg-gray-200";
+           ? "from-[#E29539] to-[#E4512E]"
+           : item.title === "Ak Sandyk"
+             ? "from-[#386DDB] to-[#23334C]"
+             : item.title === "Sary Sandyk"
+               ? "from-[#e67541] to-[#344409]"
+               : item.title === "Gyzyl Sandyk"
+                 ? "from-[#69020E] to-[#050B0D] "
+                 : item.title === "Mythic Emblem"
+                   ? "from-[#0D010D] to-[#590111] "
+                   : item.title === "Ýubileý Altyn Sandyk"
+                     ? "from-[#6676DF] to-[#87C4EE] "
+                     : "bg-gray-200";
    const textColor = item.name === "pubg" ? "text-white" : "";
    return (
       <div

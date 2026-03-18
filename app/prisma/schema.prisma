@@ -60,9 +60,9 @@ model Product {
   max            Int           @default(0)
   min            Int           @default(0)
   pricingTiers   Json          @default("[]")
+  Details        Json          @default("[]")
   Order          Order[]
   Requirements   Requirements? @relation(fields: [requirementsId], references: [id])
-  Details        Json          @default("[]")
 }
 
 model Referral {
@@ -112,7 +112,7 @@ model TonTransaction {
   id        String   @id @default(cuid())
   price     Float
   orderId   Int      @unique
-  txHash    String? // stores the hash of the verified transaction on Ton blockchain
+  txHash    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   Order     Order    @relation(fields: [orderId], references: [id])
@@ -148,6 +148,7 @@ model User {
   role                               UserRole     @default(client)
   createdAt                          DateTime     @default(now())
   updatedAt                          DateTime     @updatedAt
+  blocked                            Boolean      @default(false)
   Chest                              Chest?
   Order                              Order[]
   Referral_Referral_referredIdToUser Referral?    @relation("Referral_referredIdToUser")
@@ -155,7 +156,17 @@ model User {
   SummUpdate                         SummUpdate[]
   Transfer_Transfer_recieveridToUser Transfer[]   @relation("Transfer_recieveridToUser")
   Transfer_Transfer_senderidToUser   Transfer[]   @relation("Transfer_senderidToUser")
-  blocked                            Boolean      @default(false)
+}
+
+model Chest {
+  id        Int       @id
+  type      ChestType
+  fullname  String?
+  reward    String?
+  userId    String?   @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  User      User?     @relation(fields: [userId], references: [id])
 }
 
 enum OrderStatus {
@@ -202,17 +213,6 @@ enum ProductType {
   music
   pes
   stand
-}
-
-model Chest {
-  id        Int       @id // 1'den 100'e kadar numara
-  type      ChestType
-  fullname  String?
-  reward    String?
-  userId    String?   @unique // Bir kullanıcı sadece bir sandık alabilir
-  User      User?     @relation(fields: [userId], references: [id])
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
 }
 
 enum UserRole {

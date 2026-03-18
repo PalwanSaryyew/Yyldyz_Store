@@ -224,7 +224,7 @@ bot.command("redeem", async (ctx) => {
       try {
          const message = await ctx.reply("Redeem kodlaryny ugradyn");
          ctx.session.redeemCodeState[ctx.from.id] = {
-            message_id: message.message_id,
+            messageId: message.message_id,
          };
       } catch (error) {
          console.error("---redeem komandada reply yalnyslygy---", error);
@@ -363,6 +363,10 @@ bot.command("stop", async (ctx) => {
    delete ctx.session.chatStates[userID];
    delete ctx.session.chatStates[chatState.userId];
 });
+bot.command("clear", async (ctx) => {
+   return
+});
+
 bot.command("on", async (ctx) => {
    const userID = ctx.from?.id;
 
@@ -2790,7 +2794,7 @@ bot.on("message", async (ctx) => {
          delete ctx.session.redeemCodeState[userId];
          await ctx.api.editMessageText(
             userId,
-            redeemCodeState.message_id,
+            redeemCodeState.messageId,
             `Error`,
          );
          return;
@@ -2804,7 +2808,7 @@ bot.on("message", async (ctx) => {
 
       delete ctx.session.redeemCodeState[userId];
       await ctx.deleteMessage();
-      await ctx.api.deleteMessage(userId, redeemCodeState.message_id);
+      await ctx.api.deleteMessage(userId, redeemCodeState.messageId);
    } else if (broadcastState) {
       const users = await prisma.user.findMany().catch((e) => {
          console.error("---broadcastState prisma yalnyslygy---", e);

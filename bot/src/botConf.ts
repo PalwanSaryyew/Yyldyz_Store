@@ -26,86 +26,52 @@ interface SignupState {
    pass: string | undefined;
    message_id: number;
 }
+interface ChatState {
+   userId: number;
+   username?: string;
+   messageIds: number[];
+   calling?: boolean;
+}
+
+interface TransferState {
+   recieverID: number;
+   senderWalNum: string;
+   recieverWalNum: string;
+   amount: number;
+   currency: string;
+   messageId: number;
+}
+interface BroadcastState {
+   message: string;
+   message_id: number;
+}
+interface CheckState {
+   messageId: number;
+}
+interface RedeemCodeState {
+   messageId: number;
+}
 
 // *** YENİ BotSessionData YAPISI ***
-// Artık Record<number, ...> kullanmıyoruz, çünkü bunlar zaten tek bir objenin içindeki
-// tüm kullanıcılara ait verileri tutacak şekilde global olacak.
 export interface BotSessionData {
-   transferStates: Record<
-      number,
-      {
-         recieverID: number;
-         senderWalNum: string;
-         recieverWalNum: string;
-         amount: number;
-         currency: string;
-         messageId: number;
-      }
-   >;
-   // reasonStates'in eski Map yapısı: Map<any, any> idi.
-   // Şimdi tek bir global obje olarak tutulacak.
-   // Burada key'ler genellikle chat/user ID'leri olacak.
-   reasonStates: Record<string, ReasonState>; // Eğer key'ler string ve değerler herhangi bir tipteyse
-
-   signupState: Record<number, SignupState>; // Eğer key'ler string ve değerler herhangi bir tipteyse
-
-   // sumAddStates'in eski Map yapısı: Map<number, SumAddState> idi.
-   // Şimdi tek bir global obje olarak tutulacak.
+   // user states
+   transferStates: Record<number, TransferState>;
+   signupState: Record<number, SignupState>;
    sumAddStates: Record<number, SumAddState>;
-
-   // ordrMsgEdtStts'in eski Map yapısı: Map<number, OrdrMsgEdtSt> idi.
-   // Şimdi tek bir global obje olarak tutulacak.
+   chatStates: Record<number, ChatState>;
+   broadcastStates: Record<number, BroadcastState>;
+   checkStates: Record<number, CheckState>;
+   redeemCodeState: Record<number, RedeemCodeState>;
+   reasonStates: Record<number, ReasonState>; // none cleareable
+   // other states
    ordrMsgEdtStts: Record<number, OrdrMsgEdtSt>;
-
-   // chatStates'in eski Map yapısı: Map<number, { userId, username, messageIds, calling }> idi.
-   // Şimdi tek bir global obje olarak tutulacak.
-   chatStates: Record<
-      number,
-      {
-         userId: number;
-         username?: string;
-         messageIds: number[];
-         calling?: boolean;
-      }
-   >;
-
-   // broadcastStates'in eski Map yapısı: Map<number, { message }> idi.
-   // Şimdi tek bir global obje olarak tutulacak.
-   broadcastStates: Record<
-      number,
-      {
-         message: string;
-         message_id: number;
-      }
-   >;
-
-   // checkStates'in eski Map yapısı: Map<number, { messageId }> idi.
-   // Şimdi tek bir global obje olarak tutulacak.
-   checkStates: Record<
-      number,
-      {
-         messageId: number;
-      }
-   >;
-   paylaState: Record<number, any>; // payla ile ilgili durumları tutmak için
-   redeemCodeState: Record<
-      number,
-      {
-         message_id: number;
-      }
-   >;
-
    // Tek bir global bot durumunu takip etmek için (opsiyonel)
    // currentBotState?: 'idle' | 'broadcasting' | 'checking';
 }
-
-// Oturum verilerini içeren özel bir Context tipi oluşturuyoruz
-// DİKKAT: BotSessionData artık tek bir global oturumu temsil ettiği için,
-// bu Context'i her zaman aynı "sanal" oturum anahtarıyla kullanmalıyız.
 export type MyContext = Context & SessionFlavor<BotSessionData>;
 
 export const bot = new Bot<MyContext>(
-   process.env.BOT_TOKEN || "YOUR_FALLBACK_TOKEN"
+   process.env.BOT_TOKEN || "YOUR_FALLBACK_TOKEN",
 );
 export const bot2 = new Bot(process.env.BOT_TOKEN_2 || "YOUR_FALLBACK_TOKEN");
 
@@ -125,12 +91,11 @@ bot.use(
          broadcastStates: {},
          checkStates: {},
          signupState: {},
-         paylaState: {},
          redeemCodeState: {},
       }),
       // ÖNEMLİ: Her zaman aynı session key'ini döndürerek tüm verileri tek bir oturum altında topluyoruz.
       // Bu, ctx.session'ın her zaman aynı global durumu temsil etmesini sağlar.
       getSessionKey: (ctx) => "GLOBAL_BOT_STATE_KEY", // Her zaman aynı sabit string
       storage: new SingleFileAdapter(GLOBAL_STATE_FILE), // Kendi adaptörümüzü kullanmaya devam
-   })
+   }),
 );
