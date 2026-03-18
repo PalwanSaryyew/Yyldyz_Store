@@ -38,7 +38,7 @@ export default async function RootLayout({
             <TonProvider>
                <ModalProvider />
                <Header />
-                 Mahabat
+                 {/*  mahabat */}
                <Link
                   href={"https://t.me/YyldyzBot/app"}
                   className="mt-3 flex relative w-11/12 h-20 bg-mainColor"
