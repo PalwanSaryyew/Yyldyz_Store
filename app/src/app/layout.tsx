@@ -5,6 +5,8 @@ import TonProvider from "@/components/ton/TonProvidor";
 import Header from "@/components/mains/Header";
 import Footer from "@/components/mains/Footer";
 import ModalProvider from "@/components/modals/modalDinam/ModalProvider";
+import Image from "next/image";
+import Link from "next/link";
 
 const geistSans = localFont({
    /*  src: "@/app/fonts/GeistVF.woff", */
@@ -33,13 +35,12 @@ export default async function RootLayout({
          <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
          >
-
             <TonProvider>
                <ModalProvider />
                <Header />
-               {/*  Mahabat
+                 Mahabat
                <Link
-                  href={"https://t.me/betindenvps"}
+                  href={"https://t.me/YyldyzBot/app"}
                   className="mt-3 flex relative w-11/12 h-20 bg-mainColor"
                >
                   
@@ -50,14 +51,14 @@ export default async function RootLayout({
                   
 
                   <Image
-                     src="/banners/betindenvps.jpg"
+                     src="/banners/pubgann.jpg"
                      alt="ad banner"
                      fill
                      style={{ objectFit: "contain" }}
                      className="object-left border-y-2 border-mainColor "
                   />
                </Link> 
-               */}
+               
                {children}
                <Footer />
             </TonProvider>
