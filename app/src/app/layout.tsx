@@ -40,7 +40,7 @@ export default async function RootLayout({
                <Header />
                  {/*  mahabat */}
                <Link
-                  href={"https://t.me/YyldyzBot/app"}
+                  href={"/pubg"}
                   className="mt-3 flex relative w-11/12 h-20 bg-mainColor"
                >
                   
