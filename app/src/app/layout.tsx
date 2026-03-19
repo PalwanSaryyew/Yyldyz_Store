@@ -51,7 +51,7 @@ export default async function RootLayout({
                   
 
                   <Image
-                     src="/banners/pubgann.jpg"
+                     src="/banners/pubgann1.jpg"
                      alt="ad banner"
                      fill
                      style={{ objectFit: "contain" }}
