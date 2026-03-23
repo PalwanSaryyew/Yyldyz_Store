@@ -20,7 +20,7 @@ const Header = () => {
          </h1> */}
          {/* mid */}
          <div className="text-white font-bold">
-            TON: <Pricer round={2} />
+            TON: <Pricer round={2} />$
          </div>
          {/* right */}
          {/* <div className="cursor-pointer">
