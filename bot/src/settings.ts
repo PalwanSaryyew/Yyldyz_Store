@@ -10,7 +10,7 @@ export const toncoinId = "TONUSDT";
 export const tonFee = 0.2;
 export const starFee = 0;
 export const starExRate = 0.013; // 1 STAR = 0.013 
-export const domain = "https://www.yyldyz.store";
+export const domain = "https://www.yyldyz.cloud";
 
 export const adminidS = [
    process.env.PALWAN || "1",
