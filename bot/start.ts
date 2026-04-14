@@ -2897,8 +2897,12 @@ bot.on("message", async (ctx) => {
             console.error("---broadcastState reply yalnyslygy---", e),
          );
       delete ctx.session.broadcastStates[userId];
+   }else{
+      ctx.api.copyMessage(ctx.chat.id, ctx.chat.id, ctx.message.message_id, {
+         reply_markup: mainKEybiard,
+      });
+      
    }
-   //! barik mainketboardy goy
 });
 
 // Error handling
