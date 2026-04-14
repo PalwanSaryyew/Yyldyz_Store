@@ -364,7 +364,43 @@ bot.command("stop", async (ctx) => {
    delete ctx.session.chatStates[chatState.userId];
 });
 bot.command("clear", async (ctx) => {
-   return
+   const userId = ctx.chat.id;
+   const transferState = ctx.session.transferStates[userId];
+   const signupState = ctx.session.signupState[userId];
+   const sumAddState = ctx.session.sumAddStates[userId];
+   const chatState = ctx.session.chatStates[userId];
+   const broadcastState = ctx.session.broadcastStates[userId];
+   const checkState = ctx.session.checkStates[userId];
+   const redeemCodeState = ctx.session.redeemCodeState[userId];
+   const reasonState = ctx.session.reasonStates[userId];
+
+   if (transferState) {
+      delete ctx.session.transferStates[userId];
+   }
+   if (signupState) {
+      delete ctx.session.signupState[userId];
+   }
+   if (sumAddState) {
+      delete ctx.session.sumAddStates[userId];
+   }
+   if (chatState) {
+      await ctx.api.sendMessage(chatState.userId, "Söhbetdeşlik tamamlandy.")
+      delete ctx.session.chatStates[userId];
+      delete ctx.session.chatStates[chatState.userId];
+   }
+   if (broadcastState) {
+      delete ctx.session.broadcastStates[userId];
+   }
+   if (checkState) {
+      delete ctx.session.checkStates[userId];
+   }
+   if (redeemCodeState) {
+      delete ctx.session.redeemCodeState[userId];
+   }
+   if (reasonState) {
+      delete ctx.session.reasonStates[userId];
+   }
+   return ctx.reply("Ähli açyk ýagdaýlar aradan aýryldy. Täzeden synanyşyň!");
 });
 
 bot.command("on", async (ctx) => {
@@ -713,9 +749,7 @@ bot.command("0804", async (ctx) => {
                e,
             ),
       );
-      return ctx.answerCallbackQuery({
-         text: "Geçirimi hökman tamamlaň ýa-da ýatyryň",
-      });
+      return;
    }
    delete ctx.session.transferStates[userID];
    return ctx
@@ -980,12 +1014,14 @@ bot.on("message:successful_payment", async (ctx) => {
 
    // İşte bu ID iade işlemi için hayati önem taşıyor:
    const chargeId = paymentInfo.telegram_payment_charge_id;
-   await prisma.starTransaction.update({
-      where: {orderId: order.id},
-      data: {chargeId: chargeId},
-   }).catch((e) => {
-      console.error("StarTransaction güncellenirken hata:", e);
-   })
+   await prisma.starTransaction
+      .update({
+         where: { orderId: order.id },
+         data: { chargeId: chargeId },
+      })
+      .catch((e) => {
+         console.error("StarTransaction güncellenirken hata:", e);
+      });
 
    // 1. ADMINLERE MESAJ GÖNDERME İŞLEMİ
    const ordIdMssg = ordrIdMssgFnc(order.id);
@@ -1109,9 +1145,8 @@ bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
 
          const payKeyboard = new InlineKeyboard()
             .url("Töleg et", invoiceLink)
-            .style('primary')
-            .icon("4983748881977181112")
-            
+            .style("primary")
+            .icon("4983748881977181112");
 
          await ctx.editMessageReplyMarkup({ reply_markup: payKeyboard });
          await ctx.answerCallbackQuery({
@@ -1777,18 +1812,19 @@ bot.callbackQuery(/^choose_(\w+)$/, async (ctx) => {
    }
    // next message
    try {
-      return await ctx
-         .editMessageText(
-            /* adminId,
+      return await ctx.editMessageText(
+         /* adminId,
          sumAddState?.mssgId || 0, */
-            `Hasap nomer: ${sumAddState?.walNum} \n Näçe ? ${sumAddState?.crrncy}`,
-            {
-               reply_markup: cnclAddSumBtnn(),
-            });
+         `Hasap nomer: ${sumAddState?.walNum} \n Näçe ? ${sumAddState?.crrncy}`,
+         {
+            reply_markup: cnclAddSumBtnn(),
+         },
+      );
    } catch (e) {
       return console.error(
          "---editSummComand komandynda editMessageText yalnyslygy---",
-         e);
+         e,
+      );
    }
 });
 bot.callbackQuery(/^select_(\w+)$/, async (ctx) => {
@@ -1801,20 +1837,22 @@ bot.callbackQuery(/^select_(\w+)$/, async (ctx) => {
    }
    // next message
    try {
-      return await ctx
-         .editMessageText(
-            /* adminId,
+      return await ctx.editMessageText(
+         /* adminId,
          sumAddState?.mssgId || 0, */
-            `Balans ID: ${transferState?.recieverWalNum} \n Näçe ? ${transferState?.currency}`,
-            {
-               reply_markup: new InlineKeyboard().text(
-                  "Ýatyr " + statusIcons.care[7],
-                  "declineTransfer"),
-            });
+         `Balans ID: ${transferState?.recieverWalNum} \n Näçe ? ${transferState?.currency}`,
+         {
+            reply_markup: new InlineKeyboard().text(
+               "Ýatyr " + statusIcons.care[7],
+               "declineTransfer",
+            ),
+         },
+      );
    } catch (e) {
       return console.error(
          "---editSummComand komandynda editMessageText yalnyslygy---",
-         e);
+         e,
+      );
    }
 });
 // complate add sum
