@@ -1,4 +1,5 @@
 import { InlineKeyboard } from "grammy";
+import { type Message } from "@grammyjs/types";
 import { prisma } from "./prisma/prismaSett";
 import {
    adminidS,
@@ -8,7 +9,7 @@ import {
    productTitle,
    statusIcons,
 } from "./src/settings";
-import { bot } from "./src/botConf";
+import { bot, MyContext } from "./src/botConf";
 import { PaymentMethod } from "./prisma/prismaSett";
 import { err_6, err_7 } from "./src/errCodes";
 import {
@@ -16,6 +17,7 @@ import {
    chatIdV,
    isAdminId,
    userValid,
+   usrFnd,
    validator,
 } from "./src/validators";
 import {
@@ -297,49 +299,40 @@ bot.command("cagyr", async (ctx) => {
 });
 bot.command("stop", async (ctx) => {
    const userID = ctx.from?.id || 0;
-   const isAmdin = isAdminId(userID);
+   const isAdmin = isAdminId(userID);
    const chatState = ctx.session.chatStates[userID];
    if (!userID || !chatState) {
-      return ctx.deleteMessage().catch((e) => {
-         console.error("---stop komandasynda deleteMessage yalnyslygy---", e);
-      });
+      return ctx.deleteMessage();
    }
 
-   await ctx.reply(`Söhbetdeşlik tamamlandy.`).catch((e) => {
-      console.error("---stop komandasynda reply yalnyslygy---", e);
-   });
+   const replyMsg = await ctx.reply(`Söhbetdeşlik tamamlandy.`);
+   let userCtx: Message = replyMsg;
+
    if (chatState.userId !== 0) {
-      await ctx.api
-         .sendMessage(
-            chatState.userId,
-            `<blockquote>bot</blockquote> Söhbetdeşlik tamamlandy.`,
-            { parse_mode: "HTML" },
-         )
-         .catch((e) => {
-            console.error("---stop komandasynda sendMessage yalnyslygy---", e);
-         });
+      const adminMsg = await ctx.api.sendMessage(
+         chatState.userId,
+         `<blockquote>bot</blockquote> Söhbetdeşlik tamamlandy.`,
+         { parse_mode: "HTML" },
+      );
+      if (!isAdmin.error) userCtx = adminMsg;
    }
+
+   const user = await userValid(userCtx.chat.id);
+   if ("error" in user) {
+      return ctx.reply(user.mssg);
+   }
+   const userInfoText = await userInfo({
+      user: {
+         ...user,
+         username: userCtx.chat.username,
+         fullname:
+            userCtx.chat.first_name +
+            (userCtx.chat.last_name ? ` ${userCtx.chat.last_name}` : ""),
+      },
+   });
    if (chatState.messageIds.length > 0) {
       for (let i = 0; i < adminidS.length; i++) {
-         const messageToSend = isAmdin.error
-            ? `${userLink({
-                 id: userID,
-                 nick: ctx.from?.first_name,
-              })}${
-                 ctx.from?.username ? ` / @${ctx.from?.username}` : ""
-              }\n${userLink({
-                 id: chatState.userId,
-              })} bilen söhbetdeşligi tamamlady`
-            : `${userLink({
-                 id: userID,
-                 nick: ctx.from?.first_name,
-              })}\n${userLink({
-                 id: chatState.userId,
-              })}${
-                 ctx.session.chatStates[chatState.userId].username !== undefined
-                    ? ` / @${ctx.session.chatStates[chatState.userId].username}`
-                    : ""
-              } bilen söhbetdeşligi tamamlady.`;
+         const messageToSend = `${blockText(userInfoText, true)} ${isAdmin.error ? userLink({ id: chatState.userId }) : userLink({ id: userID, nick: ctx.from?.first_name })}: söhbetdeşlik tamamlady`;
          try {
             await ctx.api.editMessageText(
                adminidS[i],
@@ -836,7 +829,10 @@ bot.hears("Admini çagyr", async (ctx) => {
          });
    }
 
-   const userInfoText = await userInfo({ user, ctx });
+   const fullname = ctx.from?.first_name + " " + (ctx.from?.last_name || "");
+   const userInfoText = await userInfo({
+      user: { ...user, fullname: fullname, username: ctx.from?.username || "" },
+   });
    const messageIds: number[] = [];
    for (const adminId of adminidS) {
       try {
@@ -902,20 +898,29 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
       userId: userID,
       messageIds: chatState.messageIds,
    };
+   const user = await userValid(userID);
+   if ("error" in user) {
+      return ctx.reply("Ulanyjy tapylmady.");
+   }
+   const userCtx = await ctx.api.sendMessage(
+      userID,
+      "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar.",
+   );
+   const userInfoText = await userInfo({
+      user: {
+         ...user,
+         username: userCtx.chat?.username || "",
+         fullname:
+            userCtx.chat.first_name + " " + (userCtx.chat.last_name || ""),
+      },
+   });
    if (chatState.messageIds.length > 0) {
       for (let i = 0; i < adminidS.length; i++) {
          try {
             await ctx.api.editMessageText(
                adminidS[i],
                chatState?.messageIds[i],
-               `${userLink({
-                  id: acceptorId,
-                  nick: ctx.from.first_name,
-               })} bilen ${userLink({ id: userID })}${
-                  chatState.username !== undefined
-                     ? ` / @${chatState.username}`
-                     : ""
-               } söhbetdeşlik edýär.`,
+               `${blockText(userInfoText, true)} ${acceptorId.toString() === adminidS[i] ? "Siz" : userLink({ id: acceptorId, nick: ctx.from?.first_name })} söhbetdeşlikde.`,
                {
                   parse_mode: "HTML",
                   reply_markup:
@@ -940,21 +945,8 @@ bot.callbackQuery(/acceptChat_(.+)/, async (ctx) => {
    } else {
       ctx.editMessageText(
          "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar.",
-      ).catch((e) => {
-         console.error(
-            "---acceptChat duwmesinde editMessageText yalnyslygy---",
-            e,
-         );
-      });
+      );
    }
-   await ctx.api
-      .sendMessage(
-         userID,
-         "Söhbetdeşlik kabul edildi. Mundan beýläk söhbetdeşlik ýapylýança, ugradan zatlaryňyz garşy tarapa barar.",
-      )
-      .catch((e) => {
-         console.error("---acceptChat duwmesinde sendMessage yalnyslygy---", e);
-      });
 });
 // cancel sending bulk messages
 bot.callbackQuery(/cancelBroad_(.+)/, async (ctx) => {
@@ -2652,25 +2644,17 @@ bot.on("message", async (ctx) => {
       }
    } else if (checkState) {
       const message = ctx.message.text || "";
-      ctx.deleteMessage().catch((e) =>
-         console.error("---checkState deleteMessage yalnyslygy---", e),
-      );
+      await ctx.deleteMessage();
       let user;
-      const fromId = await prisma.user
-         .findUnique({
-            where: { id: message },
-         })
-         .catch((e) => console.error("---checkState prisma yalnyslygy---", e));
+      const fromId = await prisma.user.findUnique({
+         where: { id: message },
+      });
       if (fromId) {
          user = fromId;
       } else {
-         const formWal = await prisma.user
-            .findUnique({
-               where: { walNum: message },
-            })
-            .catch((e) =>
-               console.error("---checkState prisma yalnyslygy---", e),
-            );
+         const formWal = await prisma.user.findUnique({
+            where: { walNum: message },
+         });
          if (formWal) {
             user = formWal;
          }
@@ -2687,16 +2671,12 @@ bot.on("message", async (ctx) => {
                console.error("---checkState editMessageText yalnyslygy---", e),
             );
       }
+      const userInfoText = await userInfo({ user });
       delete ctx.session.checkStates[userId];
       return ctx.api
-         .editMessageText(
-            userId,
-            checkState.messageId,
-            `ID: <a href="tg://user?id=${user.id}">${user.id}</a> \n Hasap nomer: <code>${user.walNum}</code> \n TMT: ${user.sumTmt} \n USDT: ${user.sumUsdt}`,
-            {
-               parse_mode: "HTML",
-            },
-         )
+         .editMessageText(userId, checkState.messageId, `${userInfoText}`, {
+            parse_mode: "HTML",
+         })
          .catch((e) =>
             console.error("---checkState editMessageText yalnyslygy---", e),
          );

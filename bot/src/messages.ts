@@ -42,7 +42,7 @@ export function ordrIdMssgFnc(orderId: number) {
    return `<blockquote>Sargyt ID: ${orderId}</blockquote>`;
 }
 // block text
-export function blockText(text: string, expandable?: boolean){
+export function blockText(text: string, expandable?: boolean) {
    return `<blockquote ${expandable ? "expandable" : ""}>${text}</blockquote>`;
 }
 // produçt details message
@@ -144,10 +144,9 @@ export function prdcAmnt({
 // user info
 export async function userInfo({
    user,
-   ctx,
 }: {
-   user: User;
-   ctx: MyContext;
+   user: User & { username?: string; fullname?: string };
+   
 }): Promise<string> {
    const userOrders = await prisma.order.findMany({
       where: { userId: user.id, status: "completed" },
@@ -173,7 +172,7 @@ export async function userInfo({
       }
    }
 
-   return `Ulanyjy: ${userLink({ id: ctx.chat?.id ?? 0, nick: ctx.chat?.first_name ? `${ctx.chat.first_name}${ctx.chat.last_name ? ` ${ctx.chat.last_name}` : ""}` : undefined })}\nID: <code>${ctx.chat?.id}</code>\nBalans ID: <code>${user.walNum}</code>\nDöredilen wagty: ${new Date(user.createdAt).toLocaleString("tk-TR")}\nTäzelenen wagty: ${new Date(
+   return `Ulanyjy: ${userLink({ id: Number(user.id), nick: user.fullname })}\n${user.username ? `Username: @${user.username}\n` : ""}ID: <code>${user.id}</code>\nBalans ID: <code>${user.walNum}</code>\nDöredilen wagty: ${new Date(user.createdAt).toLocaleString("tk-TR")}\nTäzelenen wagty: ${new Date(
       user.updatedAt,
    ).toLocaleString("tk-TR")}\nBalans TMT: ${user.sumTmt}\nBalans USDT: ${
       user.sumUsdt
