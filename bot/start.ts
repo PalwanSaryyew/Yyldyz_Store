@@ -20,6 +20,7 @@ import {
 } from "./src/validators";
 import {
    afterOrderConfirmedMess,
+   blockText,
    hspMsg,
    ordrCmltdMssgFnc,
    ordrDclngMssgFnc,
@@ -27,6 +28,7 @@ import {
    ordrIdMssgFnc,
    prdctDtlMssg,
    sspcsCaseMs,
+   userInfo,
    userLink,
    welcome,
 } from "./src/messages";
@@ -384,7 +386,7 @@ bot.command("clear", async (ctx) => {
       delete ctx.session.sumAddStates[userId];
    }
    if (chatState) {
-      await ctx.api.sendMessage(chatState.userId, "Söhbetdeşlik tamamlandy.")
+      await ctx.api.sendMessage(chatState.userId, "Söhbetdeşlik tamamlandy.");
       delete ctx.session.chatStates[userId];
       delete ctx.session.chatStates[chatState.userId];
    }
@@ -801,7 +803,7 @@ bot.hears("Admini çagyr", async (ctx) => {
       return ctx.reply(user.mssg);
    }
 
-   if ((user as any).blocked) {
+   if (user.blocked) {
       return ctx.reply(
          "Siz admin tarapyndan bloklanan, 'Admini çagyr' funksiýasyny ulanyp bilmersiňiz.",
       );
@@ -814,7 +816,7 @@ bot.hears("Admini çagyr", async (ctx) => {
    if (ctx.session.transferStates[userID]) {
       return await ctx
          .reply(
-            "Geçirimi açyk wagty admin çagyryp bolmaýar. Geçirimiňizi tamamlap ýa-da ýatyryp admini gaýtadan çagyryň.",
+            "Geçirimi açyk wagty admin çagyryp bolmaýar. Geçirimiňizi tamamlap ýa-da ýatyryp admini gaýtadan çagyryň. Eger başa barmasa /clear 👈 buýruguny ulanyň!",
             {
                reply_to_message_id:
                   ctx.session.transferStates[userID].messageId,
@@ -834,19 +836,13 @@ bot.hears("Admini çagyr", async (ctx) => {
          });
    }
 
+   const userInfoText = await userInfo({ user, ctx });
    const messageIds: number[] = [];
    for (const adminId of adminidS) {
       try {
          const { message_id } = await ctx.api.sendMessage(
             adminId,
-            `${userLink({
-               id: userID,
-               nick: ctx.from?.first_name,
-            })}${
-               ctx.from?.username !== undefined
-                  ? ` / @${ctx.from?.username}`
-                  : ""
-            } söhbetdeşlik talap edýär`,
+            `${blockText(userInfoText, true)} Söhbetdeşlige garaşylýar.`,
             {
                reply_markup: new InlineKeyboard().text(
                   "Tassykla",
@@ -2897,11 +2893,10 @@ bot.on("message", async (ctx) => {
             console.error("---broadcastState reply yalnyslygy---", e),
          );
       delete ctx.session.broadcastStates[userId];
-   }else{
+   } else {
       ctx.api.copyMessage(ctx.chat.id, ctx.chat.id, ctx.message.message_id, {
          reply_markup: mainKEybiard,
       });
-      
    }
 });
 

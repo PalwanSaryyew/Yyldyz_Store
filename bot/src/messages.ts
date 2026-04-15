@@ -1,6 +1,13 @@
 //message returners
 
-import { Order, PaymentMethod, Product } from "../prisma/prismaSett";
+import {
+   Order,
+   PaymentMethod,
+   prisma,
+   Product,
+   User,
+} from "../prisma/prismaSett";
+import { MyContext } from "./botConf";
 import { productTitle, statusIcons, tonPriceCalculator } from "./settings";
 
 export const welcome = `<b>Salam! Sanly dükanymyza hoş geldiňiz! 🛍️
@@ -14,10 +21,9 @@ Balansyňyzy doldurmak we dükanda bolmadyk önümleri sargyt etmek üçin ýa-d
 
 <b>Täze söwda tejribesine taýyn bolsaňyz, başlalyň!</b> ✨`;
 
-export function getEmoji(emojiId: string, emojiIcon: string){
-   return `<tg-emoji id="${emojiId}">${emojiIcon}</tg-emoji>`
+export function getEmoji(emojiId: string, emojiIcon: string) {
+   return `<tg-emoji id="${emojiId}">${emojiIcon}</tg-emoji>`;
 }
-
 // hasap message
 export function hspMsg(hnum: string, sum1: number, sum2: number) {
    return `Balans ID: <code>${hnum}</code> \n TMT: ${sum1} \n USDT: ${sum2}`;
@@ -27,13 +33,17 @@ export function sspcsCaseMs(
    errMssg: string,
    comad: string,
    username?: string,
-   id?: number
+   id?: number,
 ) {
    return `${errMssg} \n ulanyjy: @${username} \n id-si: ${id} \n comandy: ${comad}`;
 }
 // order id block
 export function ordrIdMssgFnc(orderId: number) {
    return `<blockquote>Sargyt ID: ${orderId}</blockquote>`;
+}
+// block text
+export function blockText(text: string, expandable?: boolean){
+   return `<blockquote ${expandable ? "expandable" : ""}>${text}</blockquote>`;
 }
 // produçt details message
 export function prdctDtlMssg({
@@ -71,10 +81,10 @@ export function orderTotal({
       total
          ? total
          : currency === "TMT"
-         ? product.priceTMT
-         : currency === "USDT"
-         ? product.priceUSDT
-         : tonPriceCalculator(product.priceUSDT)
+           ? product.priceTMT
+           : currency === "USDT"
+             ? product.priceUSDT
+             : tonPriceCalculator(product.priceUSDT)
    } ${currency}</b>`;
 }
 //asking confirmation meesage
@@ -92,7 +102,7 @@ export function ordrDclngMssgFnc(
    adminId: string | number,
    adminNick: string | boolean,
    reason?: string,
-   isClient: boolean = false
+   isClient: boolean = false,
 ) {
    return `${statusIcons.no[2]} <a href="tg://user?id=${
       isClient ? "" : adminId
@@ -131,7 +141,44 @@ export function prdcAmnt({
       amount ? `Mukdary: ${quantity ? quantity : amount}\n` : ""
    }${duration ? `Möhleti: ${duration}\n` : ""}`;
 }
+// user info
+export async function userInfo({
+   user,
+   ctx,
+}: {
+   user: User;
+   ctx: MyContext;
+}): Promise<string> {
+   const userOrders = await prisma.order.findMany({
+      where: { userId: user.id, status: "completed" },
+   });
 
+   // Tamamlanan sipariş sayısı
+   const orderCount = userOrders.length;
+
+   // Harcama toplamlarını tutacağımız değişkenler
+   let totalSpentTMT = 0;
+   let totalSpentUSDT = 0;
+
+   // Siparişler içinde dönerek ödeme yöntemine göre tutarları (total) topluyoruz
+   for (const order of userOrders) {
+      const amount = order.total ?? 0; // total değeri null ise 0 sayıyoruz
+
+      // NOT: "TMT" ve "USDT" değerlerini PaymentMethod enum'unuzda nasıl tanımladıysanız
+      // o şekilde (örneğin "tmt", "USDT_METHOD" vb.) güncelleyin.
+      if (order.payment === "TMT") {
+         totalSpentTMT += amount;
+      } else if (order.payment === "USDT") {
+         totalSpentUSDT += amount;
+      }
+   }
+
+   return `Ulanyjy: ${userLink({ id: ctx.chat?.id ?? 0, nick: ctx.chat?.first_name ? `${ctx.chat.first_name}${ctx.chat.last_name ? ` ${ctx.chat.last_name}` : ""}` : undefined })}\nID: <code>${ctx.chat?.id}</code>\nBalans ID: <code>${user.walNum}</code>\nDöredilen wagty: ${new Date(user.createdAt).toLocaleString("tk-TR")}\nTäzelenen wagty: ${new Date(
+      user.updatedAt,
+   ).toLocaleString("tk-TR")}\nBalans TMT: ${user.sumTmt}\nBalans USDT: ${
+      user.sumUsdt
+   }\nBloklanan: ${user.blocked ? "Hawa" : "Ýok"}\nTamamlanan sargyt sany: ${orderCount}\nJemi çykdajy TMT: ${totalSpentTMT}\nJemi çykdajy USDT: ${totalSpentUSDT}`;
+}
 export function afterOrderConfirmedMess({
    order,
    adminOnlineStatus,
