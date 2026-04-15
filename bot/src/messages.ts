@@ -176,7 +176,7 @@ export async function userInfo({
       user.updatedAt,
    ).toLocaleString("tk-TR")}\nBalans TMT: ${user.sumTmt}\nBalans USDT: ${
       user.sumUsdt
-   }\nBloklanan: ${user.blocked ? "Hawa" : "Ýok"}\nTamamlanan sargyt sany: ${orderCount}\nJemi çykdajy TMT: ${totalSpentTMT}\nJemi çykdajy USDT: ${totalSpentUSDT}`;
+   }\nBloklanan: ${user.blocked ? "Hawa" : "Ýok"}\nTamamlanan sargyt sany: ${orderCount}\nJemi çykdajy TMT: ${totalSpentTMT.toFixed(2)}\nJemi çykdajy USDT: ${totalSpentUSDT.toFixed(2)}`;
 }
 export function afterOrderConfirmedMess({
    order,
