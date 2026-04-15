@@ -47,29 +47,6 @@ export function rndmNmrGnrtr(l: number): string {
    }
    return result;
 }
-// product name returner
-export function prdctDsplyNme(
-   name: ProductType | undefined | Product["title"],
-):
-   | "Jeton"
-   | "Ýyldyz"
-   | "Tg Premium"
-   | "UC"
-   | "Exitlag"
-   | ""
-   | Product["title"] {
-   return name === "jtn"
-      ? "Jeton"
-      : name === "star"
-        ? "Ýyldyz"
-        : name === "tgprem"
-          ? "Tg Premium"
-          : name === "uc"
-            ? "UC"
-            : name === "exit"
-              ? "Exitlag"
-              : (name ?? "");
-}
 
 export const editSummComand = "eylenbeylen";
 
@@ -140,8 +117,6 @@ export const productTitle = (name: ProductType) => {
          return "PUBG Mobile Lite BC";
       case "brawl":
          return "Brawl Stars";
-      case "gpt":
-         return "ChatGPT abuna";
       case "roblox":
          return "Roblox";
       case "wifi":
@@ -152,6 +127,8 @@ export const productTitle = (name: ProductType) => {
          return "Instagram";
       case "imo":
          return "imo Almaz";
+      case "capcut":
+         return "CapCut pro";
       default:
          return "";
    }
@@ -168,6 +145,7 @@ export const paths: ProductType[] = [
    "music",
    "apple",
    "roblox",
+   'capcut',
    "gpt",
    "brawl",
    "psp",

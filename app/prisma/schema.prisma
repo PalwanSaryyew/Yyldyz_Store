@@ -37,8 +37,8 @@ model Order {
   Admin           Admin?           @relation(fields: [courierid], references: [tgId])
   Product         Product          @relation(fields: [productId], references: [id])
   User            User             @relation(fields: [userId], references: [id])
-  TonTransaction  TonTransaction?
   StarTransaction StarTransaction?
+  TonTransaction  TonTransaction?
 }
 
 model Product {
@@ -112,9 +112,9 @@ model TonTransaction {
   id        String   @id @default(cuid())
   price     Float
   orderId   Int      @unique
-  txHash    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  txHash    String?
   Order     Order    @relation(fields: [orderId], references: [id])
 }
 
@@ -161,11 +161,11 @@ model User {
 model Chest {
   id        Int       @id
   type      ChestType
-  fullname  String?
   reward    String?
   userId    String?   @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  fullname  String?
   User      User?     @relation(fields: [userId], references: [id])
 }
 
@@ -213,6 +213,7 @@ enum ProductType {
   music
   pes
   stand
+  capcut
   imo
 }
 
