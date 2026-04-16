@@ -469,7 +469,6 @@ bot.command("of", async (ctx) => {
       });
    }
 });
-
 bot.command("block", async (ctx) => {
    // 1. Check if the user is an admin
    const adminId = ctx.from?.id;
@@ -523,7 +522,6 @@ bot.command("block", async (ctx) => {
       );
    }
 });
-
 bot.command("unblock", async (ctx) => {
    // 1. Check if the user is an admin
    const adminId = ctx.from?.id;
@@ -568,7 +566,6 @@ bot.command("unblock", async (ctx) => {
       console.error("Could not notify user about unblock:", error);
    }
 });
-
 /* start command */
 bot.command("test", async (ctx) => {
    ctx.reply(`${statusIcons.yes} \n ${statusIcons.no} \n ${statusIcons.care}`, {
@@ -960,7 +957,6 @@ bot.callbackQuery(/cancelBroad_(.+)/, async (ctx) => {
       },
    );
 });
-
 // Bu kodu bot.callbackQuery bloklarının dışında, ana bot dosyanın uygun bir yerine ekle
 bot.on("pre_checkout_query", async (ctx) => {
    try {
@@ -1074,7 +1070,6 @@ bot.on("message:successful_payment", async (ctx) => {
       clntMssgId: originalMsgId,
    };
 });
-
 // if order accept by the client
 bot.callbackQuery(/acceptOrder_(.+)/, async (ctx) => {
    const orderId = parseInt(ctx.match[1]);
@@ -1392,9 +1387,8 @@ bot.callbackQuery(/deliverOrder_(.+)/, async (ctx) => {
 
    try {
       const keyboard = new InlineKeyboard()
-         .text("Tabşyrdym " + statusIcons.yes[2], "orderDelivered_" + order.id)
-         .row()
-         .text("Ýatyr " + statusIcons.no[2], "declineOrder_" + order.id)
+         .text("Ýatyr" + statusIcons.no[2], "declineOrder_" + order.id)
+         .text("Tabşyr" + statusIcons.yes[2], "orderDelivered_" + order.id)
          .row()
          .copyText(order.receiver, order.receiver);
       for (let i = 0; i < adminidS.length; i++) {
