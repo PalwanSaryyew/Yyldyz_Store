@@ -2868,8 +2868,9 @@ bot.on("message", async (ctx) => {
          );
       delete ctx.session.broadcastStates[userId];
    } else {
-      ctx.api.copyMessage(ctx.chat.id, ctx.chat.id, ctx.message.message_id, {
+      return ctx.reply(welcome, {
          reply_markup: mainKEybiard,
+         parse_mode: "HTML",
       });
    }
 });

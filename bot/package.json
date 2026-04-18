@@ -3,9 +3,9 @@
    "version": "1.0.0",
    "main": "start.js",
    "scripts": {
-      "dev": "ts-node start.ts",
+      "dev": "ts-node-dev --respawn --transpile-only start.ts",
       "build": "mkdir sessions && touch sessions/states.json && tsc",
-      "start": "node start.js",
+      "start": "ts-node start.ts",
       "test": "echo \"Error: no test specified\" && exit 1"
    },
    "keywords": [],
@@ -22,6 +22,7 @@
    "devDependencies": {
       "@grammyjs/types": "^3.24.0",
       "@types/bcrypt": "^6.0.0",
-      "@types/node": "^22.13.5"
+      "@types/node": "^22.13.5",
+      "ts-node-dev": "^2.0.0"
    }
 }
