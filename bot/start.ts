@@ -193,6 +193,44 @@ bot.command("signup", async (ctx) => {
       }
    }
 });
+bot.command("clearforce", async (ctx) => {
+   const userId = ctx.chat.id;
+   const transferState = ctx.session.transferStates[userId];
+   const signupState = ctx.session.signupState[userId];
+   const sumAddState = ctx.session.sumAddStates[userId];
+   const chatState = ctx.session.chatStates[userId];
+   const broadcastState = ctx.session.broadcastStates[userId];
+   const checkState = ctx.session.checkStates[userId];
+   const redeemCodeState = ctx.session.redeemCodeState[userId];
+   const reasonState = ctx.session.reasonStates[userId];
+
+   if (transferState) {
+      delete ctx.session.transferStates[userId];
+   }
+   if (signupState) {
+      delete ctx.session.signupState[userId];
+   }
+   if (sumAddState) {
+      delete ctx.session.sumAddStates[userId];
+   }
+   if (chatState) {
+     delete ctx.session.chatStates[userId];
+  delete ctx.session.chatStates[chatState.userId];
+   }
+   if (broadcastState) {
+      delete ctx.session.broadcastStates[userId];
+   }
+   if (checkState) {
+      delete ctx.session.checkStates[userId];
+   }
+   if (redeemCodeState) {
+      delete ctx.session.redeemCodeState[userId];
+   }
+   if (reasonState) {
+      delete ctx.session.reasonStates[userId];
+   }
+   return ctx.reply("Ähli açyk ýagdaýlar aradan aýryldy. Täzeden synanyşyň!");
+});
 bot.command("broadcast", async (ctx) => {
    const isAmdin = isAdminId(ctx.from?.id);
    if (isAmdin.error) {
