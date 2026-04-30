@@ -156,7 +156,7 @@ bot.command("start", async (ctx) => {
    const param = ctx.match;
    if (param === "calladmin") {
       return ctx.reply("Balansyňyzy doldurmak üçin admini çagyryň.", {
-         reply_markup: mainKEybiard,
+         reply_markup: mainKEybiard(ctx.from?.id.toString() || ''),
       });
    }
 
@@ -167,7 +167,7 @@ bot.command("start", async (ctx) => {
    }
 
    ctx.reply(welcome, {
-      reply_markup: mainKEybiard,
+      reply_markup: mainKEybiard(ctx.from?.id.toString() || ''),
       parse_mode: "HTML",
    }).catch((e) => {
       console.error("---start komandynda reply yalnyslygy---", e);
@@ -234,68 +234,6 @@ bot.command("redeem", async (ctx) => {
          console.error("---redeem komandada reply yalnyslygy---", error);
       }
    }
-});
-bot.command("cagyr", async (ctx) => {
-   const userID = ctx.from?.id;
-   if (!userID) {
-      return;
-   }
-   if (ctx.session.chatStates[userID]) {
-      return await ctx
-         .reply(
-            "Siz häzir hem söhbetdeşlikde. Öňki söhbetdeşligi ýapmak üçin 👉 /stop 👈",
-         )
-         .catch((e) => {
-            console.error("--- çagyr komandynda reply yalnyslygy---", e);
-         });
-   }
-   if (isAdminId(userID).error === true) {
-      return await ctx
-         .reply("Bul komandy diňe adminler ulanyp bilýär!")
-         .catch((e) => {
-            console.error("---çagyr komandynda reply yalnyslygy---", e);
-         });
-   }
-
-   const messageIds: number[] = [];
-   /* for (const adminId of adminidS) {
-      try {
-         const { message_id } = await ctx.api.sendMessage(
-            adminId,
-            `${userLink({
-               id: userID,
-               nick: ctx.from?.first_name,
-            })}${
-               ctx.from?.username !== undefined
-                  ? ` / @${ctx.from?.username}`
-                  : ""
-            } söhbetdeşlik talap edýär`,
-            {
-               reply_markup: new InlineKeyboard().text(
-                  "Tassykla",
-                  "acceptChat_" + userID
-               ),
-               parse_mode: "HTML",
-            }
-         );
-
-         messageIds.push(message_id);
-      } catch (e) {
-         console.error(
-            "---Admini çagyr duwmesinde for-sendMessage yalnyslygy---",
-            e
-         );
-      }
-   } */
-
-   ctx.session.chatStates[userID] = {
-      userId: 0,
-      messageIds: messageIds,
-      calling: true,
-   };
-   return ctx.reply("ID ugradyň.").catch((e) => {
-      console.error("---çagyr komandynda reply yalnyslygy---", e);
-   });
 });
 bot.command("stop", async (ctx) => {
    const userID = ctx.from?.id || 0;
@@ -574,63 +512,60 @@ bot.command("test", async (ctx) => {
       console.error("---test komandasynda reply yalnyslygy---", e);
    });
 });
-// add sum comand
-bot.command("check", async (ctx) => {
+bot.command("0804", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID) {
+      return;
+   }
+   if (ctx.session.transferStates[userID]) {
       return ctx
-         .deleteMessage()
+         .reply("Birinji öňki geçirimi tamamlaň, soňra täzeden synanyşyň!")
          .catch((e) =>
-            console.error("---check komandynda deleteMessage yalnyslygy---", e),
+            console.error("---reply komandynda deleteMessage yalnyslygy---", e),
          );
    }
-   if (ctx.session.checkStates[userID]) {
-      return ctx
-         .deleteMessage()
-         .catch((e) =>
-            console.error("---check komandynda deleteMessage yalnyslygy---", e),
-         );
-   }
-   /* if (ctx.session.chatStates[Number(userID)]) {
-      return ctx
-         .reply(
-            "Siz şu wagt söhbetdeşlikde, ilki söhbetdeşligi tamamlaň! \n /stop"
-         )
-         .catch((e) =>
-            console.error("---check komandynda reply yalnyslygy---", e)
-         );
-   } */
-   // if user not admin notify admins
-   const isAdmin = adminValid(userID);
-   if (isAdmin.error) {
-      adminidS.map(async (adminId) => {
-         await ctx.api.sendMessage(
-            adminId,
-            sspcsCaseMs(
-               isAdmin.mssg,
-               "/" + editSummComand,
-               ctx.from?.username,
-               ctx.from?.id,
-            ),
-         );
-      });
-      return ctx.reply(isAdmin.mssg);
-   }
+
    // asking walnum
    const message = await ctx
-      .reply(`Hasap nomer ýa-da tg ID: ?`, {
-         reply_markup: new InlineKeyboard().text("Yatyr", "declineCheck"),
+      .reply(`Kabul edijiniň balans ID-si?`, {
+         reply_markup: new InlineKeyboard().text(
+            "Ýatyr " + statusIcons.care[7],
+            "declineTransfer",
+         ),
       })
       .catch((e) =>
-         console.error("---check komandynda reply yalnyslygy---", e),
+         console.error("---transfer komandynda reply yalnyslygy---", e),
       );
+
    // open the state
-   ctx.session.checkStates[userID] = {
+   ctx.session.transferStates[userID] = {
       messageId: message?.message_id || 0,
+      recieverID: 0,
+      senderWalNum: "",
+      recieverWalNum: "",
+      amount: 0,
+      currency: "",
    };
-   return;
+
+   if (ctx.session.transferStates[userID].messageId) {
+      ctx.pinChatMessage(ctx.session.transferStates[userID].messageId).catch(
+         (e) =>
+            console.error(
+               "---transfer komandynda pinChatMessage yalnyslygy---",
+               e,
+            ),
+      );
+      return;
+   }
+   delete ctx.session.transferStates[userID];
+   return ctx
+      .reply("Ýalňyşlyk ýüze çykdy täzeden synanyşyň.")
+      .catch((e) =>
+         console.error("---transfer komandynda reply yalnyslygy---", e),
+      );
 });
-bot.command(editSummComand, async (ctx) => {
+
+bot.hears("-Hasap-", async (ctx) => {
    const userID = ctx.from?.id;
    const isAdmin = adminValid(userID);
    if (ctx.session.sumAddStates[userID || 0]) {
@@ -698,57 +633,122 @@ bot.command(editSummComand, async (ctx) => {
    };
    return;
 });
-bot.command("0804", async (ctx) => {
+bot.hears("-Barla-", async (ctx) => {
+   const userID = ctx.from?.id;
+   if (!userID) {
+      return ctx
+         .deleteMessage()
+         .catch((e) =>
+            console.error("---check komandynda deleteMessage yalnyslygy---", e),
+         );
+   }
+   if (ctx.session.checkStates[userID]) {
+      return ctx
+         .deleteMessage()
+         .catch((e) =>
+            console.error("---check komandynda deleteMessage yalnyslygy---", e),
+         );
+   }
+   /* if (ctx.session.chatStates[Number(userID)]) {
+      return ctx
+         .reply(
+            "Siz şu wagt söhbetdeşlikde, ilki söhbetdeşligi tamamlaň! \n /stop"
+         )
+         .catch((e) =>
+            console.error("---check komandynda reply yalnyslygy---", e)
+         );
+   } */
+   // if user not admin notify admins
+   const isAdmin = adminValid(userID);
+   if (isAdmin.error) {
+      adminidS.map(async (adminId) => {
+         await ctx.api.sendMessage(
+            adminId,
+            sspcsCaseMs(
+               isAdmin.mssg,
+               "/" + editSummComand,
+               ctx.from?.username,
+               ctx.from?.id,
+            ),
+         );
+      });
+      return ctx.reply(isAdmin.mssg);
+   }
+   // asking walnum
+   const message = await ctx
+      .reply(`Hasap nomer ýa-da tg ID: ?`, {
+         reply_markup: new InlineKeyboard().text("Yatyr", "declineCheck"),
+      })
+      .catch((e) =>
+         console.error("---check komandynda reply yalnyslygy---", e),
+      );
+   // open the state
+   ctx.session.checkStates[userID] = {
+      messageId: message?.message_id || 0,
+   };
+   return;
+});
+bot.hears("-Çagyr-", async (ctx) => {
    const userID = ctx.from?.id;
    if (!userID) {
       return;
    }
-   if (ctx.session.transferStates[userID]) {
-      return ctx
-         .reply("Birinji öňki geçirimi tamamlaň, soňra täzeden synanyşyň!")
-         .catch((e) =>
-            console.error("---reply komandynda deleteMessage yalnyslygy---", e),
+   if (ctx.session.chatStates[userID]) {
+      return await ctx
+         .reply(
+            "Siz häzir hem söhbetdeşlikde. Öňki söhbetdeşligi ýapmak üçin 👉 /stop 👈",
+         )
+         .catch((e) => {
+            console.error("--- çagyr komandynda reply yalnyslygy---", e);
+         });
+   }
+   if (isAdminId(userID).error === true) {
+      return await ctx
+         .reply("Bul komandy diňe adminler ulanyp bilýär!")
+         .catch((e) => {
+            console.error("---çagyr komandynda reply yalnyslygy---", e);
+         });
+   }
+
+   const messageIds: number[] = [];
+   /* for (const adminId of adminidS) {
+      try {
+         const { message_id } = await ctx.api.sendMessage(
+            adminId,
+            `${userLink({
+               id: userID,
+               nick: ctx.from?.first_name,
+            })}${
+               ctx.from?.username !== undefined
+                  ? ` / @${ctx.from?.username}`
+                  : ""
+            } söhbetdeşlik talap edýär`,
+            {
+               reply_markup: new InlineKeyboard().text(
+                  "Tassykla",
+                  "acceptChat_" + userID
+               ),
+               parse_mode: "HTML",
+            }
          );
-   }
 
-   // asking walnum
-   const message = await ctx
-      .reply(`Kabul edijiniň balans ID-si?`, {
-         reply_markup: new InlineKeyboard().text(
-            "Ýatyr " + statusIcons.care[7],
-            "declineTransfer",
-         ),
-      })
-      .catch((e) =>
-         console.error("---transfer komandynda reply yalnyslygy---", e),
-      );
+         messageIds.push(message_id);
+      } catch (e) {
+         console.error(
+            "---Admini çagyr duwmesinde for-sendMessage yalnyslygy---",
+            e
+         );
+      }
+   } */
 
-   // open the state
-   ctx.session.transferStates[userID] = {
-      messageId: message?.message_id || 0,
-      recieverID: 0,
-      senderWalNum: "",
-      recieverWalNum: "",
-      amount: 0,
-      currency: "",
+   ctx.session.chatStates[userID] = {
+      userId: 0,
+      messageIds: messageIds,
+      calling: true,
    };
-
-   if (ctx.session.transferStates[userID].messageId) {
-      ctx.pinChatMessage(ctx.session.transferStates[userID].messageId).catch(
-         (e) =>
-            console.error(
-               "---transfer komandynda pinChatMessage yalnyslygy---",
-               e,
-            ),
-      );
-      return;
-   }
-   delete ctx.session.transferStates[userID];
-   return ctx
-      .reply("Ýalňyşlyk ýüze çykdy täzeden synanyşyň.")
-      .catch((e) =>
-         console.error("---transfer komandynda reply yalnyslygy---", e),
-      );
+   return ctx.reply("ID ugradyň.").catch((e) => {
+      console.error("---çagyr komandynda reply yalnyslygy---", e);
+   });
 });
 bot.hears("Dükana gir 🛒", async (ctx) => {
    ctx.reply("Dükana girmek üçin aşaky düwma basyň.", {
@@ -2838,7 +2838,7 @@ bot.on("message", async (ctx) => {
                continue;
             }
             await ctx.api.copyMessage(user.id, userId, ctx.message.message_id, {
-               reply_markup: mainKEybiard,
+               reply_markup: mainKEybiard(ctx.from?.id.toString() || ''),
             });
             console.log(`Habar ugradyldy: ${user.id}`);
             sentCount++;
@@ -2869,7 +2869,7 @@ bot.on("message", async (ctx) => {
       delete ctx.session.broadcastStates[userId];
    } else {
       return ctx.reply(welcome, {
-         reply_markup: mainKEybiard,
+         reply_markup: mainKEybiard(ctx.from?.id.toString() || ''),
          parse_mode: "HTML",
       });
    }
