@@ -89,8 +89,6 @@ export const productTitle = (name: ProductType) => {
          return "Telegram Premium";
       case "uc":
          return "PUBG UC";
-      case "exit":
-         return "Exitlag";
       case "pubg":
          return "PUBG Mobile";
       case "psp":
