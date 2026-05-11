@@ -39,7 +39,7 @@ export default async function RootLayout({
                <ModalProvider />
                <Header />
                  {/*  mahabat */}
-               <Link
+               {/* <Link
                   href={"/pubg"}
                   className="mt-3 flex relative w-11/12 h-20 bg-mainColor"
                >
@@ -57,7 +57,7 @@ export default async function RootLayout({
                      style={{ objectFit: "contain" }}
                      className="object-left border-y-2 border-mainColor "
                   />
-               </Link> 
+               </Link>  */}
                
                {children}
                <Footer />
